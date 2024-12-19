@@ -1,0 +1,124 @@
+version: '3.8'
+services:
+  springboot-app:
+    image: your-spring-boot-image
+    build: ./backend
+    ports:
+      - "5010:5010"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    depends_on:
+      - keycloak
+    networks:
+      - common-network
+
+  opensearch:
+    image: opensearchproject/opensearch:2.8.0
+    container_name: opensearch
+    environment:
+      - discovery.type=single-node
+      - cluster.name=docker-cluster
+      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m  # Adjust memory as needed
+      - network.host=0.0.0.0
+      - plugins.security.disabled=true
+    ports:
+      - "9200:9200"  # REST API
+      - "9600:9600"  # Prometheus metrics (optional)
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data
+    networks:
+      - common-network
+
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:2.8.0
+    container_name: opensearch-dashboards
+    environment:
+      - OPENSEARCH_HOSTS=http://opensearch:9200
+      - network.host=0.0.0.0
+      - plugins.security.ssl.http.enabled=false
+      - opensearch_security.enabled=false
+      - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true
+    ports:
+      - "5601:5601"
+    depends_on:
+      - opensearch
+    networks:
+      - common-network
+
+  # Uncomment and configure the following if needed:
+  react-app:
+    image: acko-fe-tool
+    build: ./frontend
+    ports:
+      - "3003:3003"
+    depends_on:
+      - springboot-app
+    networks: 
+      - common-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak
+    environment:
+      - KEYCLOAK_USER=admin              # Keycloak admin username
+      - KEYCLOAK_PASSWORD=admin          # Keycloak admin password
+      #- DB_VENDOR=mysql                 # Database vendor (MySQL in this case)
+      #- DB_ADDR=mysql:3306              # Database address
+      #- DB_DATABASE=keycloak            # Database name
+      #- DB_USER=keycloak                # Database user
+      #- DB_PASSWORD=keycloak_password   # Database password
+      - KEYCLOAK_HTTP_PORT=8080         # Optional: Set the Keycloak HTTP port
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
+      - KC_HOSTNAME_STRICT_HTTPS=false
+      - KC_DB=mysql
+      - KC_DB_USERNAME=root
+      - KC_DB_PASSWORD=root_password
+      - KC_DB_URL=jdbc:mysql://mysql:3306/keycloak?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    ports:
+      - "8080:8080"                     # Expose Keycloak on port 8080
+    command: start-dev
+    depends_on:
+      - mysql
+    networks:
+      - common-network
+    restart: unless-stopped
+
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password  # MySQL root password
+      - MYSQL_DATABASE=keycloak            # Database name to create
+      - MYSQL_USER=keycloak                # Database user
+      - MYSQL_PASSWORD=keycloak_password   # Database user password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - common-network
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"  # Expose MongoDB on port 27017
+    environment:
+      - MONGO_INITDB_DATABASE=test
+      - MONGO_INITDB_ROOT_USERNAME=admin  # Root user for MongoDB
+      - MONGO_INITDB_ROOT_PASSWORD=admin  # Root password for MongoDB
+    volumes:
+      - mongodb_data:/data/db  # Persistent volume for MongoDB data
+
+networks:
+  common-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local
+  opensearch-data:
+  mongodb_data:      # Named volume for data persistence
