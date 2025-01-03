@@ -4,12 +4,13 @@ COPY pom.xml /build/
 COPY src /build/src/
 
 WORKDIR /build/
-RUN mvn package
+RUN mvn clean package
 
 FROM openjdk:17-jdk-slim
 
 WORKDIR /app
 
-COPY --from=MAVEN_BUILD /build/target/spring-boot-3-rest-api-example-0.0.1-SNAPSHOT.jar /app/
+COPY --from=MAVEN_BUILD /build/target/acko-tool-backend-0.0.1-SNAPSHOT.jar /app/app.jar
 
-ENTRYPOINT ["java", "-jar", "spring-boot-3-rest-api-example-0.0.1-SNAPSHOT.jar"]
+EXPOSE 5010
+ENTRYPOINT ["java", "-jar", "app.jar"]

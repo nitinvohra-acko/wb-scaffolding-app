@@ -2,7 +2,9 @@ version: '3.8'
 services:
   springboot-app:
     image: your-spring-boot-image
-    build: ./backend
+    build:
+     context: ./backend
+     dockerfile: Dockerfile
     ports:
       - "5010:5010"
     environment:
@@ -74,20 +76,20 @@ services:
       - KC_DB=mysql
       - KC_DB_USERNAME=root
       - KC_DB_PASSWORD=root_password
-      - KC_DB_URL=jdbc:mysql://mysql:3306/keycloak?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      - KC_DB_URL=jdbc:mysql://mysql_container:3306/keycloak?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     ports:
       - "8080:8080"                     # Expose Keycloak on port 8080
     command: start-dev
     depends_on:
-      - mysql
+      - mysql_container
     networks:
       - common-network
     restart: unless-stopped
 
 
-  mysql:
+  mysql_container:
     image: mysql:8.0
-    container_name: mysql
+    container_name: mysql_container
     environment:
       - MYSQL_ROOT_PASSWORD=root_password  # MySQL root password
       - MYSQL_DATABASE=keycloak            # Database name to create
