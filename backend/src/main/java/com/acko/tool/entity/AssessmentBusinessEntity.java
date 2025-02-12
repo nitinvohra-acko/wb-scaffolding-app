@@ -13,8 +13,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class ProposalEntity {
+public class AssessmentBusinessEntity {
 
-	private String proposalId;
-	private String proposalStatus;
+	private String assessmentId;
+	private String assessmentStatus;
 }

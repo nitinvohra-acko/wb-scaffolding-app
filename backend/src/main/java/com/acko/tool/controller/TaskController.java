@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,10 +36,34 @@ public class TaskController {
 	}
 
 	@PostMapping
-	public void updateTasks(@RequestBody List<Task<?>> tasks) {
+	public List<Task<?>> updateTasks(@RequestBody List<Task<?>> tasks) throws Exception {
 		if (CollectionUtils.isNotEmpty(tasks)) {
 			tasks.forEach(t -> t.setId(UUID.randomUUID().toString()));
-			taskService.createOrUpdateTasks(tasks);
+			return taskService.createOrUpdateTasks(tasks);
 		}
+		return null;
 	}
+	
+	@DeleteMapping("{id}")
+	public ResponseEntity<?> deleteTasks(@PathVariable String id) {
+		taskService.deleteTaskById(id);
+		return ResponseEntity.ok(true);
+	}
+	
+	
+//	@PostConstruct
+//	public void abcd() throws ElasticsearchException, IOException {
+//		Task<?> task = Task
+//				.builder()
+//				.id(UUID.randomUUID().toString())
+//				.status("dkdfkd")
+//				.priority("fkdmfkd")
+//				.build();
+//
+//		IndexResponse response = elasticsearchClient.index(i -> i
+//				  .index("task")
+//				  .id(task.getId())
+//				  .document(task));
+//		KeycloakConfig.getInstance();
+//	}
 }

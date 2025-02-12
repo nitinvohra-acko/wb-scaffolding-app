@@ -14,36 +14,66 @@ services:
     networks:
       - common-network
 
-  opensearch:
-    image: opensearchproject/opensearch:2.8.0
-    container_name: opensearch
+  # opensearch:
+  #   image: opensearchproject/opensearch:2.8.0
+  #   container_name: opensearch
+  #   environment:
+  #     - discovery.type=single-node
+  #     - cluster.name=docker-cluster
+  #     - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m  # Adjust memory as needed
+  #     - network.host=0.0.0.0
+  #     - plugins.security.disabled=true
+  #   ports:
+  #     - "9200:9200"  # REST API
+  #     - "9600:9600"  # Prometheus metrics (optional)
+  #   volumes:
+  #     - opensearch-data:/usr/share/opensearch/data
+  #   networks:
+  #     - common-network
+
+  # opensearch-dashboards:
+  #   image: opensearchproject/opensearch-dashboards:2.8.0
+  #   container_name: opensearch-dashboards
+  #   environment:
+  #     - OPENSEARCH_HOSTS=http://opensearch:9200
+  #     - network.host=0.0.0.0
+  #     - plugins.security.ssl.http.enabled=false
+  #     - opensearch_security.enabled=false
+  #     - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true
+  #   ports:
+  #     - "5601:5601"
+  #   depends_on:
+  #     - opensearch
+  #   networks:
+  #     - common-network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.5.3  # Use the appropriate version
+    container_name: elasticsearch
     environment:
-      - discovery.type=single-node
-      - cluster.name=docker-cluster
-      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m  # Adjust memory as needed
-      - network.host=0.0.0.0
-      - plugins.security.disabled=true
+      - discovery.type=single-node         # For single-node mode (avoid clustering issues)
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g        # Memory options, adjust based on available RAM
+      - "ELASTICSEARCH_PASSWORD=changeme"   # Default password for 'elastic' user
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
     ports:
-      - "9200:9200"  # REST API
-      - "9600:9600"  # Prometheus metrics (optional)
+      - "9200:9200"                         # Expose HTTP port for Elasticsearch
+      - "9300:9300"                         # Expose internal transport port (used by nodes in cluster)
     volumes:
-      - opensearch-data:/usr/share/opensearch/data
+      - es_data:/usr/share/elasticsearch/data  # Persistent data storage (optional but recommended)
     networks:
       - common-network
 
-  opensearch-dashboards:
-    image: opensearchproject/opensearch-dashboards:2.8.0
-    container_name: opensearch-dashboards
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.5.3  # Kibana version (adjust as needed)
+    container_name: kibana
     environment:
-      - OPENSEARCH_HOSTS=http://opensearch:9200
-      - network.host=0.0.0.0
-      - plugins.security.ssl.http.enabled=false
-      - opensearch_security.enabled=false
-      - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200  # Set the URL of Elasticsearch to connect to
+      - xpack.security.enabled=false                  # Disable Kibana's security features (authentication, authorization)
     ports:
-      - "5601:5601"
+      - "5601:5601"  # Expose the Kibana port
     depends_on:
-      - opensearch
+      - elasticsearch  # Kibana depends on Elasticsearch
     networks:
       - common-network
 
@@ -122,5 +152,6 @@ networks:
 volumes:
   mysql_data:
     driver: local
-  opensearch-data:
+  # opensearch-data:
+  es_data:
   mongodb_data:      # Named volume for data persistence
