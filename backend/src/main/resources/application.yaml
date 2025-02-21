@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/camunda
+    url: jdbc:mysql://mysql_container:3306/camunda
     username: root
     password: root_password
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -11,7 +11,7 @@ spring:
       maximum-pool-size: 10
   data:
     mongodb:
-      uri: mongodb://admin:admin@localhost:27017/acko_tool?retryWrites=true&connectTimeoutMS=10000&authSource=admin&authMechanism=SCRAM-SHA-1
+      uri: mongodb://admin:admin@mongodb:27017/acko_tool?retryWrites=true&connectTimeoutMS=10000&authSource=admin&authMechanism=SCRAM-SHA-1
       port: 27017
       database: acko_tool
       auto-index-creation: true
