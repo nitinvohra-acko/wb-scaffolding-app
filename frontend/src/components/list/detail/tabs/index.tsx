@@ -17,9 +17,9 @@ const RightSection: React.FC = () => {
         indicatorColor="primary"
       >
         <Tab label="Introduction" />
-        <Tab label="Demographics" />
+        {/* <Tab label="Demographics" />
         <Tab label="Medical details" />
-        <Tab label="End note" />
+        <Tab label="End note" /> */}
       </Tabs>
       <Divider sx={{ my: 2 }} />
       {activeTab === 0 && (

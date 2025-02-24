@@ -10,6 +10,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import AddOneIcon from "@mui/icons-material/Add";
 import SortIcon from "@mui/icons-material/Sort";
 import { styled } from "@mui/system";
 
@@ -18,6 +19,7 @@ interface HeaderProps {
   onSearch: (query: string) => void;
   onFilter: () => void;
   onSort: () => void;
+  handleNewTask: (data: any) => void;
 }
 
 const SearchInput = styled(TextField)(({ theme }) => ({
@@ -31,6 +33,7 @@ const Header: React.FC<HeaderProps> = ({
   onSearch,
   onFilter,
   onSort,
+  handleNewTask,
 }) => {
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     onSearch(event.target.value);
@@ -48,6 +51,16 @@ const Header: React.FC<HeaderProps> = ({
         </Typography>
 
         <Box>
+          <Tooltip title="Add task">
+            <Button
+              startIcon={<AddOneIcon />}
+              onClick={() => {
+                handleNewTask("task");
+              }}
+            >
+              Add Task
+            </Button>
+          </Tooltip>
           <SearchInput
             variant="outlined"
             size="small"

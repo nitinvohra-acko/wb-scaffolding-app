@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   DataGrid,
   GridColDef,
@@ -32,9 +32,9 @@ const priorityOptions = {
   P2: { label: "Low", color: "green" },
 } as const;
 
-const DataTable: React.FC<{}> = () => {
+const DataTable: React.FC<{ data: any }> = ({ data }) => {
   const [tableData, setTableData] = useState<DataRow[]>(data);
-
+  console.log("data", data);
   const handleAssigneeChange = (id: string, newAssignee: string) => {
     setTableData((prevData) =>
       prevData.map((row) =>
@@ -45,18 +45,9 @@ const DataTable: React.FC<{}> = () => {
 
   const columns: GridColDef[] = [
     {
-      field: "proposer_name",
-      headerName: "Proposer Name",
+      field: "assignee",
+      headerName: "Assignee",
       flex: 1,
-      renderCell: (params: GridRenderCellParams<GridValidRowModel>) => {
-        return (
-          <Box height={"100%"} sx={{ display: "flex", alignItems: "center" }}>
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>
-              {params.value}
-            </Typography>
-          </Box>
-        );
-      },
     },
     { field: "id", headerName: "ID", flex: 1 },
     { field: "status", headerName: "Status", flex: 1 },
@@ -64,41 +55,8 @@ const DataTable: React.FC<{}> = () => {
       field: "priority",
       headerName: "Priority",
       flex: 1,
-      renderCell: (params: GridRenderCellParams<GridValidRowModel>) => {
-        const priority =
-          priorityOptions[params.value as keyof typeof priorityOptions];
-        return (
-          <Chip
-            label={priority.label}
-            style={{ backgroundColor: priority.color, color: "white" }}
-            size="small"
-          />
-        );
-      },
     },
-    {
-      field: "assignee",
-      headerName: "Assignee",
-      flex: 1,
-      renderCell: (
-        params: GridRenderCellParams<GridValidRowModel, DataRow>
-      ) => (
-        <Select
-          value={params.value}
-          onChange={(e: any) =>
-            handleAssigneeChange(params.row.id, e.target.value)
-          }
-          fullWidth
-          size="small"
-        >
-          {assignees.map((assignee) => (
-            <MenuItem key={assignee} value={assignee}>
-              {assignee}
-            </MenuItem>
-          ))}
-        </Select>
-      ),
-    },
+
     {
       field: "detail",
       headerName: "Detail",
@@ -117,24 +75,26 @@ const DataTable: React.FC<{}> = () => {
 
   return (
     <div style={{ height: 600, width: "100%" }}>
-      <DataGrid
-        rows={tableData}
-        columns={columns}
-        // pageSize={5}
-        // rowsPerPageOptions={[5, 10, 20]}
-        getRowId={(row) => row.id}
-        sx={{
-          boxShadow: 2,
-          border: 1,
-          borderColor: "background.paper",
-          "& .MuiDataGrid-cell:hover": {
-            color: "primary.main",
-          },
-          "& .MuiDataGrid-columnHeader": {
-            backgroundColor: "background.paper",
-          },
-        }}
-      />
+      {data && (
+        <DataGrid
+          rows={data}
+          columns={columns}
+          // pageSize={5}
+          // rowsPerPageOptions={[5, 10, 20]}
+          getRowId={(row) => row.id}
+          sx={{
+            boxShadow: 2,
+            border: 1,
+            borderColor: "background.paper",
+            "& .MuiDataGrid-cell:hover": {
+              color: "primary.main",
+            },
+            "& .MuiDataGrid-columnHeader": {
+              backgroundColor: "background.paper",
+            },
+          }}
+        />
+      )}
     </div>
   );
 };
