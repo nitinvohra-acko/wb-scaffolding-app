@@ -51,7 +51,7 @@ const Header: React.FC<HeaderProps> = ({
         </Typography>
 
         <Box>
-          <Tooltip title="Add task">
+          {/* <Tooltip title="Add task">
             <Button
               startIcon={<AddOneIcon />}
               onClick={() => {
@@ -60,7 +60,7 @@ const Header: React.FC<HeaderProps> = ({
             >
               Add Task
             </Button>
-          </Tooltip>
+          </Tooltip> */}
           <SearchInput
             variant="outlined"
             size="small"

@@ -15,7 +15,11 @@ const DataTableComponent: React.FC = () => {
   }, []);
   const fetchAlltask = async () => {
     try {
-      const resp = await fetch("/task");
+      const resp = await fetch("/task", {
+        headers:{
+          'Content-Type':'application/json'
+        }
+      });
       if (resp.ok) {
         const response = await resp.json();
         setAllTask(response);
@@ -62,18 +66,18 @@ const DataTableComponent: React.FC = () => {
               setOpenAddTask(true);
             }}
           />
-          <Box sx={{ paddingX: 8 }}>
+          <Box sx={{ my:2 }}>
             <MemberTable data={allTask} />
           </Box>
         </Box>
       ) : (
         <Typography>...Loading</Typography>
       )}
-      <AddTaskModal
+      {/* <AddTaskModal
         open={openAddTask}
         handleClose={() => setOpenAddTask(false)}
         onSubmit={handleAddTask}
-      />
+      /> */}
     </>
   );
 };

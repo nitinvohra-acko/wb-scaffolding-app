@@ -80,28 +80,26 @@ const Login: React.FC = () => {
       }
 
       const tokens = await response.json();
-      console.log("Tokens:", tokens);
+      // console.log("Tokens:", JSON.stringify(tokens));
       Cookies.set("access_token", tokens.access_token, {
         secure: true,
         sameSite: "strict",
         path: "/",
-        expires: tokens.expires_in / 3600 / 24, // Convert seconds to days
       });
-
+      Cookies.remove("id_token")
       Cookies.set("id_token", tokens.id_token, {
         secure: true,
         sameSite: "strict",
         path: "/",
-        expires: tokens.expires_in / 3600 / 24, // Convert seconds to days
       });
-
+      Cookies.remove("refresh_token")
       Cookies.set("refresh_token", tokens.refresh_token, {
         secure: true,
         sameSite: "strict",
         path: "/",
-        expires: tokens.refresh_expires_in / 3600 / 24, // Convert seconds to days
       });
-      window.location.href = "/";
+      console.log(Cookies.get('refresh_token'), tokens?.refresh_token)
+      window.location.href = "/list";
     } catch (error: any) {
       setError(error.message || "An error occurred during login.");
     } finally {

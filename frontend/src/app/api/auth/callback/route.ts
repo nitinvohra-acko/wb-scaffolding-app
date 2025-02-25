@@ -39,35 +39,33 @@ export async function GET(req: NextRequest) {
     const tokens = await response.json();
     console.log("Tokens received:", tokens);
 
-    const responseHeaders = NextResponse.redirect("http://localhost:3003/home");
+    const responseHeaders = NextResponse.redirect("http://localhost:3003/list");
     // Set cookies for all tokens
-    console.log(tokens?.id_token, "id_toke");
-    responseHeaders.cookies.set("access_token", tokens.access_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      path: "/",
-      maxAge: tokens.expires_in,
-    });
+    // responseHeaders.cookies.set("access_token", tokens.access_token, {
+    //   httpOnly: true,
+    //   secure: process.env.NODE_ENV === "production",
+    //   sameSite: "strict",
+    //   path: "/",
+    //   maxAge: tokens.expires_in,
+    // });
 
-    if (tokens.refresh_token) {
-      responseHeaders.cookies.set("refresh_token", tokens.refresh_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        path: "/",
-        maxAge: 30 * 24 * 60 * 60, // Example: 30 days
-      });
-    }
+    // if (tokens.refresh_token) {
+    //   responseHeaders.cookies.set("refresh_token", tokens.refresh_token, {
+    //     httpOnly: true,
+    //     secure: process.env.NODE_ENV === "production",
+    //     sameSite: "strict",
+    //     path: "/",
+    //   });
+    // }
 
-    if (tokens.id_token) {
-      responseHeaders.cookies.set("id_token", tokens.id_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        path: "/",
-      });
-    }
+    // if (tokens.id_token) {
+    //   responseHeaders.cookies.set("id_token", tokens.id_token, {
+    //     httpOnly: true,
+    //     secure: process.env.NODE_ENV === "production",
+    //     sameSite: "strict",
+    //     path: "/",
+    //   });
+    // }
 
     return responseHeaders;
   } catch (error) {
