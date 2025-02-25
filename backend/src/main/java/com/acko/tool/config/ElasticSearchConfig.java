@@ -1,5 +1,6 @@
 package com.acko.tool.config;
 
+import lombok.extern.log4j.Log4j2;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,11 +13,11 @@ import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
 
 @Configuration
+@Log4j2
 public class ElasticSearchConfig {
 
 	@Value("${elasticsearch.url}")
 	private String url;
-	
 	@Bean
 	public ElasticsearchClient elasticsearchClient() {
 

@@ -1,5 +1,6 @@
 package com.acko.tool.service;
 
+import com.acko.tool.utils.ESUtils;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +23,7 @@ public class TasksService {
 
 	private final TaskRepository taskRepository;
 	private final ElasticsearchClient elasticsearchClient;
+	private final ESUtils esUtils;
 
 	public List<Task<?>> fetchAllTasks() {
 		return taskRepository.findAll();
@@ -39,10 +41,11 @@ public class TasksService {
 		List<Task<?>> savedTasks = taskRepository.saveAll(tasks);
 		savedTasks.forEach(t -> {
 			try {
-				elasticsearchClient.index(i -> i
-						.index("task")
-						.id(t.getId())
-						.document(t));
+				esUtils.putTaskInES(t, null);
+//				elasticsearchClient.index(i -> i
+//						.index("task")
+//						.id(t.getId())
+//						.document(t));
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

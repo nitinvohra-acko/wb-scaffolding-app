@@ -1,4 +1,4 @@
-package com.acko.tool.entity.Search;
+package com.acko.tool.entity.search;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -27,7 +27,7 @@ public class SearchParam {
     @NonNull
     private String entity;
     private List<SearchParamField> params;
-    private boolean isActive;
+    private boolean isActive = true;
     @CreatedDate
     private Date createdDate;
 

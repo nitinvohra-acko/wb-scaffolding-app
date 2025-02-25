@@ -1,50 +1,74 @@
 package com.acko.tool.utils;
 
-import com.acko.tool.entity.Search.SearchFilterAggregatedOption;
-import com.acko.tool.entity.Search.SearchParam;
-import com.acko.tool.entity.Search.SearchParamField;
-import com.acko.tool.entity.Search.TaskSearchFilter;
-import com.acko.tool.entity.Search.TaskSearchableField;
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
+import com.acko.tool.entity.search.SearchFilterAggregatedOption;
+import com.acko.tool.entity.search.SearchParam;
+import com.acko.tool.entity.search.SearchParamField;
+import com.acko.tool.entity.search.TaskSearchFilter;
+import com.acko.tool.entity.search.TaskSearchableField;
+import com.acko.tool.enums.TaskType;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.elasticsearch.client.HttpAsyncResponseConsumerFactory;
 import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.springframework.stereotype.Component;
 
 @Component
-@AllArgsConstructor
 @RequiredArgsConstructor
 public class SearchUtils {
+
     RequestOptions REQUEST_OPTIONS = null;
-    public BoolQueryBuilder getQueryForSearchableFields(List<TaskSearchableField> searchableFields, SearchParam searchParam) {
-        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+
+    public Class<?> isEntityValid(String entity) throws NoSuchFieldException {
+        // check if the entity is valid
+        String normalizedInput = entity.trim().toUpperCase();
+        TaskType taskType = null;
+        try {
+            taskType = TaskType.valueOf(normalizedInput);
+        } catch (IllegalArgumentException e) {
+            throw new NoSuchFieldException("Invalid task type: " + entity);
+        }
+        return taskType.getTaskClass();
+    }
+
+    public List<Query> getQueryForSearchableFields(List<TaskSearchableField> searchableFields, SearchParam searchParam) {
+        List<Query> mustQueries = new ArrayList<>();
         searchableFields.forEach(searchableField -> {
             String variableNameForField = getVariableNameForField(searchableField.getFieldName(), searchParam);
             if(Objects.nonNull(variableNameForField) && Objects.nonNull(searchableField.getValue())) {
-                boolQuery.must(QueryBuilders.matchQuery(variableNameForField, searchableField.getValue()));
+                TermQuery termQuery = TermQuery.of(t -> t
+                    .field(variableNameForField + ".keyword")
+                    .value(searchableField.getValue().toString())
+                );
+                mustQueries.add(Query.of(q -> q.term(termQuery)));
             }
         });
-        return boolQuery;
+        return mustQueries;
     }
 
-    public BoolQueryBuilder getQueryForFilterableFields(List<TaskSearchFilter> filters, SearchParam searchParam) {
-        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+    public List<Query> getQueryForFilterableFields(List<TaskSearchFilter> filters, SearchParam searchParam) {
+        List<Query> shouldQueries = new ArrayList<>();
         filters.forEach(filter -> {
             String variableNameForField = getVariableNameForField(filter.getFieldName(), searchParam);
             if(Objects.nonNull(variableNameForField) && Objects.nonNull(filter.getOptions())) {
-                filter.getOptions().stream().filter(SearchFilterAggregatedOption::isSelected).forEach(option -> {
-                    boolQuery.should(QueryBuilders.matchQuery(variableNameForField, option.getValue()));
+                filter.getOptions().stream().filter(SearchFilterAggregatedOption::getIsSelected).forEach(option -> {
+                    TermQuery termQuery = TermQuery.of(t -> t
+                        .field(variableNameForField)
+                        .value(option.getValue())
+                    );
+                    shouldQueries.add(Query.of(q -> q.term(termQuery)));
                 });
             }
         });
-        return boolQuery;
+        return shouldQueries;
     }
 
     private String getVariableNameForField(String fieldName, SearchParam searchParam) {
@@ -57,15 +81,18 @@ public class SearchUtils {
         return null;
     }
 
-    public List<TermsAggregationBuilder> getAggregationsForFilters(SearchParam searchParam) {
+    public Map<String, Aggregation> getAggregationsForFilters(SearchParam searchParam) {
         // return the aggregation builders for the filters
-        return searchParam.getParams().stream().map(searchParamField -> {
+        Map<String, Aggregation> aggregations = new HashMap<>();
+        for(SearchParamField searchParamField : searchParam.getParams()) {
             if(searchParamField.getIsFilterable()) {
-                return AggregationBuilders.terms(searchParamField.getFieldName()).field(searchParamField.getVariableName());
-            } else {
-                return null;
+                String aggName = searchParamField.getFieldName().replace(".", "_") + "_agg";
+                aggregations.put(aggName, Aggregation.of(a -> a
+                    .terms(t -> t.field(searchParamField.getFieldName()))
+                ));
             }
-        }).filter(Objects::nonNull).toList();
+        }
+        return aggregations;
     }
 
     public RequestOptions getRequestOptions(Integer bufferLimitInMB) {

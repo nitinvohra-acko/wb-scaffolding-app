@@ -1,10 +1,11 @@
 package com.acko.tool.controller;
 
-import com.acko.tool.entity.Search.SearchParam;
-import com.acko.tool.entity.Search.TaskSearch;
+import com.acko.tool.entity.search.SearchParam;
+import com.acko.tool.entity.search.TaskSearch;
 import com.acko.tool.service.SearchService;
 import com.acko.tool.utils.JSONUtils;
 import com.acko.tool.utils.ReflectionUtil;
+import com.acko.tool.utils.SearchUtils;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 public class SearchController {
     SearchService searchService;
+    SearchUtils searchUtils;
     private final ReflectionUtil reflectionUtil;
     private final JSONUtils jsonUtils;
     @GetMapping("/params")
@@ -40,7 +42,7 @@ public class SearchController {
     }
 
     @PostMapping("/{entity}")
-    TaskSearch searchTasks(
+    Object searchTasks(
 
         @PathVariable(value = "entity") String entity,
         @RequestBody TaskSearch searchRequest
@@ -48,10 +50,12 @@ public class SearchController {
         return searchService.searchTasks(searchRequest, entity);
     }
 
-    @GetMapping("/fields")
-    public Object getTaskSearchFields() {
+    @GetMapping("/fields/{entity}")
+    public Object getTaskSearchFields(
+        @PathVariable(value = "entity") String entity
+    ) throws NoSuchFieldException {
         HashMap<String, Object> response = new HashMap<>();
-        List<String> list = reflectionUtil.getFieldPaths(TaskSearch.class, "");
+        List<String> list = reflectionUtil.getFieldPaths(searchUtils.isEntityValid(entity), "");
         for(int i= 0; i<list.size(); i++){
             jsonUtils.setKeyInObject(response, list.get(i), new HashMap<>());
         }

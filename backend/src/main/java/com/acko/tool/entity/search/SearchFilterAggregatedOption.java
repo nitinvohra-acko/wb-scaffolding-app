@@ -1,4 +1,4 @@
-package com.acko.tool.entity.Search;
+package com.acko.tool.entity.search;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -15,5 +15,5 @@ import lombok.NoArgsConstructor;
 public class SearchFilterAggregatedOption {
     private String value;
     private int count;
-    private boolean isSelected;
+    private Boolean isSelected;
 }
