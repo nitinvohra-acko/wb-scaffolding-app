@@ -15,8 +15,21 @@ spring:
       port: 27017
       database: acko_tool
       auto-index-creation: true
-
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/my-realm
+jwt:
+  auth:
+    converter:
+      resource-id: my-todo-list
+      principal-attribute: preferred_username
+      
+          
 camunda.bpm:
+  webapp:
+    enabled: true
   history-level: none
   generic-properties.properties:
     telemetry-reporter-activate: false
