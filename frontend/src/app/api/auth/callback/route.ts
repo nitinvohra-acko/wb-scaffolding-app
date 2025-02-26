@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 const CLIENT_ID = process.env.NEXT_PUBLIC_CLIENT_ID;
 const REDIRECT_URI = process.env.NEXT_PUBLIC_REDIRECT_URI;
-const KEYCLOAK_BASE_URL = process.env.NEXT_PUBLIC_KEYCLOAK_BASE_URL;
 const SECRET = process.env.NEXT_PUBLIC_SECRET;
 const TOKEN_API = process.env.NEXT_PUBLIC_TOKEN_API;
 export async function GET(req: NextRequest) {
@@ -15,7 +14,6 @@ export async function GET(req: NextRequest) {
       { status: 400 }
     );
   }
-
   try {
     // Exchange authorization code for tokens
     const response = await fetch(TOKEN_API ?? "", {
@@ -39,33 +37,33 @@ export async function GET(req: NextRequest) {
     const tokens = await response.json();
     console.log("Tokens received:", tokens);
 
-    const responseHeaders = NextResponse.redirect("http://localhost:3003/list");
+    const responseHeaders = NextResponse.redirect(new URL("/list", req.url));
     // Set cookies for all tokens
-    // responseHeaders.cookies.set("access_token", tokens.access_token, {
-    //   httpOnly: true,
-    //   secure: process.env.NODE_ENV === "production",
-    //   sameSite: "strict",
-    //   path: "/",
-    //   maxAge: tokens.expires_in,
-    // });
+    responseHeaders.cookies.set("access_token", tokens.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+      maxAge: tokens.expires_in,
+    });
 
-    // if (tokens.refresh_token) {
-    //   responseHeaders.cookies.set("refresh_token", tokens.refresh_token, {
-    //     httpOnly: true,
-    //     secure: process.env.NODE_ENV === "production",
-    //     sameSite: "strict",
-    //     path: "/",
-    //   });
-    // }
+    if (tokens.refresh_token) {
+      responseHeaders.cookies.set("refresh_token", tokens.refresh_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        path: "/",
+      });
+    }
 
-    // if (tokens.id_token) {
-    //   responseHeaders.cookies.set("id_token", tokens.id_token, {
-    //     httpOnly: true,
-    //     secure: process.env.NODE_ENV === "production",
-    //     sameSite: "strict",
-    //     path: "/",
-    //   });
-    // }
+    if (tokens.id_token) {
+      responseHeaders.cookies.set("id_token", tokens.id_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        path: "/",
+      });
+    }
 
     return responseHeaders;
   } catch (error) {

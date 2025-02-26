@@ -1,8 +1,9 @@
 import React from 'react'
+import KibanaCustomDashboard from './KibanaCustomDashboard'
 
 const Index = () => {
   return (
-    <div>Dashboard</div>
+    <div><KibanaCustomDashboard /></div>
   )
 }
 

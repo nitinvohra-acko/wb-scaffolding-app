@@ -22,16 +22,17 @@ export const retail: {
 } = {
   items: [
     {
-      icon: PieChartOutlinedIcon,
-      title: "Dashboard",
-      href: "/dashboard",
-      id: "dashboard",
-    },
-    {
       icon: DescriptionIcon,
       title: "List",
       href: "/list",
       id: "list",
     },
+    {
+      icon: PieChartOutlinedIcon,
+      title: "Dashboard",
+      href: "/dashboard",
+      id: "dashboard",
+    },
+    
   ],
 };

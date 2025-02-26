@@ -1,9 +1,10 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import MemberTable from "./table";
-import { Box, Button, Typography } from "@mui/material";
-import TableHeader from "./header";
-import AddTaskModal from "./component/addTaskModal";
+'use client';
+import React, { useEffect, useState } from 'react';
+import MemberTable from './table';
+import { Box, Button, Typography } from '@mui/material';
+import TableHeader from './header';
+import AddTaskModal from './component/addTaskModal';
+import { apiClient } from '@/utils/interceptor';
 
 const DataTableComponent: React.FC = () => {
   const [allTask, setAllTask] = useState(null);
@@ -15,22 +16,15 @@ const DataTableComponent: React.FC = () => {
   }, []);
   const fetchAlltask = async () => {
     try {
-      const resp = await fetch("/task", {
-        headers:{
-          'Content-Type':'application/json'
-        }
-      });
-      if (resp.ok) {
-        const response = await resp.json();
-        setAllTask(response);
-      }
+      const response: any = await apiClient('/task', 'GET');
+      setAllTask(response);
     } catch (err) {
-      console.log("error", err);
+      console.log('error', err);
     }
   };
 
   const handleAddTask = (formData: any) => {
-    console.log("form Data", formData);
+    console.log('form Data', formData);
     setOpenAddTask(false);
   };
 
@@ -66,7 +60,7 @@ const DataTableComponent: React.FC = () => {
               setOpenAddTask(true);
             }}
           />
-          <Box sx={{ my:2 }}>
+          <Box sx={{ my: 2 }}>
             <MemberTable data={allTask} />
           </Box>
         </Box>
