@@ -1,9 +1,13 @@
 package com.acko.tool.config;
 
+import java.util.List;
+
 import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
+import org.keycloak.representations.AccessTokenResponse;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,7 +27,7 @@ public class KeycloakConfig {
 	@Bean
 	public Keycloak keycloak() {
 
-		return KeycloakBuilder.builder()
+		Keycloak keycloak =  KeycloakBuilder.builder()
 				.serverUrl(serverUrl)
 				.realm(realm)
 				.grantType(OAuth2Constants.PASSWORD)
@@ -36,10 +40,14 @@ public class KeycloakConfig {
 						.build())
 				.build();
 
-//            List<UserRepresentation> users = keycloak.realm(realm)
-//            	      .users()
-//            	      .searchByUsername("admin", true);
-//            System.out.println(users);
+            List<UserRepresentation> users = keycloak.realm(realm)
+            	      .users()
+            	      .searchByUsername("admin", true);
+            
+            AccessTokenResponse accessTokenResponse = keycloak.tokenManager().getAccessToken();
+            AccessTokenResponse accessTokenResponse2 = keycloak.tokenManager().getAccessToken();
+            System.out.println(users);
+            return keycloak;
 
 	}
 }

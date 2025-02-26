@@ -15,6 +15,18 @@ spring:
       port: 27017
       database: acko_tool
       auto-index-creation: true
+#  security:
+#    oauth2:
+#      resourceserver:
+#        jwt:
+#          issuer-uri: http://localhost:8080/realms/MyRealm
+#          jwk-set-uri: http://localhost:8080/realms/MyRealm/protocol/openid-connect/certs
+#jwt:
+#  auth:
+#    converter:
+#      resource-id: my-client
+#      principal-attribute: principal_username
+          
 
 camunda.bpm:
   history-level: none
