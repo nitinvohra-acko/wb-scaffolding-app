@@ -14,7 +14,10 @@ COPY . ./
 
 # Install dependencies
 RUN npm install
-
+# Explicitly use .env.dev and remove .env.local if it exists
+ARG ENV_FILE
+COPY ${ENV_FILE:-.env.development} .env
+RUN rm -f .env.local  # Ensure .env.local does not interfere
 # Build the app
 RUN npm run build
 

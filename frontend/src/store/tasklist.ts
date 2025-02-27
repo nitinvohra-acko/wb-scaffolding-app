@@ -1,11 +1,11 @@
-import { FilterType, TaskRequest, TaskResponse } from '@/types/task';
+import { FilterField, TaskRequest, TaskResponse } from '@/types/task';
 import { create, StoreApi } from 'zustand';
 import { combine, devtools } from 'zustand/middleware';
 
 interface StateType {
   taskResponse: TaskResponse | null;
   taskRequest: TaskRequest | null;
-  initFilters: FilterType[] | null;
+  initFilters: FilterField[] | null;
   status: 'success' | 'loading' | 'error';
 }
 
