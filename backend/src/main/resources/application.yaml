@@ -16,15 +16,15 @@ spring:
       database: acko_tool
       auto-index-creation: true
 
-#camunda.bpm:
-#  history-level: none
-#  generic-properties.properties:
-#    telemetry-reporter-activate: false
-#  auto-deployment-enabled: false
-#  generic-properties:
-#    properties:
-#      enforceHistoryTimeToLive: false
-#      enableDefaultDbHistoryEventHandler: false
+camunda.bpm:
+  history-level: none
+  generic-properties.properties:
+    telemetry-reporter-activate: false
+  auto-deployment-enabled: false
+  generic-properties:
+    properties:
+      enforceHistoryTimeToLive: false
+      enableDefaultDbHistoryEventHandler: false
 
 elasticsearch:
   url: http://elasticsearch:9200
