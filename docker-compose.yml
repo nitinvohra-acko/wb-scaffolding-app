@@ -67,6 +67,7 @@ services:
       - common-network
 
   keycloak:
+    hostname: keycloak
     image: quay.io/keycloak/keycloak:latest
     container_name: keycloak
     environment:
@@ -86,6 +87,7 @@ services:
       - KC_DB_PASSWORD=root_password
       - KC_DB_URL=jdbc:mysql://mysql_container:3306/keycloak?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       - KC_FEATURES=token-exchange,admin-fine-grained-authz
+      - KC_HOSTNAME=keycloak
     ports:
       - "8080:8080" # Expose Keycloak on port 8080
     command: start-dev
