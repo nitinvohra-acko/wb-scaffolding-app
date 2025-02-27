@@ -3,6 +3,7 @@ package com.acko.tool.service;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
 import co.elastic.clients.elasticsearch.core.search.Hit;
+import com.acko.tool.entity.search.SearchFilterAggregatedOption;
 import com.acko.tool.entity.search.SearchParam;
 import com.acko.tool.entity.search.SearchParamField;
 import com.acko.tool.entity.search.TaskSearch;
@@ -58,7 +59,7 @@ public class SearchService {
         return searchParamRepository.save(searchParamRequest);
     }
 
-    public Object searchTasks(TaskSearch searchRequestInput, String entity) throws IOException {
+    public TaskSearch searchTasks(TaskSearch searchRequestInput, String entity) throws IOException {
         SearchParam searchParams = getParamsForEntity(entity);
         TaskSearch response = new TaskSearch();
 
@@ -67,14 +68,14 @@ public class SearchService {
 
         List<TaskSearchableField> searchableFields = searchRequestInput.getSearchableFields();
         if(Objects.isNull(searchableFields) || searchableFields.isEmpty()) {
-            response.setSearchableFields(setDefaultSearchableFieldsForEntity(entity, searchParams));
+            response.setSearchableFields(getDefaultSearchableFieldsForEntity( searchParams));
         } else {
             response.setSearchableFields(searchableFields);
         }
 
         List<TaskSearchFilter> searchFilters = searchRequestInput.getFilters();
         if(Objects.isNull(searchFilters) || searchFilters.isEmpty()) {
-            response.setFilters(setDefaultFiltersForEntity(entity, searchParams));
+            response.setFilters(getDefaultFiltersForEntity( searchParams));
         } else {
             response.setFilters(searchFilters);
         }
@@ -103,35 +104,25 @@ public class SearchService {
         SearchResponse<Map> elasticResponse = elasticSearchClient.search(s -> s
                 .index("tasks")
                 .query(finalQuery)
-                .aggregations(aggregationBuilders),
+                .aggregations(aggregationBuilders)
+                .from((response.getPageNo() - 1) * response.getPageSize())
+                .size(response.getPageSize()),
             Map.class
         );
 
-        HashMap<String, Object> res = new HashMap<>();
         ArrayList<Object> resultArray = new ArrayList<>();
-        HashMap<String, Object> aggregationResponse = new HashMap<>();
         for (Hit<Map> hit : elasticResponse.hits().hits()) {
-//            System.out.println("Document ID: " + hit.id());
-//            System.out.println("Document Source: " + hit.source());
             resultArray.add(hit.source());
         }
-        res.put("result", resultArray);
+        response.setResult(resultArray);
+        response.setTotalCount(elasticResponse.hits().total().value());
 
+        transformSearchResponse(response, elasticResponse, aggregationBuilders, searchParams);
 
-        aggregationBuilders.keySet().forEach(aggName -> {
-            if(elasticResponse.aggregations() != null && elasticResponse.aggregations().get(aggName) != null) {
-                System.out.println("Aggregation: " + aggName);
-                elasticResponse.aggregations().get(aggName).sterms().buckets().array().forEach(bucket -> {
-                    System.out.println("  Key: " + bucket.key() + " Count: " + bucket.docCount());
-                    aggregationResponse.put(aggName + "__" +bucket.key().stringValue(), bucket.docCount());
-                });
-            }
-        });
-        res.put("aggregations", aggregationResponse);
-        return res;
+        return response;
     }
 
-    private List<TaskSearchFilter> setDefaultFiltersForEntity(String entity, SearchParam searchParams) {
+    private List<TaskSearchFilter> getDefaultFiltersForEntity( SearchParam searchParams) {
         List<SearchParamField> searchParamsFields = searchParams.getParams().stream().filter(
             SearchParamField::getIsFilterable).toList();
 
@@ -147,7 +138,7 @@ public class SearchService {
         }).collect(Collectors.toList());
     }
 
-    private List<TaskSearchableField> setDefaultSearchableFieldsForEntity(String entity, SearchParam searchParams) {
+    private List<TaskSearchableField> getDefaultSearchableFieldsForEntity( SearchParam searchParams) {
         List<SearchParamField> searchParamsFields = searchParams.getParams().stream().filter(
             SearchParamField::getIsSearchable).toList();
 
@@ -163,6 +154,48 @@ public class SearchService {
         }).collect(Collectors.toList());
     }
 
+    private void transformSearchResponse(TaskSearch response, SearchResponse<Map> elasticResponse, Map<String, Aggregation> aggregationBuilders, SearchParam searchParams) {
+        List<TaskSearchFilter> allFilters = getDefaultFiltersForEntity( searchParams);
+        List<TaskSearchFilter> inputFilters = response.getFilters();
+
+        HashMap<String, List<String>> selectedFilters = new HashMap<>();
+        for(TaskSearchFilter filter: inputFilters) {
+            if(filter.getOptions() != null) {
+                List<String> selectedOptions = filter.getOptions().stream()
+                    .filter(SearchFilterAggregatedOption::getIsSelected)
+                    .map(SearchFilterAggregatedOption::getValue)
+                    .collect(Collectors.toList());
+                selectedFilters.put(filter.getFieldName(), selectedOptions);
+            }
+        }
+
+        Map<String, List<SearchFilterAggregatedOption>> aggregationResponse = new HashMap<>();
+        aggregationBuilders.keySet().forEach(aggName -> {
+            if(elasticResponse.aggregations() != null && elasticResponse.aggregations().get(aggName) != null) {
+                elasticResponse.aggregations().get(aggName).sterms().buckets().array().forEach(bucket -> {
+                    SearchFilterAggregatedOption aggNumber = new SearchFilterAggregatedOption();
+                    aggNumber.setValue(bucket.key().stringValue());
+                    aggNumber.setCount(bucket.docCount());
+                    aggNumber.setIsSelected(false);
+                    if(Objects.isNull(aggregationResponse.get(aggName.split("_agg")[0]))) {
+                        aggregationResponse.put(aggName.split("_agg")[0], new ArrayList<>());
+                    }
+                    aggregationResponse.get(aggName.split("_agg")[0]).add(aggNumber);
+                });
+            }
+        });
+        for(TaskSearchFilter filter: allFilters) {
+            if(aggregationResponse.containsKey(filter.getFieldName())) {
+                filter.setOptions(aggregationResponse.get(filter.getFieldName()));
+                if(selectedFilters.containsKey(filter.getFieldName())) {
+                    filter.getOptions().forEach(option -> {
+                        option.setIsSelected(BooleanUtils.toBoolean(selectedFilters.get(filter.getFieldName()).contains(option.getValue())));
+                    });
+                }
+            }
+        }
+        response.setFilters(allFilters);
+    }
 //    private SortBuilder<?> getSortBuilder(TaskSort selectedSort, SearchParam searchParams) {
 //        RAPSearchSort selectedRapSearchSort = RAPSearchSort.fromString(selectedSort.getFieldId());
 //        return Objects.requireNonNull(selectedRapSearchSort)
