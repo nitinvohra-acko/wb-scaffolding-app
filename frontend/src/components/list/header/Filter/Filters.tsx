@@ -18,9 +18,15 @@ import ExpandLessSharpIcon from '@mui/icons-material/ExpandLessSharp';
 import DoneIcon from '@mui/icons-material/Done';
 import useTasks from '@/store/tasklist';
 import Filter from './Filter';
+import { useShallow } from 'zustand/shallow';
 
 export const Filters = () => {
-  const { taskResponse } = useTasks.getState();
+  const { taskResponse, hoist } = useTasks(
+    useShallow((store) => ({
+      taskResponse: store.taskResponse,
+      hoist: store.hoist,
+    })),
+  );
   const [isExpandFilter, setExpandFilter] = useState(false);
   const handleApply = () => {};
   const handleClear = () => {};
