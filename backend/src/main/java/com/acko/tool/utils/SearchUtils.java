@@ -45,7 +45,7 @@ public class SearchUtils {
             String variableNameForField = getVariableNameForField(searchableField.getFieldName(), searchParam);
             if(Objects.nonNull(variableNameForField) && Objects.nonNull(searchableField.getValue())) {
                 TermQuery termQuery = TermQuery.of(t -> t
-                    .field(variableNameForField + ".keyword")
+                    .field(variableNameForField )
                     .value(searchableField.getValue().toString())
                 );
                 mustQueries.add(Query.of(q -> q.term(termQuery)));
@@ -59,13 +59,15 @@ public class SearchUtils {
         filters.forEach(filter -> {
             String variableNameForField = getVariableNameForField(filter.getFieldName(), searchParam);
             if(Objects.nonNull(variableNameForField) && Objects.nonNull(filter.getOptions())) {
-                filter.getOptions().stream().filter(SearchFilterAggregatedOption::getIsSelected).forEach(option -> {
-                    TermQuery termQuery = TermQuery.of(t -> t
-                        .field(variableNameForField)
-                        .value(option.getValue())
-                    );
-                    shouldQueries.add(Query.of(q -> q.term(termQuery)));
-                });
+                filter.getOptions().stream()
+                    .filter(x-> Objects.nonNull(x.getIsSelected()) && x.getIsSelected())
+                    .forEach(option -> {
+                        TermQuery termQuery = TermQuery.of(t -> t
+                            .field(variableNameForField)
+                            .value(option.getValue())
+                        );
+                        shouldQueries.add(Query.of(q -> q.term(termQuery)));
+                    });
             }
         });
         return shouldQueries;
@@ -75,9 +77,14 @@ public class SearchUtils {
         // return the variable name for the field name
         for(SearchParamField searchParamField : searchParam.getParams()) {
             if(searchParamField.getFieldName().equals(fieldName)) {
-                return searchParamField.getVariableName();
+                if(searchParamField.getVariableName().contains("businessEntityImpl")) {
+                    return searchParamField.getVariableName() + ".keyword";
+                } else {
+                    return searchParamField.getVariableName();
+                }
             }
         }
+
         return null;
     }
 

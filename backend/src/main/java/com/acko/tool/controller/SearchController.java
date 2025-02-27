@@ -42,7 +42,7 @@ public class SearchController {
     }
 
     @PostMapping("/{entity}")
-    Object searchTasks(
+    TaskSearch searchTasks(
 
         @PathVariable(value = "entity") String entity,
         @RequestBody TaskSearch searchRequest

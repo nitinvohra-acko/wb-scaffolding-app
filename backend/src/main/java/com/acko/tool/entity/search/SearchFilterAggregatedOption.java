@@ -14,6 +14,6 @@ import lombok.NoArgsConstructor;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class SearchFilterAggregatedOption {
     private String value;
-    private int count;
+    private Long count;
     private Boolean isSelected;
 }
