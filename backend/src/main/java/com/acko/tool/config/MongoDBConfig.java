@@ -39,9 +39,4 @@ public class MongoDBConfig extends AbstractMongoClientConfiguration {
         return mongoDBProperties.getDatabase();
     }
     
-//    @Override
-//	protected void configureConverters(MongoConverterConfigurationAdapter adapter) {
-//		adapter.registerConverter(new MemberFormDataReadConverter());
-//		adapter.registerConverter(new MemberFormDataWriteConverter());
-//	}
 }

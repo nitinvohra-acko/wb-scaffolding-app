@@ -8,44 +8,14 @@ services:
     ports:
       - "5010:5010"
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_PROFILES_ACTIVE=docker
     depends_on:
       - keycloak
+      - kafka
+      - elasticsearch
+      - mongodb
     networks:
       - common-network
-
-  # opensearch:
-  #   image: opensearchproject/opensearch:2.8.0
-  #   container_name: opensearch
-  #   environment:
-  #     - discovery.type=single-node
-  #     - cluster.name=docker-cluster
-  #     - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m  # Adjust memory as needed
-  #     - network.host=0.0.0.0
-  #     - plugins.security.disabled=true
-  #   ports:
-  #     - "9200:9200"  # REST API
-  #     - "9600:9600"  # Prometheus metrics (optional)
-  #   volumes:
-  #     - opensearch-data:/usr/share/opensearch/data
-  #   networks:
-  #     - common-network
-
-  # opensearch-dashboards:
-  #   image: opensearchproject/opensearch-dashboards:2.8.0
-  #   container_name: opensearch-dashboards
-  #   environment:
-  #     - OPENSEARCH_HOSTS=http://opensearch:9200
-  #     - network.host=0.0.0.0
-  #     - plugins.security.ssl.http.enabled=false
-  #     - opensearch_security.enabled=false
-  #     - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true
-  #   ports:
-  #     - "5601:5601"
-  #   depends_on:
-  #     - opensearch
-  #   networks:
-  #     - common-network
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.5.3  # Use the appropriate version
@@ -107,6 +77,7 @@ services:
       - KC_DB_USERNAME=root
       - KC_DB_PASSWORD=root_password
       - KC_DB_URL=jdbc:mysql://mysql_container:3306/keycloak?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      - KC_FEATURES=token-exchange,admin-fine-grained-authz
     ports:
       - "8080:8080"                     # Expose Keycloak on port 8080
     command: start-dev
@@ -127,11 +98,13 @@ services:
       - MYSQL_PASSWORD=keycloak_password   # Database user password
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql  # Mount SQL initialization file
     networks:
       - common-network
     restart: unless-stopped
     ports:
       - "3306:3306"
+
 
   mongodb:
     image: mongo:latest
@@ -145,6 +118,28 @@ services:
     volumes:
       - mongodb_data:/data/db  # Persistent volume for MongoDB data
 
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.4
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - 2181:2181
+  
+  kafka:
+    image: confluentinc/cp-kafka:7.4.4
+    depends_on:
+      - zookeeper
+    ports:
+      - 29092:29092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
 networks:
   common-network:
     driver: bridge
@@ -152,6 +147,5 @@ networks:
 volumes:
   mysql_data:
     driver: local
-  # opensearch-data:
   es_data:
   mongodb_data:      # Named volume for data persistence

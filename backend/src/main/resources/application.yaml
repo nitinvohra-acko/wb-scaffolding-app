@@ -1,7 +1,21 @@
 server:
   port: 5010
 
+camunda.bpm:
+  history-level: none
+  generic-properties.properties:
+    telemetry-reporter-activate: false
+  auto-deployment-enabled: false
+  generic-properties:
+    properties:
+      enforceHistoryTimeToLive: false
+      enableDefaultDbHistoryEventHandler: false
+--- 
 spring:
+  config:
+    activate:
+      on-profile: local
+
   datasource:
     url: jdbc:mysql://localhost:3306/camunda
     username: root
@@ -15,29 +29,18 @@ spring:
       port: 27017
       database: acko_tool
       auto-index-creation: true
-#  security:
-#    oauth2:
-#      resourceserver:
-#        jwt:
-#          issuer-uri: http://localhost:8080/realms/MyRealm
-#          jwk-set-uri: http://localhost:8080/realms/MyRealm/protocol/openid-connect/certs
-#jwt:
-#  auth:
-#    converter:
-#      resource-id: my-client
-#      principal-attribute: principal_username
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/MyRealm
+          jwk-set-uri: http://localhost:8080/realms/MyRealm/protocol/openid-connect/certs
+jwt:
+  auth:
+    converter:
+      resource-id: my-client
+      principal-attribute: preferred_username
           
-
-camunda.bpm:
-  history-level: none
-  generic-properties.properties:
-    telemetry-reporter-activate: false
-  auto-deployment-enabled: false
-  generic-properties:
-    properties:
-      enforceHistoryTimeToLive: false
-      enableDefaultDbHistoryEventHandler: false
-
 elasticsearch:
   url: http://localhost:9200
   index: task
@@ -46,5 +49,47 @@ keycloak:
   serverUrl: http://localhost:8080
   realm: master
   clientId: admin-cli
-  userName: admin
-  password: admin
+  adminUserName: admin
+  adminPassword: admin
+
+--- 
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  datasource:
+    url: jdbc:mysql://mysql_container:3306/camunda
+    username: root
+    password: root_password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+  data:
+    mongodb:
+      uri: mongodb://admin:admin@mongodb:27017/acko_tool?retryWrites=true&connectTimeoutMS=10000&authSource=admin&authMechanism=SCRAM-SHA-1
+      port: 27017
+      database: acko_tool
+      auto-index-creation: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8080/realms/MyRealm
+          jwk-set-uri: http://keycloak:8080/realms/MyRealm/protocol/openid-connect/certs
+jwt:
+  auth:
+    converter:
+      resource-id: my-client
+      principal-attribute: preferred_username
+          
+elasticsearch:
+  url: http://elasticsearch:9200
+  index: task
+
+keycloak:
+  serverUrl: http://keycloak:8080
+  realm: master
+  clientId: admin-cli
+  adminUserName: admin
+  adminPassword: admin
