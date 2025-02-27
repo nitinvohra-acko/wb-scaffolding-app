@@ -27,7 +27,7 @@ spring:
 #      enableDefaultDbHistoryEventHandler: false
 
 elasticsearch:
-  url: http://localhost:9200
+  url: http://elasticsearch:9200
   index: task
 
 keycloak:

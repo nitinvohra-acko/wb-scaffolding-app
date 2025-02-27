@@ -1,4 +1,5 @@
-import React from "react";
+'use client';
+import React from 'react';
 import {
   AppBar,
   Toolbar,
@@ -8,11 +9,11 @@ import {
   IconButton,
   Box,
   Tooltip,
-} from "@mui/material";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import AddOneIcon from "@mui/icons-material/Add";
-import SortIcon from "@mui/icons-material/Sort";
-import { styled } from "@mui/system";
+} from '@mui/material';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import AddOneIcon from '@mui/icons-material/Add';
+import SortIcon from '@mui/icons-material/Sort';
+import { styled } from '@mui/system';
 
 interface HeaderProps {
   title: string;
@@ -40,12 +41,12 @@ const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <Box position="static" bgcolor={"background.paper"}>
-      <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+    <Box position="static" bgcolor={'background.paper'}>
+      <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <Typography
           variant="h6"
           component="div"
-          sx={{ flexGrow: 0, color: "primary.main" }}
+          sx={{ flexGrow: 0, color: 'primary.main' }}
         >
           {title}
         </Typography>
