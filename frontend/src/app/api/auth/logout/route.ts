@@ -23,23 +23,23 @@ export async function GET(req: NextRequest) {
   // Clear tokens by setting cookies with Max-Age=0
   const response = NextResponse.redirect(logoutUrl, 307);
 
-  response.cookies.set("access_token", "", {
-    httpOnly: true,
-    path: "/",
-    maxAge: 0,
-  });
+  // response.cookies.set("access_token", "", {
+  //   httpOnly: true,
+  //   path: "/",
+  //   maxAge: 0,
+  // });
 
-  response.cookies.set("refresh_token", "", {
-    httpOnly: true,
-    path: "/",
-    maxAge: 0,
-  });
+  // response.cookies.set("refresh_token", "", {
+  //   httpOnly: true,
+  //   path: "/",
+  //   maxAge: 0,
+  // });
 
-  response.cookies.set("id_token", "", {
-    httpOnly: true,
-    path: "/",
-    maxAge: 0,
-  });
+  // response.cookies.set("id_token", "", {
+  //   httpOnly: true,
+  //   path: "/",
+  //   maxAge: 0,
+  // });
 
   return response;
 }

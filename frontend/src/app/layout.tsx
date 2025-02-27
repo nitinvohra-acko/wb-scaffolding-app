@@ -2,7 +2,8 @@
 
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import React from "react";
-import { darkTheme } from "../theme";
+import { darkTheme, lightTheme } from "../theme";
+import DashboardLayout from "@/components/DashboardLayout";
 
 export default function RootLayout({
   children,
@@ -12,9 +13,11 @@ export default function RootLayout({
   return (
     <html>
       <body>
-        <ThemeProvider theme={darkTheme}>
+        <ThemeProvider theme={lightTheme}>
           <CssBaseline />
-          {children}
+             <DashboardLayout>
+                {children}
+                </DashboardLayout>
         </ThemeProvider>
       </body>
     </html>

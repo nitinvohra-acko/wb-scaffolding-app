@@ -18,7 +18,7 @@ const HomePage: React.FC = () => {
       <AppBar position="static" color="primary">
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Ops Tech Tool
+            {process.env.NEXT_PUBLIC_APP_NAME}
           </Typography>
           <Button color="inherit" href="/login">
             Login
@@ -34,7 +34,7 @@ const HomePage: React.FC = () => {
         {/* Introduction */}
         <Box textAlign="center" mb={4}>
           <Typography variant="h3" gutterBottom>
-            Welcome to Ops Tech Tool
+            Welcome to {process.env.NEXT_PUBLIC_APP_NAME}(Testing)
           </Typography>
           <Typography variant="body1" color="textSecondary">
             Streamline your operations with a suite of powerful tools designed

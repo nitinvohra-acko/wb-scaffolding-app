@@ -1,10 +1,10 @@
-version: '3.8'
+version: "3.8"
 services:
   springboot-app:
     image: your-spring-boot-image
     build:
-     context: ./backend
-     dockerfile: Dockerfile
+      context: ./backend
+      dockerfile: Dockerfile
     ports:
       - "5010:5010"
     environment:
@@ -18,32 +18,34 @@ services:
       - common-network
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.5.3  # Use the appropriate version
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.5.3 # Use the appropriate version
     container_name: elasticsearch
     environment:
-      - discovery.type=single-node         # For single-node mode (avoid clustering issues)
-      - ES_JAVA_OPTS=-Xms1g -Xmx1g        # Memory options, adjust based on available RAM
-      - "ELASTICSEARCH_PASSWORD=changeme"   # Default password for 'elastic' user
+      - discovery.type=single-node # For single-node mode (avoid clustering issues)
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g # Memory options, adjust based on available RAM
+      - "ELASTICSEARCH_PASSWORD=changeme" # Default password for 'elastic' user
       - xpack.security.enabled=false
       - xpack.security.enrollment.enabled=false
     ports:
-      - "9200:9200"                         # Expose HTTP port for Elasticsearch
-      - "9300:9300"                         # Expose internal transport port (used by nodes in cluster)
+      - "9200:9200" # Expose HTTP port for Elasticsearch
+      - "9300:9300" # Expose internal transport port (used by nodes in cluster)
     volumes:
-      - es_data:/usr/share/elasticsearch/data  # Persistent data storage (optional but recommended)
+      - es_data:/usr/share/elasticsearch/data # Persistent data storage (optional but recommended)
     networks:
       - common-network
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:8.5.3  # Kibana version (adjust as needed)
+    image: docker.elastic.co/kibana/kibana:8.5.3 # Kibana version (adjust as needed)
     container_name: kibana
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200  # Set the URL of Elasticsearch to connect to
       - xpack.security.enabled=false                  # Disable Kibana's security features (authentication, authorization)
+      - SERVER_CORS_ENABLED=true                      # Enable CORS
+      - SERVER_CORS_ALLOWORIGIN=["*"]  
     ports:
-      - "5601:5601"  # Expose the Kibana port
+      - "5601:5601" # Expose the Kibana port
     depends_on:
-      - elasticsearch  # Kibana depends on Elasticsearch
+      - elasticsearch # Kibana depends on Elasticsearch
     networks:
       - common-network
 
@@ -55,21 +57,21 @@ services:
       - "3003:3003"
     depends_on:
       - springboot-app
-    networks: 
+    networks:
       - common-network
 
   keycloak:
     image: quay.io/keycloak/keycloak:latest
     container_name: keycloak
     environment:
-      - KEYCLOAK_USER=admin              # Keycloak admin username
-      - KEYCLOAK_PASSWORD=admin          # Keycloak admin password
+      - KEYCLOAK_USER=admin # Keycloak admin username
+      - KEYCLOAK_PASSWORD=admin # Keycloak admin password
       #- DB_VENDOR=mysql                 # Database vendor (MySQL in this case)
       #- DB_ADDR=mysql:3306              # Database address
       #- DB_DATABASE=keycloak            # Database name
       #- DB_USER=keycloak                # Database user
       #- DB_PASSWORD=keycloak_password   # Database password
-      - KEYCLOAK_HTTP_PORT=8080         # Optional: Set the Keycloak HTTP port
+      - KEYCLOAK_HTTP_PORT=8080 # Optional: Set the Keycloak HTTP port
       - KC_BOOTSTRAP_ADMIN_USERNAME=admin
       - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
       - KC_HOSTNAME_STRICT_HTTPS=false
@@ -79,7 +81,7 @@ services:
       - KC_DB_URL=jdbc:mysql://mysql_container:3306/keycloak?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       - KC_FEATURES=token-exchange,admin-fine-grained-authz
     ports:
-      - "8080:8080"                     # Expose Keycloak on port 8080
+      - "8080:8080" # Expose Keycloak on port 8080
     command: start-dev
     depends_on:
       - mysql_container
@@ -87,15 +89,14 @@ services:
       - common-network
     restart: unless-stopped
 
-
   mysql_container:
     image: mysql:8.0
     container_name: mysql_container
     environment:
-      - MYSQL_ROOT_PASSWORD=root_password  # MySQL root password
-      - MYSQL_DATABASE=keycloak            # Database name to create
-      - MYSQL_USER=keycloak                # Database user
-      - MYSQL_PASSWORD=keycloak_password   # Database user password
+      - MYSQL_ROOT_PASSWORD=root_password # MySQL root password
+      - MYSQL_DATABASE=keycloak # Database name to create
+      - MYSQL_USER=keycloak # Database user
+      - MYSQL_PASSWORD=keycloak_password # Database user password
     volumes:
       - mysql_data:/var/lib/mysql
       - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql  # Mount SQL initialization file
@@ -110,13 +111,13 @@ services:
     image: mongo:latest
     container_name: mongodb
     ports:
-      - "27017:27017"  # Expose MongoDB on port 27017
+      - "27017:27017" # Expose MongoDB on port 27017
     environment:
       - MONGO_INITDB_DATABASE=test
-      - MONGO_INITDB_ROOT_USERNAME=admin  # Root user for MongoDB
-      - MONGO_INITDB_ROOT_PASSWORD=admin  # Root password for MongoDB
+      - MONGO_INITDB_ROOT_USERNAME=admin # Root user for MongoDB
+      - MONGO_INITDB_ROOT_PASSWORD=admin # Root password for MongoDB
     volumes:
-      - mongodb_data:/data/db  # Persistent volume for MongoDB data
+      - mongodb_data:/data/db # Persistent volume for MongoDB data
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.4
@@ -148,4 +149,4 @@ volumes:
   mysql_data:
     driver: local
   es_data:
-  mongodb_data:      # Named volume for data persistence
+  mongodb_data: # Named volume for data persistence

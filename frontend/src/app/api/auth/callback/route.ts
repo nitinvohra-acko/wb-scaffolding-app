@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 const CLIENT_ID = process.env.NEXT_PUBLIC_CLIENT_ID;
 const REDIRECT_URI = process.env.NEXT_PUBLIC_REDIRECT_URI;
-const KEYCLOAK_BASE_URL = process.env.NEXT_PUBLIC_KEYCLOAK_BASE_URL;
 const SECRET = process.env.NEXT_PUBLIC_SECRET;
 const TOKEN_API = process.env.NEXT_PUBLIC_TOKEN_API;
 export async function GET(req: NextRequest) {
@@ -15,7 +14,6 @@ export async function GET(req: NextRequest) {
       { status: 400 }
     );
   }
-
   try {
     // Exchange authorization code for tokens
     const response = await fetch(TOKEN_API ?? "", {
@@ -39,9 +37,8 @@ export async function GET(req: NextRequest) {
     const tokens = await response.json();
     console.log("Tokens received:", tokens);
 
-    const responseHeaders = NextResponse.redirect("http://localhost:3003/home");
+    const responseHeaders = NextResponse.redirect(new URL("/list", req.url));
     // Set cookies for all tokens
-    console.log(tokens?.id_token, "id_toke");
     responseHeaders.cookies.set("access_token", tokens.access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -56,7 +53,6 @@ export async function GET(req: NextRequest) {
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
         path: "/",
-        maxAge: 30 * 24 * 60 * 60, // Example: 30 days
       });
     }
 
