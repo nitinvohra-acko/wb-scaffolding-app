@@ -38,7 +38,11 @@ public class TaskController {
 	@PostMapping
 	public List<Task<?>> updateTasks(@RequestBody List<Task<?>> tasks) throws Exception {
 		if (CollectionUtils.isNotEmpty(tasks)) {
-			tasks.forEach(t -> t.setId(UUID.randomUUID().toString()));
+			tasks.forEach(t -> {
+				if (t.getId() == null) {
+					t.setId(UUID.randomUUID().toString());
+				}
+			});
 			return taskService.createOrUpdateTasks(tasks);
 		}
 		return null;

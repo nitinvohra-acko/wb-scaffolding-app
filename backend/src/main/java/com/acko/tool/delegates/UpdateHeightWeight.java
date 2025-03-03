@@ -18,6 +18,7 @@ public class UpdateHeightWeight implements JavaDelegate {
     public void execute(DelegateExecution delegateExecution){
         String proposalId = delegateExecution.getVariable("proposalId").toString();
         Object request = delegateExecution.getVariable("request");
-        rapManagerClient.updatePostPaymentMemberDetailsToProposal(proposalId, request);
+        Object proposalOutput = rapManagerClient.updatePostPaymentMemberDetailsToProposal(proposalId, request);
+        delegateExecution.setVariable("response",proposalOutput);
     }
 }
