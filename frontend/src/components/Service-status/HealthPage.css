@@ -1,0 +1,46 @@
+.health-status {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.status-up-rect {
+  display: inline-block;
+  width: 200px; /* Adjust width as needed */
+  height: 20px; /* Adjust height as needed */
+  background: repeating-linear-gradient(
+    90deg,
+    green,
+    green 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  margin-left: 10px;
+  animation: move 3s linear infinite; /* Increased duration to 3s for slower movement */
+}
+
+@keyframes move {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 80px 0; /* Adjust this value based on the width of the bar */
+  }
+}
+
+.status-up {
+  color: green;
+  font-size: 24px;
+  margin-left: 10px;
+}
+
+.status-down {
+  color: red;
+  font-size: 24px;
+  margin-left: 10px;
+}
+
+.status-label {
+  font-size: 18px;
+  font-weight: bold;
+}
