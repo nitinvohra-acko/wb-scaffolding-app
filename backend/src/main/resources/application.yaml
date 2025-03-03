@@ -15,7 +15,8 @@ spring:
       port: 27017
       database: acko_tool
       auto-index-creation: true
-
+  elasticsearch:
+    uris: http://elasticsearch:9200
 #camunda.bpm:
 #  history-level: none
 #  generic-properties.properties:
@@ -36,3 +37,8 @@ keycloak:
   clientId: admin-cli
   userName: admin
   password: admin
+
+management:
+  endpoint:
+    health:
+      show-details: "ALWAYS"
