@@ -36,3 +36,8 @@ keycloak:
   clientId: admin-cli
   userName: admin
   password: admin
+
+acko:
+  rap-manager-service:
+    url: https://health-rap-manager-service-uat.internal.ackodev.com
+

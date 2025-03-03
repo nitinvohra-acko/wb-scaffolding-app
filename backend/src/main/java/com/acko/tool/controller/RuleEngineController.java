@@ -4,8 +4,6 @@ import com.acko.tool.dtos.GenericRuleObject;
 import com.acko.tool.service.RuleEngineService;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
-import org.camunda.bpm.engine.ProcessEngine;
-import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.model.dmn.Dmn;
 import org.camunda.bpm.model.dmn.DmnModelInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +17,6 @@ import java.util.Map;
 @Log4j2
 public class RuleEngineController {
 
-    @Autowired
-    RepositoryService repositoryService;
-    @Autowired
-    ProcessEngine processEngine;
     @Autowired
     RuleEngineService ruleEngineService;
 

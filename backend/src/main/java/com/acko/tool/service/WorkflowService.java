@@ -1,6 +1,5 @@
 package com.acko.tool.service;
 
-import com.acko.health.commons.proposal.dto.request.ProposalRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.camunda.bpm.engine.RuntimeService;
@@ -18,7 +17,7 @@ public class WorkflowService {
 
     public static final String SCHEDULE_ASSESSMENT_PROCESS_KEY = "UpdateHeightWeightProcess";
 
-    public String updatePostPaymentMemberDetailsToProposal(String proposalId, ProposalRequest request) {
+    public String updatePostPaymentMemberDetailsToProposal(String proposalId, Object request) {
         ProcessInstance scheduleProcessInstance = runtimeService.createProcessInstanceQuery()
                 .superProcessInstanceId(proposalId)
                 .processDefinitionKey(SCHEDULE_ASSESSMENT_PROCESS_KEY)

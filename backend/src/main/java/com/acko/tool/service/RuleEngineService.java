@@ -16,8 +16,11 @@ import java.util.Objects;
 @Log4j2
 public class RuleEngineService {
 
-    @Autowired
-    RepositoryService repositoryService;
+    private final RepositoryService repositoryService;
+
+    public RuleEngineService(RepositoryService repositoryService) {
+        this.repositoryService = repositoryService;
+    }
 
     @Autowired
     ProcessEngine processEngine;
