@@ -1,7 +1,7 @@
-"use client";
-import NavList from "./NavList";
+'use client';
+import NavList from './NavList';
 
-const NavlistView  = ()=>{
-  return <NavList featuresList={['list', 'dashboard']} />
-}
+const NavlistView = () => {
+  return <NavList featuresList={['list', 'dashboard', 'administrative']} />;
+};
 export default NavlistView;

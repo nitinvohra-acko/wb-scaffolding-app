@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './HealthPage.css';
+import { Box, Typography } from '@mui/material';
 
 interface HealthData {
   status?: string;
@@ -82,8 +83,10 @@ const HealthPage: React.FC = () => {
   const isKeycloakUp = keycloakStatus === 'UP';
 
   return (
-    <div>
-      <h1>Health Page</h1>
+    <Box>
+      <Typography variant="h6" fontWeight={600} mb={2}>
+        Services status
+      </Typography>
       <div className="health-status">
         <a href="http://localhost:5010" className="status-label">
           SpringBoot application (Port 5010)
@@ -156,7 +159,7 @@ const HealthPage: React.FC = () => {
           <span className="status-down">❌</span>
         )}
       </div>
-    </div>
+    </Box>
   );
 };
 
