@@ -19,19 +19,55 @@ import DoneIcon from '@mui/icons-material/Done';
 import useTasks from '@/store/tasklist';
 import Filter from './Filter';
 import { useShallow } from 'zustand/shallow';
+import { FilterField, TaskRequest, TaskResponse } from '@/types/task';
+import useTaskLists from '@/hooks/useTaskLists';
 
 export const Filters = () => {
-  const { taskResponse, hoist } = useTasks(
+  const { taskResponse, hoist, initFilters } = useTasks(
     useShallow((store) => ({
       taskResponse: store.taskResponse,
       hoist: store.hoist,
+      initFilters: store.initFilters,
     })),
   );
+  const { fetchTaskLists } = useTaskLists();
   const [isExpandFilter, setExpandFilter] = useState(false);
-  const handleApply = () => {};
-  const handleClear = () => {};
+  const handleApply = () => {
+    if (taskResponse?.filters) {
+      hoist({
+        ...(taskResponse as TaskResponse),
+        page_no: 1,
+      });
+      setTimeout(async () => {
+        const req = {
+          ...useTasks.getState().taskResponse,
+        };
+        delete req.result;
+        await fetchTaskLists(req as TaskRequest);
+        handleClose();
+      }, 100);
+    }
+  };
+  const handleClear = () => {
+    hoist({
+      ...(taskResponse as TaskResponse),
+      filters: initFilters as FilterField[],
+      page_no: 1,
+    });
+    setTimeout(async () => {
+      const req = {
+        ...useTasks.getState().taskResponse,
+      };
+      delete req.result;
+      await fetchTaskLists(req as TaskRequest);
+      handleClose();
+    }, 100);
+  };
   const onFilter = () => {
     setExpandFilter(true);
+  };
+  const handleClose = () => {
+    setExpandFilter(false);
   };
   return (
     <>
@@ -43,7 +79,7 @@ export const Filters = () => {
       <Drawer
         anchor={'right'}
         open={isExpandFilter}
-        onClose={() => setExpandFilter(false)}
+        onClose={handleClose}
         sx={{ '.MuiDrawer-paper': { top: '70px' } }}
         // onOpen={() => setExpandFilter(true)}
       >
