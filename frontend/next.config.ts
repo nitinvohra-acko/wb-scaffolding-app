@@ -12,6 +12,18 @@ const nextConfig: NextConfig = {
         source: '/search/:path*',
         destination: `${process.env.NEXT_PUBLIC_BASE_API}/search/:path*`,
       },
+      {
+        source: '/actuator/health',
+        destination: `${process.env.NEXT_PUBLIC_BASE_API}/actuator/health`,
+      },
+      {
+        source: '/keycloak/health',
+        destination: `${process.env.NEXT_PUBLIC_KEYCLOAK_HEALTH}/health`,
+      },
+      {
+        source: '/kibana/api/status',
+        destination: `${process.env.NEXT_PUBLIC_KIBANA_HEALTH}/api/status`,
+      },
     ];
   },
 };

@@ -112,11 +112,14 @@ services:
       - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
       - KC_HOSTNAME_STRICT_HTTPS=false
       - KC_DB=mysql
+      - KC_HEALTH_ENABLED=true
+      - KC_LEGACY_OBSERVABILITY_INTERFACE=false
       - KC_DB_USERNAME=root
       - KC_DB_PASSWORD=root_password
       - KC_DB_URL=jdbc:mysql://mysql_container:3306/keycloak?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     ports:
       - "8080:8080" # Expose Keycloak on port 8080
+      - "9000:9000"
     command: start-dev
     depends_on:
       - mysql_container
