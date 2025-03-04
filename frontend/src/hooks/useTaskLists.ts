@@ -7,7 +7,7 @@ import { useCallback, useState } from 'react';
 const useTaskLists = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const { hoist, setStatus } = useTasks.getState();
+  const { hoist, setStatus, hoistInitFilters } = useTasks.getState();
   const fetchTaskLists = useCallback(
     async (taskRequest?: TaskRequest, initialRequest?: boolean) => {
       try {
@@ -21,6 +21,7 @@ const useTaskLists = () => {
             body: taskRequest,
           },
         );
+        initialRequest && hoistInitFilters(response?.filters);
         hoist(response);
         setStatus('success');
       } catch (err: any) {

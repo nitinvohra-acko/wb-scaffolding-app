@@ -15,6 +15,7 @@ import AddOneIcon from '@mui/icons-material/Add';
 import SortIcon from '@mui/icons-material/Sort';
 import { styled } from '@mui/system';
 import Filter from './Filter';
+import Searching from './Searching';
 
 interface HeaderProps {
   title: string;
@@ -53,22 +54,7 @@ const Header: React.FC<HeaderProps> = ({
         </Typography>
 
         <Box sx={{ display: 'flex' }}>
-          {/* <Tooltip title="Add task">
-            <Button
-              startIcon={<AddOneIcon />}
-              onClick={() => {
-                handleNewTask("task");
-              }}
-            >
-              Add Task
-            </Button>
-          </Tooltip> */}
-          <SearchInput
-            variant="outlined"
-            size="small"
-            placeholder="Search..."
-            onChange={handleSearchChange}
-          />
+          <Searching />
           <Filter />
           {/* <Tooltip title="Sort">
             <IconButton color="inherit" onClick={onSort}>
