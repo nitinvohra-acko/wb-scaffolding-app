@@ -118,7 +118,7 @@ services:
       - KC_DB_USERNAME=root
       - KC_DB_PASSWORD=root_password
       - KC_DB_URL=jdbc:mysql://mysql_container:3306/keycloak?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-      - KC_HOSTNAME=keycloak
+      # - KC_HOSTNAME=keycloak
     ports:
       - "8080:8080" # Expose Keycloak on port 8080
       - "9000:9000"
