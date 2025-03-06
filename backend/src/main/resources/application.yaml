@@ -10,6 +10,11 @@ camunda.bpm:
     properties:
       enforceHistoryTimeToLive: false
       enableDefaultDbHistoryEventHandler: false
+
+management:
+  endpoint:
+    health:
+      show-details: "ALWAYS"
 --- 
 spring:
   config:
@@ -35,6 +40,9 @@ spring:
         jwt:
           issuer-uri: http://localhost:8080/realms/MyRealm
           jwk-set-uri: http://localhost:8080/realms/MyRealm/protocol/openid-connect/certs
+  elasticsearch:
+    uris: http://localhost:9200
+
 jwt:
   auth:
     converter:
@@ -77,12 +85,16 @@ spring:
         jwt:
           issuer-uri: http://keycloak:8080/realms/MyRealm
           jwk-set-uri: http://keycloak:8080/realms/MyRealm/protocol/openid-connect/certs
+  elasticsearch:
+    uris: http://elasticsearch:9200
+
 jwt:
   auth:
     converter:
       resource-id: my-client
       principal-attribute: preferred_username
           
+
 elasticsearch:
   url: http://elasticsearch:9200
   index: task

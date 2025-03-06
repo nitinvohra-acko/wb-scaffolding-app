@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { CssBaseline, ThemeProvider } from "@mui/material";
-import React from "react";
-import { darkTheme, lightTheme } from "../theme";
-import DashboardLayout from "@/components/DashboardLayout";
+import { CssBaseline, ThemeProvider } from '@mui/material';
+import React from 'react';
+import { darkTheme, lightTheme } from '@/theme';
+import DashboardLayout from '@/components/DashboardLayout';
 
 export default function RootLayout({
   children,
@@ -15,9 +15,7 @@ export default function RootLayout({
       <body>
         <ThemeProvider theme={lightTheme}>
           <CssBaseline />
-             <DashboardLayout>
-                {children}
-                </DashboardLayout>
+          <DashboardLayout>{children}</DashboardLayout>
         </ThemeProvider>
       </body>
     </html>

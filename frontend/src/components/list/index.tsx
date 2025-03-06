@@ -17,7 +17,7 @@ const INIT_FILTER = {
   page_size: 10,
 };
 const DataTableComponent: React.FC = () => {
-  const { taskResponse } = useTasks.getState();
+  const { taskResponse, status } = useTasks.getState();
   // const [allTask, setAllTask] = useState(null);
   const [openAddTask, setOpenAddTask] = useState(false);
   // const [loading, setLoading] = useState(false);
@@ -35,7 +35,8 @@ const DataTableComponent: React.FC = () => {
   //     console.log('error', err);
   //   }
   // };
-  if (!taskResponse) {
+  console.log(taskResponse, 'tas');
+  if (status === 'loading') {
     return <>loading..</>;
   }
   return (
@@ -52,11 +53,11 @@ const DataTableComponent: React.FC = () => {
             }}
           />
           <Box sx={{ my: 2 }}>
-            <MemberTable data={taskResponse?.result} />
+            <MemberTable />
           </Box>
         </Box>
       ) : (
-        <Typography>...Loading</Typography>
+        <Typography>No data available</Typography>
       )}
     </>
   );
