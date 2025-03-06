@@ -65,6 +65,7 @@ public class SearchService {
 
         response.setPageNo(Objects.nonNull(searchRequestInput.getPageNo())? searchRequestInput.getPageNo(): 1);
         response.setPageSize(Objects.nonNull(searchRequestInput.getPageSize())? searchRequestInput.getPageSize(): 50);
+        response.setSearchStr(searchRequestInput.getSearchStr());
 
         List<TaskSearchableField> searchableFields = searchRequestInput.getSearchableFields();
         if(Objects.isNull(searchableFields) || searchableFields.isEmpty()) {
@@ -84,6 +85,8 @@ public class SearchService {
 
         List<Query> shouldQueries = searchUtils.getQueryForFilterableFields(response.getFilters(), searchParams);
 
+        List<Query> universalQueries = searchUtils.getQueryForGlobalSearch(response.getSearchStr(), searchParams);
+
 //        SortBuilder<?> sortBuilder = getSortBuilder(Objects.requireNonNull(selectedSort));
 
         Map<String, Aggregation> aggregationBuilders = searchUtils.getAggregationsForFilters(searchParams);
@@ -96,6 +99,11 @@ public class SearchService {
 
         if(!shouldQueries.isEmpty()) {
             Query boolQuery = Query.of(q -> q.bool(b -> b.should(shouldQueries)));
+            finalMustQueries.add(boolQuery);
+        }
+
+        if(!universalQueries.isEmpty()) {
+            Query boolQuery = Query.of(q -> q.bool(b -> b.should(universalQueries)));
             finalMustQueries.add(boolQuery);
         }
 
