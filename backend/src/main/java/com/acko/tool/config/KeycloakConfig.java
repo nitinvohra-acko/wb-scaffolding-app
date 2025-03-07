@@ -17,7 +17,6 @@ public class KeycloakConfig {
 
 	private final KeycloakConfigProperties keycloakConfigProperties;
 	
-	
 	@Bean
 	public Keycloak adminKeycloak() {
 		Keycloak keycloak = KeycloakBuilder.builder()
