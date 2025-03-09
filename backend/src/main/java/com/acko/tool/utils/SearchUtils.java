@@ -73,6 +73,23 @@ public class SearchUtils {
         return shouldQueries;
     }
 
+    public List<Query> getQueryForGlobalSearch(String searchStr, SearchParam searchParam) {
+        List<Query> shouldQueries = new ArrayList<>();
+        if(Objects.isNull(searchStr)) return shouldQueries;
+
+        for(SearchParamField searchParamField : searchParam.getParams()) {
+            String variableNameForField = getVariableNameForField(searchParamField.getFieldName(), searchParam);
+            if(searchParamField.getIsSearchable()) {
+                TermQuery termQuery = TermQuery.of(t -> t
+                    .field(variableNameForField)
+                    .value(searchStr)
+                );
+                shouldQueries.add(Query.of(q -> q.term(termQuery)));
+            }
+        }
+        return shouldQueries;
+    }
+
     private String getVariableNameForField(String fieldName, SearchParam searchParam) {
         // return the variable name for the field name
         for(SearchParamField searchParamField : searchParam.getParams()) {
