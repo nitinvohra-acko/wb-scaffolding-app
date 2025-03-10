@@ -3,9 +3,14 @@ package com.acko.tool.utils;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -17,61 +22,50 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class ReflectionUtil {
     // Set of classes that we consider "leaf" types
-    private static final Set<Class<?>> LEAF_TYPES = new HashSet<>(Arrays.asList(
-        String.class,
-        Boolean.class, Byte.class, Character.class, Short.class,
-        Integer.class, Long.class, Float.class, Double.class,
-        Date.class // add more types such as LocalDate, LocalDateTime if needed.
-    ));
+    public static List<HashMap<String, String>> extractLeafNodes(Class<?> clazz, String prefix) {
+        List<HashMap<String, String>> leafNodes = new ArrayList<>();
+        extractLeafNodesHelper(clazz, prefix, leafNodes);
+        return leafNodes;
+    }
 
-    public static List<String> getFieldPaths(Class<?> clazz, String parent) {
-        List<String> fieldPaths = new ArrayList<>();
+    private static void extractLeafNodesHelper(Class<?> clazz, String prefix, List<HashMap<String, String>> leafNodes) {
         for (Field field : clazz.getDeclaredFields()) {
-            // Skip static fields.
-            if (Modifier.isStatic(field.getModifiers())) {
-                continue;
-            }
-            String fieldPath = parent.isEmpty() ? field.getName() : parent + "." + field.getName();
-            fieldPaths.add(fieldPath);
+            Class<?> fieldType = field.getType();
+            String fieldName = prefix.isEmpty() ? toSnakeCase(field.getName()) : prefix + "." + toSnakeCase(field.getName());
 
-            // If field is of leaf type, do not expand further.
-            if (isLeafType(field.getType())) {
-                continue;
-            }
+            if (Collection.class.isAssignableFrom(fieldType)) {
+                ParameterizedType listType = (ParameterizedType) field.getGenericType();
+                Class<?> listClass = (Class<?>) listType.getActualTypeArguments()[0];
 
-            // If the field is a List, handle its generic type.
-            if (List.class.isAssignableFrom(field.getType())) {
-                Class<?> genericType = getGenericType(field);
-                if (genericType != null && !isLeafType(genericType) && isCustomClass(genericType)) {
-                    fieldPaths.addAll(getFieldPaths(genericType, fieldPath));
+                if (isPrimitiveOrCommonType(listClass)) {
+                    HashMap<String, String> map = new HashMap<>();
+                    map.put("type", listClass.getSimpleName());
+                    map.put("variable", "businessEntityImpl."+fieldName);
+//                    leafNodes.add(fieldName + " : L" + listClass.getSimpleName());
+                    leafNodes.add(map);
+                } else {
+                    extractLeafNodesHelper(listClass, fieldName, leafNodes);
                 }
-            } else if (isCustomClass(field.getType())) {
-                // For non-collection custom classes, expand recursively.
-                fieldPaths.addAll(getFieldPaths(field.getType(), fieldPath));
+            } else if (isPrimitiveOrCommonType(fieldType)) {
+                HashMap<String, String> map = new HashMap<>();
+                map.put("type", fieldType.getSimpleName());
+                map.put("variable", "businessEntityImpl."+fieldName);
+//                leafNodes.add(fieldName + " : " + fieldType.getSimpleName());
+                leafNodes.add(map);
+            } else {
+                extractLeafNodesHelper(fieldType, fieldName, leafNodes);
             }
         }
-        return fieldPaths;
     }
 
-    private static Class<?> getGenericType(Field field) {
-        try {
-            return (Class<?>) ((ParameterizedType) field.getGenericType())
-                .getActualTypeArguments()[0];
-        } catch (Exception e) {
-            return null;
-        }
+    private static boolean isPrimitiveOrCommonType(Class<?> clazz) {
+        return clazz.isPrimitive() || clazz == String.class || Number.class.isAssignableFrom(clazz) ||
+            clazz == Integer.class || clazz == Long.class || clazz == Double.class || clazz == Float.class ||
+            clazz == Boolean.class || clazz == Short.class || clazz == Byte.class || clazz == Character.class ||
+            clazz == OffsetDateTime.class || clazz == LocalDate.class || clazz == LocalDateTime.class;
     }
 
-    private static boolean isCustomClass(Class<?> clazz) {
-        if (clazz.getPackage() == null) {
-            return false;
-        }
-        String packageName = clazz.getPackage().getName();
-        return !(packageName.startsWith("java.") || packageName.startsWith("javax."));
-    }
-
-    // Determines if the class should be considered a leaf value.
-    private static boolean isLeafType(Class<?> clazz) {
-        return clazz.isPrimitive() || LEAF_TYPES.contains(clazz);
+    private static String toSnakeCase(String input) {
+        return input.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
     }
 }

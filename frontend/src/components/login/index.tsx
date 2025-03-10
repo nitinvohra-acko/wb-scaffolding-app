@@ -1,52 +1,28 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import {
-  Box,
-  Button,
-  CircularProgress,
-  TextField,
-  Typography,
-} from "@mui/material";
-import { styled } from "@mui/system";
-import GoogleIcon from "@mui/icons-material/Google";
-import Cookies from "js-cookie";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
+import { Chrome, Loader2 } from 'lucide-react';
+import Cookies from 'js-cookie';
 
 const CLIENT_ID = process.env.NEXT_PUBLIC_CLIENT_ID;
 const REDIRECT_URI = process.env.NEXT_PUBLIC_REDIRECT_URI;
 const KEYCLOAK_BASE_URL = process.env.NEXT_PUBLIC_KEYCLOAK_BASE_URL;
-const SECRET = process.env.NEXT_PUBLIC_SECRET;
 
-// Define a custom styled container using Emotion
-const CenteredBox = styled(Box)(({ theme }) => ({
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  minHeight: "100vh",
-  backgroundColor: theme.palette.background.default,
-}));
-
-const FormContainer = styled(Box)(({ theme }) => ({
-  width: "100%",
-  maxWidth: 400,
-  padding: theme.spacing(4),
-  borderRadius: theme.shape.borderRadius,
-  boxShadow: "2",
-  backgroundColor: theme.palette.background.paper,
-}));
-
-const Login: React.FC = () => {
+export default function Login() {
   const [loading, setLoading] = useState(false);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   const handleIdPLogin = (provider: string) => {
     const loginUrl =
       `${KEYCLOAK_BASE_URL}/protocol/openid-connect/auth` +
       `?client_id=${CLIENT_ID}` +
       `&response_type=code` +
-      `&redirect_uri=${encodeURIComponent(REDIRECT_URI ?? "")}` +
+      `&redirect_uri=${encodeURIComponent(REDIRECT_URI ?? '')}` +
       `&kc_idp_hint=${provider}` +
       `&scope=openid`;
     window.location.href = loginUrl;
@@ -54,123 +30,93 @@ const Login: React.FC = () => {
 
   const handleDirectLogin = async () => {
     setLoading(true);
-    setError("");
+    setError('');
 
     try {
       const response = await fetch(
         `${KEYCLOAK_BASE_URL}/protocol/openid-connect/token`,
         {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: new URLSearchParams({
-            client_id: CLIENT_ID ?? "",
-            client_secret: SECRET ?? "",
-            grant_type: "password",
+            client_id: CLIENT_ID ?? '',
+            grant_type: 'password',
             username,
             password,
-            scope: "openid",
+            scope: 'openid',
           }),
-        }
+        },
       );
 
-      if (!response.ok) {
-        throw new Error("Invalid username or password");
-      }
+      if (!response.ok) throw new Error('Invalid username or password');
 
       const tokens = await response.json();
-      // console.log("Tokens:", JSON.stringify(tokens));
-      Cookies.set("access_token", tokens.access_token, {
+      Cookies.set('access_token', tokens.access_token, {
         secure: true,
-        sameSite: "strict",
-        path: "/",
+        sameSite: 'strict',
+        path: '/',
       });
-      Cookies.remove("id_token")
-      Cookies.set("id_token", tokens.id_token, {
+      Cookies.set('id_token', tokens.id_token, {
         secure: true,
-        sameSite: "strict",
-        path: "/",
+        sameSite: 'strict',
+        path: '/',
       });
-      Cookies.remove("refresh_token")
-      Cookies.set("refresh_token", tokens.refresh_token, {
+      Cookies.set('refresh_token', tokens.refresh_token, {
         secure: true,
-        sameSite: "strict",
-        path: "/",
+        sameSite: 'strict',
+        path: '/',
       });
-      console.log(Cookies.get('refresh_token'), tokens?.refresh_token)
-      window.location.href = "/list";
+
+      window.location.href = '/list';
     } catch (error: any) {
-      setError(error.message || "An error occurred during login.");
+      setError(error.message || 'An error occurred during login.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <>
-      <CenteredBox>
-        <FormContainer>
-          <Typography variant="h5" mb={2} align="center" gutterBottom>
-            Login
-          </Typography>
+    <div className="flex justify-center items-center min-h-screen">
+      <Card className="w-full max-w-sm  shadow-md bg-white dark:bg-gray-800">
+        <CardContent>
+          <h2 className="text-xl font-semibold text-center mb-4">Login</h2>
           <Button
-            variant="contained"
-            color="error"
-            fullWidth
-            onClick={() => handleIdPLogin("google")}
-            sx={{ mb: 2 }}
-            startIcon={<GoogleIcon />}
+            variant="destructive"
+            className="w-full mb-4"
+            onClick={() => handleIdPLogin('google')}
           >
+            <span className="mr-2">
+              <Chrome />
+            </span>{' '}
             Login with Google
           </Button>
-          <Typography variant="body2" align="center" gutterBottom>
+          <p className="text-sm text-center text-gray-500 dark:text-gray-400 mb-2">
             Or login with your username and password
-          </Typography>
-          <form onSubmit={(e) => e.preventDefault()}>
-            <TextField
-              label="Username"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              size="small"
-            />
-            <TextField
-              label="Password"
-              variant="outlined"
-              type="password"
-              fullWidth
-              margin="normal"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              size="small"
-            />
-            {error && (
-              <Typography color="error" variant="body2" sx={{ mt: 1 }}>
-                {error}
-              </Typography>
-            )}
-            <Button
-              variant="contained"
-              color="primary"
-              fullWidth
-              onClick={handleDirectLogin}
-              disabled={loading}
-              sx={{ mt: 2 }}
-            >
-              {loading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "Login"
-              )}
-            </Button>
-          </form>
-        </FormContainer>
-      </CenteredBox>
-    </>
+          </p>
+          <Input
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="mb-3"
+          />
+          <Input
+            placeholder="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="mb-3"
+          />
+          {error && <p className="text-sm text-red-500 mb-2">{error}</p>}
+          <Button
+            variant="default"
+            className="w-full"
+            onClick={handleDirectLogin}
+            disabled={loading}
+          >
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Login'}
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
   );
-};
-
-export default Login;
+}

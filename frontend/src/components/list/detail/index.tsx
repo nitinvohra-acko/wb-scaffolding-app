@@ -1,10 +1,9 @@
+import { apiClient } from '@/utils/interceptor';
+import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { Box } from '@mui/material';
+import { DataRow } from '../constants';
 import LeftSection from './Overview';
 import RightSection from './tabs';
-import { userDataList, DataRow } from '../constants';
-import { useParams } from 'next/navigation';
-import { apiClient } from '@/utils/interceptor';
 
 const PageLayout: React.FC<{ pageId: string[] }> = ({ pageId }) => {
   const params = useParams();
@@ -29,10 +28,10 @@ const PageLayout: React.FC<{ pageId: string[] }> = ({ pageId }) => {
   };
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh' }}>
+    <div className="flex h-full">
       <LeftSection taskData={taskDetail} />
       <RightSection />
-    </Box>
+    </div>
   );
 };
 

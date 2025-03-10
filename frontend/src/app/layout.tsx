@@ -1,9 +1,8 @@
 'use client';
 
-import { CssBaseline, ThemeProvider } from '@mui/material';
 import React from 'react';
-import { darkTheme, lightTheme } from '@/theme';
-import DashboardLayout from '@/components/DashboardLayout';
+import './globals.css';
+import Navbars from '@/components/Navbars';
 
 export default function RootLayout({
   children,
@@ -13,10 +12,7 @@ export default function RootLayout({
   return (
     <html>
       <body>
-        <ThemeProvider theme={lightTheme}>
-          <CssBaseline />
-          <DashboardLayout>{children}</DashboardLayout>
-        </ThemeProvider>
+        <Navbars>{children}</Navbars>
       </body>
     </html>
   );
