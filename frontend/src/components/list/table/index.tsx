@@ -1,21 +1,22 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+
 import {
-  DataGrid,
-  GridColDef,
-  GridRenderCellParams,
-  GridValidRowModel,
-} from '@mui/x-data-grid';
-import { Select, MenuItem, Button, Chip, Typography, Box } from '@mui/material';
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
+import React from 'react';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { userDataList } from '../constants';
+import { cn } from '@/lib/utils'; // optional utility for Tailwind class merging
 import useTasks from '@/store/tasklist';
 import { useShallow } from 'zustand/shallow';
 
 type DataRow = {
   id: string;
   proposer_name: string;
-  priority: keyof typeof priorityOptions;
+  priority: 'P0' | 'P1' | 'P2';
   assignee: string;
   type: string;
   created_at: string;
@@ -25,85 +26,101 @@ type DataRow = {
   business_entity: Record<string, unknown>;
 };
 
-const assignees: string[] = ['user_1', 'user_2', 'user_3']; // Sample dropdown options
-
 const priorityOptions = {
-  P0: { label: 'High', color: 'red' },
-  P1: { label: 'Medium', color: '#2563EB' },
-  P2: { label: 'Low', color: 'green' },
-} as const;
-
-const DataTable: React.FC = () => {
-  const { taskResponse, hoist, initFilters } = useTasks(
-    useShallow((store) => ({
-      taskResponse: store.taskResponse,
-      hoist: store.hoist,
-      initFilters: store.initFilters,
-    })),
-  );
-  console.log('data', taskResponse?.result);
-  // const handleAssigneeChange = (id: string, newAssignee: string) => {
-  //   setTableData((prevData) =>
-  //     prevData.map((row) =>
-  //       row.id === id ? { ...row, assignee: newAssignee } : row
-  //     )
-  //   );
-  // };
-
-  const columns: GridColDef[] = [
-    {
-      field: 'assignee',
-      headerName: 'Assignee',
-      flex: 1,
-    },
-    { field: 'id', headerName: 'ID', flex: 1 },
-    { field: 'status', headerName: 'Status', flex: 1 },
-    {
-      field: 'priority',
-      headerName: 'Priority',
-      flex: 1,
-    },
-
-    {
-      field: 'detail',
-      headerName: 'Detail',
-      flex: 1,
-      renderCell: (
-        params: GridRenderCellParams<GridValidRowModel, DataRow>,
-      ) => (
-        <Link href={`/list/${params.row.id}`} passHref>
-          <Button variant="contained" color="primary" size="small">
-            Detail
-          </Button>
-        </Link>
-      ),
-    },
-  ];
-
-  return (
-    <div style={{ height: 600, width: '100%' }}>
-      {taskResponse?.result && (
-        <DataGrid
-          rows={taskResponse?.result}
-          columns={columns}
-          // pageSize={5}
-          // rowsPerPageOptions={[5, 10, 20]}
-          getRowId={(row) => row.id}
-          sx={{
-            boxShadow: 2,
-            border: 1,
-            borderColor: 'background.paper',
-            '& .MuiDataGrid-cell:hover': {
-              color: 'primary.main',
-            },
-            '& .MuiDataGrid-columnHeader': {
-              backgroundColor: 'background.paper',
-            },
-          }}
-        />
-      )}
-    </div>
-  );
+  P0: { label: 'High', color: 'text-red-600' },
+  P1: { label: 'Medium', color: 'text-blue-600' },
+  P2: { label: 'Low', color: 'text-green-600' },
 };
 
-export default DataTable;
+export default function DataTable() {
+  const { taskResponse } = useTasks(
+    useShallow((store) => ({
+      taskResponse: store.taskResponse,
+    })),
+  );
+
+  const columns = React.useMemo<ColumnDef<DataRow>[]>(
+    () => [
+      {
+        accessorKey: 'assignee',
+        header: 'Assignee',
+        cell: (info) => info.getValue(),
+      },
+      {
+        accessorKey: 'id',
+        header: 'ID',
+        cell: (info) => info.getValue(),
+      },
+      {
+        accessorKey: 'status',
+        header: 'Status',
+        cell: (info) => info.getValue(),
+      },
+      {
+        accessorKey: 'priority',
+        header: 'Priority',
+        cell: ({ row }) => {
+          const priority = row.original.priority;
+          const label = priorityOptions[priority]?.label;
+          const color = priorityOptions[priority]?.color;
+          return <span className={cn('font-medium', color)}>{label}</span>;
+        },
+      },
+      {
+        id: 'detail',
+        header: 'Detail',
+        cell: ({ row }) => (
+          <Link href={`/list/${row.original.id}`}>
+            <Button variant="outline" size="sm">
+              Detail
+            </Button>
+          </Link>
+        ),
+      },
+    ],
+    [],
+  );
+
+  const table = useReactTable({
+    data: taskResponse?.result || [],
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
+  return (
+    <div className="rounded-md border border-gray-200 shadow-sm overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-200 text-sm text-left">
+        <thead className="bg-gray-100">
+          {table.getHeaderGroups().map((headerGroup) => (
+            <tr key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <th
+                  key={header.id}
+                  className="px-4 py-2 font-medium text-gray-700"
+                >
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                </th>
+              ))}
+            </tr>
+          ))}
+        </thead>
+        <tbody className="divide-y divide-gray-100">
+          {table.getRowModel().rows.map((row) => (
+            <tr key={row.id} className="hover:bg-gray-50">
+              {row.getVisibleCells().map((cell) => (
+                <td key={cell.id} className="px-4 py-2">
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}

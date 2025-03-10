@@ -24,7 +24,6 @@ export async function middleware(req: NextRequest) {
     if (refreshResponse.ok) {
       const response = NextResponse.next();
       const newAccessToken = (await refreshResponse.json()).accessToken;
-
       response.cookies.set('access_token', newAccessToken, {
         httpOnly: true,
         secure: true,
@@ -37,8 +36,12 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL('/login', req.url));
     }
   }
-
-  return NextResponse.next();
+  const url = req.nextUrl.clone();
+  if (url.pathname === '/') {
+    url.pathname = '/list';
+    return NextResponse.redirect(url);
+  }
+  // return NextResponse.next();
 }
 
 // Helper function to check if token is expired

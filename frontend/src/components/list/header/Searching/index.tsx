@@ -1,23 +1,22 @@
-import ClearSharpIcon from '@mui/icons-material/ClearSharp';
+'use client';
+
+import { Input } from '@/components/ui/input';
 import {
-  Box,
-  FormControl,
-  Icon,
-  IconButton,
-  InputAdornment,
-  InputLabel,
-  OutlinedInput,
-  Skeleton,
   Tooltip,
-} from '@mui/material';
-import { useCallback, useMemo, useState } from 'react';
-import InfoSharpIcon from '@mui/icons-material/InfoSharp';
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { X, Info } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useState, useMemo } from 'react';
 import useTasks from '@/store/tasklist';
 import { useShallow } from 'zustand/shallow';
 import useTaskLists from '@/hooks/useTaskLists';
 import { TaskRequest, TaskResponse } from '@/types/task';
+import { Button } from '@/components/ui/button';
 
-const Index = () => {
+const SearchBar = () => {
   const { taskResponse, hoist, initFilters } = useTasks(
     useShallow((store) => ({
       taskResponse: store.taskResponse,
@@ -25,17 +24,21 @@ const Index = () => {
       initFilters: store.initFilters,
     })),
   );
+
   const { fetchTaskLists } = useTaskLists();
   const [searchStr, setSearchStr] = useState(taskResponse?.search_str ?? '');
 
-  const handleQueryChange = (event: any): void => {
-    event.persist();
+  const handleQueryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchStr(event.target.value);
+  };
+
+  const handleKeyUp = async (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       hoist({
         ...(taskResponse as TaskResponse),
-        search_str: searchStr.trim() as string,
+        search_str: searchStr.trim(),
       });
+
       setTimeout(async () => {
         const req = {
           ...useTasks.getState().taskResponse,
@@ -47,12 +50,14 @@ const Index = () => {
       }, 100);
     }
   };
-  const clearSearch = () => {
+
+  const clearSearch = async () => {
     setSearchStr('');
     hoist({
       ...(taskResponse as TaskResponse),
-      search_str: '' as string,
+      search_str: '',
     });
+
     setTimeout(async () => {
       const req = {
         ...useTasks.getState().taskResponse,
@@ -62,65 +67,54 @@ const Index = () => {
       await fetchTaskLists(req as TaskRequest);
     }, 100);
   };
+
   const searchableText = useMemo(() => {
     return taskResponse?.searchable_fields
-      ?.map((fields) => fields?.field_display_name)
+      ?.map((field) => field?.field_display_name)
       ?.join(', ');
   }, [taskResponse]);
+
   return (
-    <Box sx={{ display: 'flex', m: 1, flex: 1, mx: 2 }}>
+    <div className="flex items-center space-x-2 w-full max-w-md px-2">
       {taskResponse?.result?.length < 0 ? (
-        <Skeleton
-          variant="rectangular"
-          width={'250px'}
-          height={40}
-          sx={{ my: 2 }}
-        />
+        <Skeleton className="w-[250px] h-10 rounded-md" />
       ) : (
         <>
-          <FormControl
-            sx={{
-              minWidth: '300px',
-              bgcolor: 'white',
-            }}
-            size="small"
-          >
-            <InputLabel htmlFor="Search-Employeew">Search</InputLabel>
-            <OutlinedInput
-              label={`Search`}
-              sx={{ background: 'white' }}
-              id="Search-Employeew"
+          <div className="relative w-full">
+            <Input
               type="text"
+              placeholder="Search"
               value={searchStr}
               onChange={handleQueryChange}
-              onKeyUp={handleQueryChange}
-              endAdornment={
-                searchStr ? (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={clearSearch}
-                      aria-label="toggle password visibility"
-                      edge="end"
-                    >
-                      <ClearSharpIcon />
-                    </IconButton>
-                  </InputAdornment>
-                ) : (
-                  ''
-                )
-              }
-              // labelWidth={130}
+              onKeyUp={handleKeyUp}
+              className="pr-10 bg-white"
             />
-          </FormControl>
-          <Tooltip title={searchableText}>
-            <Icon sx={{ cursor: 'pointer', height: '100%' }}>
-              <InfoSharpIcon fontSize="small" color="info" />
-            </Icon>
-          </Tooltip>
+            {searchStr && (
+              <Button
+                size="icon"
+                variant="ghost"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0 text-muted-foreground"
+                onClick={clearSearch}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="w-4 h-4 text-muted-foreground cursor-pointer" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{searchableText}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </>
       )}
-    </Box>
+    </div>
   );
 };
 
-export default Index;
+export default SearchBar;

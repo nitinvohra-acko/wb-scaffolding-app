@@ -1,7 +1,9 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import './KibanaCustomDashboard.css'; // Import the CSS file
-import { Box, Button, Chip, Typography } from '@mui/material';
+
+import React, { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 interface TagMap {
   [key: string]: string;
@@ -90,56 +92,53 @@ const KibanaCustomDashboard: React.FC = () => {
   };
 
   return (
-    <Box mb={2}>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        width="100%"
-        border="none"
-      >
-        <Box>
-          <Typography variant="h6">{visibleSection} Dashboards</Typography>
-          <Box>
+    <div className="w-full space-y-4">
+      <div className="flex items-start justify-between w-full">
+        <div className="flex flex-col gap-4">
+          <h2 className="text-xl font-semibold">{visibleSection} Dashboards</h2>
+          <div className="flex flex-wrap gap-3">
             {filteredDashboards.map((dashboard) => (
               <Button
                 key={dashboard.id}
+                variant={selectedId === dashboard.id ? 'default' : 'outline'}
                 onClick={() => handleClick(dashboard.id)}
-                variant="contained"
-                color={dashboard.id === selectedId ? 'primary' : 'inherit'}
-                sx={{ mr: 2, my: 2, boxShadow: 1 }}
+                className="shadow-sm"
               >
                 {dashboard.attributes.title}
               </Button>
             ))}
-          </Box>
-        </Box>
-        <Box sx={{ '&>div': { mx: 1, minWidth: '60px' } }}>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2 min-w-[200px] justify-end">
           {['Admin', 'UnderWriter', 'Doctor', 'All'].map((role) => (
-            <Chip
+            <Badge
               key={role}
-              label={role}
-              className={visibleSection === role ? 'active' : ''}
               onClick={() => handleSectionClick(role)}
-              sx={{
-                background:
-                  visibleSection === role ? 'rgb(239, 233, 251)' : 'default',
-                color: visibleSection === role ? '#752cff' : 'default',
-                fontWeight: visibleSection === role ? '600' : '400',
-              }}
-              variant="filled"
-            />
+              className={`cursor-pointer px-3 py-1 rounded-md text-sm transition-colors ${
+                visibleSection === role
+                  ? 'bg-violet-100 text-violet-700 font-semibold'
+                  : 'bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+              }`}
+              variant="secondary"
+            >
+              {role}
+            </Badge>
           ))}
-        </Box>
-      </Box>
+        </div>
+      </div>
+
+      <Separator />
+
       {selectedId && (
         <iframe
           src={`http://localhost:5601/app/dashboards#/view/${selectedId}?embed=true&_g=()`}
           width="100%"
           height="600px"
-          style={{ border: 'none' }}
-        ></iframe>
+          className="border-none"
+        />
       )}
-    </Box>
+    </div>
   );
 };
 
