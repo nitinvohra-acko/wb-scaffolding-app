@@ -2,6 +2,7 @@ version: "3.8"
 services:
   springboot-app:
     image: your-spring-boot-image
+    container_name: backendserver
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -44,8 +45,26 @@ services:
       - SERVER_CORS_ALLOWORIGIN=["*"]
     ports:
       - "5601:5601" # Expose the Kibana port
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     depends_on:
       - elasticsearch # Kibana depends on Elasticsearch
+    networks:
+      - common-network
+
+  import-dashboard:
+    image: curlimages/curl:latest
+    container_name: import-dashboard
+    depends_on:
+      - kibana
+      - springboot-app
+    volumes:
+      - ./dashboard.ndjson:/tmp/dashboard.ndjson
+      - ./pre-processing-script.sh:/tmp/pre-processing-script.sh
+    entrypoint: [ "/bin/sh", "/tmp/pre-processing-script.sh" ]
     networks:
       - common-network
 
@@ -90,8 +109,8 @@ services:
       - KC_FEATURES=token-exchange,admin-fine-grained-authz
       - KC_HOSTNAME=keycloak
     ports:
-      - "8080:8080" # Expose Keycloak on port 8080
-      - "9000:9000"
+      - "8080:8080"
+      - "9000:9000" # Expose Keycloak on port 8080
     command: start-dev
     depends_on:
       - mysql_container
@@ -136,7 +155,7 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     ports:
       - 2181:2181
-  
+
   kafka:
     image: confluentinc/cp-kafka:7.4.4
     depends_on:
