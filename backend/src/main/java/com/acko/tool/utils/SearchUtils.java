@@ -75,7 +75,7 @@ public class SearchUtils {
 
     public List<Query> getQueryForGlobalSearch(String searchStr, SearchParam searchParam) {
         List<Query> shouldQueries = new ArrayList<>();
-        if(Objects.isNull(searchStr)) return shouldQueries;
+        if(Objects.isNull(searchStr) || searchStr.isEmpty()) return shouldQueries;
 
         for(SearchParamField searchParamField : searchParam.getParams()) {
             String variableNameForField = getVariableNameForField(searchParamField.getFieldName(), searchParam);
