@@ -10,7 +10,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import static com.acko.tool.Constants.Constants.ASSESSMENT_CONFIG;
+import static com.acko.tool.constants.Constants.ASSESSMENT_CONFIG;
+
 
 @RestController
 @RequestMapping("/questions")
