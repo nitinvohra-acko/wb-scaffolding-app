@@ -1,6 +1,9 @@
-package com.acko.tool.entity.search;
+package com.acko.tool.entity.search.user;
 
 import java.util.List;
+
+import com.acko.tool.entity.search.filter.Filter;
+import com.acko.tool.entity.search.sort.Sort;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,12 +14,11 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
-public class TaskSearch {
-    private List<TaskSearchableField> searchableFields;
-    private List<TaskSearchFilter> filters;
-    private List<TaskSort> sort;
+public class UserSearch {
+    private List<Filter<?>> filters;
+    private List<Sort> sort;
     private String searchStr;
-    private List<Object> result;    // Definitely should not be this. Set correct type here.
+    private List<ESUser> result;
     private long totalCount;
     private Integer pageNo;
     private Integer pageSize;

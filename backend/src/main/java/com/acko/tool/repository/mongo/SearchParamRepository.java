@@ -1,4 +1,4 @@
-package com.acko.tool.repository;
+package com.acko.tool.repository.mongo;
 
 import com.acko.tool.entity.search.SearchParam;
 import org.springframework.data.mongodb.repository.MongoRepository;

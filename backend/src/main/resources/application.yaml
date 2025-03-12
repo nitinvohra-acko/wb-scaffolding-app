@@ -51,7 +51,8 @@ jwt:
           
 elasticsearch:
   url: http://localhost:9200
-  index: task
+  taskIndex: tasks
+  userIndex: user
 
 keycloak:
   serverUrl: http://localhost:8080
@@ -97,7 +98,8 @@ jwt:
 
 elasticsearch:
   url: http://elasticsearch:9200
-  index: task
+  taskIndex: tasks
+  userIndex: user
 
 keycloak:
   serverUrl: http://keycloak:8080

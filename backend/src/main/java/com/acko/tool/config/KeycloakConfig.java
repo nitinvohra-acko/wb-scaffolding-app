@@ -4,6 +4,7 @@ import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
+import org.keycloak.admin.client.resource.RealmResource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -31,5 +32,10 @@ public class KeycloakConfig {
 						.build())
 				.build();
         return keycloak;
+	}
+	
+	@Bean
+	public RealmResource adminRealmResource(Keycloak adminKeycloak) {
+		return adminKeycloak.realm(keycloakConfigProperties.getRealm());
 	}
 }

@@ -1,4 +1,4 @@
-package com.acko.tool.entity.search;
+package com.acko.tool.entity.search.filter;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
-public class SearchFilterAggregatedOption {
-    private String value;
-    private Long count;
-    private Boolean isSelected;
+public class FilterOptions {
+    private String name;
+    private long count;
 }
