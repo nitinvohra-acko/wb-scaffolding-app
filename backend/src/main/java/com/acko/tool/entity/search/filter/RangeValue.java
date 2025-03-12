@@ -1,4 +1,4 @@
-package com.acko.tool.entity.search;
+package com.acko.tool.entity.search.filter;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,9 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
-public class TaskSort {
-    private String fieldDisplayName;
-    private String fieldName;
-    private String order;
-    private Boolean isSelected;
+public class RangeValue {
+    private String from;
+    private String to;
 }

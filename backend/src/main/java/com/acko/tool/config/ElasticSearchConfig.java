@@ -1,29 +1,32 @@
 package com.acko.tool.config;
 
-import lombok.extern.log4j.Log4j2;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.acko.tool.config.properties.ElasticSearchConfigProperties;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
-@Log4j2
+@Slf4j
+@RequiredArgsConstructor
 public class ElasticSearchConfig {
 
-	@Value("${elasticsearch.url}")
-	private String url;
+	private final ElasticSearchConfigProperties elasticSearchConfigProperties;
+	
 	@Bean
 	public ElasticsearchClient elasticsearchClient() {
 
-		RestClient restClient = RestClient.builder(HttpHost.create(url)).build();
+		RestClient restClient = RestClient.builder(HttpHost.create(elasticSearchConfigProperties.getUrl())).build();
 		ElasticsearchTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
 		return new ElasticsearchClient(transport);
 	}
-
+	
 }
