@@ -1,20 +1,20 @@
-export interface TaskResponse {
+export interface UsersResponse {
   searchableFields: SearchableFieldsTypetype[];
   filters: FilterField[];
   sort: any;
   searchStr: string;
-  result: any;
-  totalCount: 0;
-  pageNo: 1;
-  pageSize: 10;
+  result: User[];
+  totalCount: number;
+  pageNo: number;
+  pageSize: number;
 }
-export interface TaskRequest {
+export interface UsersRequest {
   searchableFields: SearchableFieldsTypetype[];
   filters: FilterField[];
   sort: any;
   searchStr: string;
-  pageNo: 1;
-  pageSize: 10;
+  pageNo: number;
+  pageSize: number;
 }
 
 export interface SearchableFields {}
@@ -36,4 +36,14 @@ export interface SearchableFieldsTypetype {
   fieldName: string;
   fieldType: string;
   value: string | null;
+}
+export interface User {
+  username: string;
+  email: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+  group: string;
+  active: boolean;
+  id: string;
 }

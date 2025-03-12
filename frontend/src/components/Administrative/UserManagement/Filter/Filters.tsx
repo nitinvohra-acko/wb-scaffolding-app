@@ -28,32 +28,35 @@ import {
   X,
   Check,
 } from 'lucide-react';
+import useUsersStore from '@/store/users';
+import { UsersRequest, UsersResponse } from '@/types/users';
+import useUsers from '@/hooks/useUsers';
 
 const Filters = () => {
-  const { taskResponse, hoist, initFilters } = useTasks(
+  const { usersResponse, hoist, initFilters } = useUsersStore(
     useShallow((store) => ({
-      taskResponse: store.taskResponse,
+      usersResponse: store.usersResponse,
       hoist: store.hoist,
       initFilters: store.initFilters,
     })),
   );
-  const { fetchTaskLists } = useTaskLists();
+  const { fetchUsersLists } = useUsers();
 
   const [isOpen, setIsOpen] = useState(false);
 
   const handleApply = () => {
-    if (taskResponse?.filters) {
+    if (usersResponse?.filters) {
       hoist({
-        ...(taskResponse as TaskResponse),
+        ...(usersResponse as UsersResponse),
         pageNo: 1,
       });
 
       setTimeout(async () => {
         const req = {
-          ...useTasks.getState().taskResponse,
+          ...useUsersStore.getState().usersResponse,
         };
         delete req.result;
-        await fetchTaskLists(req as TaskRequest);
+        await fetchUsersLists(req as UsersRequest);
         setIsOpen(false);
       }, 100);
     }
@@ -61,17 +64,17 @@ const Filters = () => {
 
   const handleClear = () => {
     hoist({
-      ...(taskResponse as TaskResponse),
+      ...(usersResponse as TaskResponse),
       filters: initFilters as FilterField[],
       pageNo: 1,
     });
 
     setTimeout(async () => {
       const req = {
-        ...useTasks.getState().taskResponse,
+        ...useUsersStore.getState().usersResponse,
       };
       delete req.result;
-      await fetchTaskLists(req as TaskRequest);
+      await fetchUsersLists(req as TaskRequest);
       setIsOpen(false);
     }, 100);
   };
@@ -102,7 +105,7 @@ const Filters = () => {
                 </div>
               </SheetTitle>
             </SheetHeader>
-            {taskResponse?.filters ? (
+            {usersResponse?.filters ? (
               <>
                 <CardContent className="h-[75vh] overflow-auto p-4">
                   <Filter />

@@ -5,21 +5,22 @@ import { FC, useCallback, useMemo } from 'react';
 import useTasks from '@/store/tasklist';
 import { FilterField, TaskResponse } from '@/types/task';
 import { useShallow } from 'zustand/shallow';
+import useUsersStore from '@/store/users';
 
 interface Props {
   filter: FilterField;
 }
 
 const Index: FC<Props> = ({ filter }) => {
-  const { taskResponse, hoist } = useTasks(
+  const { usersResponse, hoist } = useUsersStore(
     useShallow((store) => ({
-      taskResponse: store.taskResponse,
+      usersResponse: store.usersResponse,
       hoist: store.hoist,
     })),
   );
 
   const handleChange = (filterValue: string[]) => {
-    const res = taskResponse?.filters?.map((f) => {
+    const res = usersResponse?.filters?.map((f) => {
       if (f.fieldName === filter.fieldName) {
         return {
           ...filter,
@@ -34,7 +35,7 @@ const Index: FC<Props> = ({ filter }) => {
 
     if (res) {
       hoist({
-        ...(taskResponse as TaskResponse),
+        ...(usersResponse as TaskResponse),
         filters: res as FilterField[],
       });
     }

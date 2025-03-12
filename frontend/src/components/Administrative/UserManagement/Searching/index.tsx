@@ -15,18 +15,21 @@ import { useShallow } from 'zustand/shallow';
 import useTaskLists from '@/hooks/useTaskLists';
 import { TaskRequest, TaskResponse } from '@/types/task';
 import { Button } from '@/components/ui/button';
+import useUsersStore from '@/store/users';
+import { UsersRequest, UsersResponse } from '@/types/users';
+import useUsers from '@/hooks/useUsers';
 
 const SearchBar = () => {
-  const { taskResponse, hoist, initFilters } = useTasks(
+  const { usersResponse, hoist, initFilters } = useUsersStore(
     useShallow((store) => ({
-      taskResponse: store.taskResponse,
+      usersResponse: store.usersResponse,
       hoist: store.hoist,
       initFilters: store.initFilters,
     })),
   );
 
-  const { fetchTaskLists } = useTaskLists();
-  const [searchStr, setSearchStr] = useState(taskResponse?.searchStr ?? '');
+  const { fetchUsersLists } = useUsers();
+  const [searchStr, setSearchStr] = useState(usersResponse?.searchStr ?? '');
 
   const handleQueryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchStr(event.target.value);
@@ -35,18 +38,18 @@ const SearchBar = () => {
   const handleKeyUp = async (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       hoist({
-        ...(taskResponse as TaskResponse),
+        ...(usersResponse as UsersResponse),
         searchStr: searchStr.trim(),
       });
 
       setTimeout(async () => {
         const req = {
-          ...useTasks.getState().taskResponse,
+          ...useUsersStore.getState().usersResponse,
         };
         req.filters = [];
         req.pageNo = 1;
         delete req.result;
-        await fetchTaskLists(req as TaskRequest);
+        await fetchUsersLists(req as UsersRequest);
       }, 100);
     }
   };
@@ -54,7 +57,7 @@ const SearchBar = () => {
   const clearSearch = async () => {
     setSearchStr('');
     hoist({
-      ...(taskResponse as TaskResponse),
+      ...(usersResponse as UsersResponse),
       searchStr: '',
     });
 
@@ -64,19 +67,19 @@ const SearchBar = () => {
       };
       req.pageNo = 1;
       delete req.result;
-      await fetchTaskLists(req as TaskRequest);
+      await fetchUsersLists(req as TaskRequest);
     }, 100);
   };
 
   const searchableText = useMemo(() => {
-    return taskResponse?.searchableFields
+    return usersResponse?.searchableFields
       ?.map((field) => field?.fieldDisplayName)
       ?.join(', ');
-  }, [taskResponse]);
+  }, [usersResponse]);
 
   return (
     <div className="flex items-center space-x-2 w-full max-w-md px-2">
-      {taskResponse?.result?.length < 0 ? (
+      {usersResponse!?.result?.length < 0 ? (
         <Skeleton className="w-[250px] h-10 rounded-md" />
       ) : (
         <>

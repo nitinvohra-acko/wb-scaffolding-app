@@ -10,7 +10,7 @@ const categories: Record<
     name: 'Services health status',
     description: 'Search through our proposals catalog',
   },
-  user_mangement: {
+  users: {
     name: 'User management',
     description: 'Find customer policy and take action',
   },
@@ -27,7 +27,7 @@ const categories: Record<
 
 const featureList: string[] = [
   'service-status',
-  'user_mangement',
+  'users',
   'entity-config',
   'dashboard',
 ];
@@ -36,7 +36,7 @@ const LandingPage = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const handleCategoryClick = (key: string, url?: string) => {
-    window?.open(url ? url : `/administrative/${key}`, '_blank');
+    window?.open(url ? url : `/administrative/${key}`, url && '_blank');
   };
 
   return (

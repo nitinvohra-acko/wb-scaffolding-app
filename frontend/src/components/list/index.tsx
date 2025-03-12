@@ -9,12 +9,12 @@ import TableHeader from './header';
 import MemberTable from './table';
 
 const INIT_FILTER: TaskRequest = {
-  searchable_fields: [],
+  searchableFields: [],
   filters: [],
   sort: [],
-  search_str: '',
-  page_no: 1,
-  page_size: 10,
+  searchStr: '',
+  pageNo: 1,
+  pageSize: 10,
 };
 
 const DataTableComponent: React.FC = () => {

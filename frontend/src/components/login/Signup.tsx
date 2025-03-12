@@ -30,9 +30,15 @@ export default function Signup() {
   });
 
   const handleSignup = async (data: SignupForm) => {
+    const userData = {
+      ...data,
+      username: data?.email,
+      group: 'doctor',
+      active: true,
+    }; // handle the group later
     try {
-      const response = await apiClient('/api/user/create', 'POST', {
-        body: data,
+      const response = await apiClient('/api/user', 'POST', {
+        body: userData,
       });
 
       router.push('/login');

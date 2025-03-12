@@ -27,10 +27,10 @@ import { Label } from '@/components/ui/label';
 
 // Define the Zod schema for validation
 const fieldParamSchema = z.object({
-  field_display_name: z.string().min(1, 'Display name is required'),
-  field_name: z.string().min(1, 'Field name is required'),
+  fieldDisplayName: z.string().min(1, 'Display name is required'),
+  fieldName: z.string().min(1, 'Field name is required'),
   variable_name: z.string().min(1, 'Variable name is required'),
-  field_type: z.enum(['string', 'number', 'boolean', 'date']),
+  fieldType: z.enum(['string', 'number', 'boolean', 'date']),
   is_searchable: z.boolean().default(false),
   is_filterable: z.boolean().default(false),
 });
@@ -60,10 +60,10 @@ export default function EntityFieldMappingForm() {
       entity: '',
       params: [
         {
-          field_display_name: '',
-          field_name: '',
+          fieldDisplayName: '',
+          fieldName: '',
           variable_name: '',
-          field_type: 'string',
+          fieldType: 'string',
           is_searchable: false,
           is_filterable: false,
         },
@@ -134,10 +134,10 @@ export default function EntityFieldMappingForm() {
                   size="sm"
                   onClick={() =>
                     append({
-                      field_display_name: '',
-                      field_name: '',
+                      fieldDisplayName: '',
+                      fieldName: '',
                       variable_name: '',
-                      field_type: 'string',
+                      fieldType: 'string',
                       is_searchable: false,
                       is_filterable: false,
                     })
@@ -169,33 +169,33 @@ export default function EntityFieldMappingForm() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor={`params.${index}.field_display_name`}>
+                      <Label htmlFor={`params.${index}.fieldDisplayName`}>
                         Display Name
                       </Label>
                       <Input
-                        id={`params.${index}.field_display_name`}
+                        id={`params.${index}.fieldDisplayName`}
                         placeholder="User Display Name"
-                        {...register(`params.${index}.field_display_name`)}
+                        {...register(`params.${index}.fieldDisplayName`)}
                       />
-                      {errors.params?.[index]?.field_display_name && (
+                      {errors.params?.[index]?.fieldDisplayName && (
                         <p className="text-sm text-red-500">
-                          {errors.params[index]?.field_display_name?.message}
+                          {errors.params[index]?.fieldDisplayName?.message}
                         </p>
                       )}
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor={`params.${index}.field_name`}>
+                      <Label htmlFor={`params.${index}.fieldName`}>
                         Field Name
                       </Label>
                       <Input
-                        id={`params.${index}.field_name`}
+                        id={`params.${index}.fieldName`}
                         placeholder="user_name"
-                        {...register(`params.${index}.field_name`)}
+                        {...register(`params.${index}.fieldName`)}
                       />
-                      {errors.params?.[index]?.field_name && (
+                      {errors.params?.[index]?.fieldName && (
                         <p className="text-sm text-red-500">
-                          {errors.params[index]?.field_name?.message}
+                          {errors.params[index]?.fieldName?.message}
                         </p>
                       )}
                     </div>
@@ -217,12 +217,12 @@ export default function EntityFieldMappingForm() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor={`params.${index}.field_type`}>
+                      <Label htmlFor={`params.${index}.fieldType`}>
                         Field Type
                       </Label>
                       <Controller
                         control={control}
-                        name={`params.${index}.field_type`}
+                        name={`params.${index}.fieldType`}
                         render={({ field }) => (
                           <Select
                             value={field.value}
@@ -240,9 +240,9 @@ export default function EntityFieldMappingForm() {
                           </Select>
                         )}
                       />
-                      {errors.params?.[index]?.field_type && (
+                      {errors.params?.[index]?.fieldType && (
                         <p className="text-sm text-red-500">
-                          {errors.params[index]?.field_type?.message}
+                          {errors.params[index]?.fieldType?.message}
                         </p>
                       )}
                     </div>
