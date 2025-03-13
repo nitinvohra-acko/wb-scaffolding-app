@@ -1,5 +1,6 @@
 package com.acko.tool.controller;
 
+import com.acko.tool.dtos.WorkflowRequest;
 import com.acko.tool.service.WorkflowService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
@@ -12,8 +13,8 @@ public class WorkflowController {
 
     private final WorkflowService workflowService;
 
-    @PutMapping(path = "{proposal_id}/postPayment/member/update", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public String updatePostPaymentMemberDetailsToProposal(@PathVariable("proposal_id") String proposalId, @RequestBody Object request) {
-        return workflowService.updatePostPaymentMemberDetailsToProposal(proposalId, request);
+    @PutMapping(path = "{task_id}/initiate/workflow", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public String initiateWorkflow(@PathVariable("task_id") String taskId, @RequestBody WorkflowRequest request) {
+        return workflowService.initiateWorkflow(taskId, request);
     }
 }

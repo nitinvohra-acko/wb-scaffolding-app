@@ -37,7 +37,7 @@ public class RuleEngineController {
         return ruleEngineService.deployDmn(genericRuleObject);
     }
 
-    @PostMapping(value = "/{ruleId}/evaluate")
+    @PostMapping(value = "/{ruleId}/initiate")
     public Object execute(@PathVariable("ruleId") String ruleId, @RequestBody Map<String, Object> stringObjectMap) {
         return ruleEngineService.execute(ruleId, stringObjectMap);
     }

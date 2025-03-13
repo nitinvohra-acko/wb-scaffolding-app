@@ -4,9 +4,13 @@ import com.acko.tool.dtos.GenericRuleObject;
 import lombok.extern.log4j.Log4j2;
 import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.RepositoryService;
+import org.camunda.bpm.engine.RuntimeService;
+import org.camunda.bpm.engine.repository.ProcessDefinition;
+import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.model.dmn.Dmn;
 import org.camunda.bpm.model.dmn.DmnModelInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -16,25 +20,22 @@ import java.util.Objects;
 @Log4j2
 public class RuleEngineService {
 
-    private final RepositoryService repositoryService;
-
-    public RuleEngineService(RepositoryService repositoryService) {
-        this.repositoryService = repositoryService;
-    }
-
     @Autowired
     ProcessEngine processEngine;
 
+    @Autowired
+    RepositoryService repositoryService;
+
+    @Autowired
+    RuntimeService runtimeService;
+
     public Object execute(String ruleId, Map<String, Object> stringObjectMap) {
-        String decisionDefinitionId = repositoryService
-                .createDecisionDefinitionQuery()
-                .decisionDefinitionKey(ruleId)
-                .latestVersion().singleResult().getId();
-        DmnModelInstance dmnModelInstance = processEngine.getRepositoryService().getDmnModelInstance(decisionDefinitionId);
-        if (Objects.nonNull(dmnModelInstance)) {
-            return processEngine.getDecisionService()
-                    .evaluateDecisionById(decisionDefinitionId).variables(stringObjectMap).evaluate();
-        }
+        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
+                .processDefinitionKey(ruleId)
+                .latestVersion()
+                .singleResult();
+        ProcessInstance processInstance = runtimeService
+                .startProcessInstanceById(processDefinition.getId(), stringObjectMap);
         return null;
     }
 
@@ -42,7 +43,7 @@ public class RuleEngineService {
         processEngine.getRepositoryService()
                 .createDeployment()
                 .name(name)
-                .addString(name + ".dmn", genericRuleObject)
+                .addString(name + ".bpmn", genericRuleObject)
                 .enableDuplicateFiltering(true)
                 .deploy();
         return genericRuleObject;
@@ -53,7 +54,7 @@ public class RuleEngineService {
         processEngine.getRepositoryService()
                 .createDeployment()
                 .name(genericRuleObject.getRuleId())
-                .addModelInstance(genericRuleObject.getRuleId()+".dmn", dmnModelInstance)
+                .addModelInstance(genericRuleObject.getRuleId()+".bpmn", dmnModelInstance)
                 .enableDuplicateFiltering(true)
                 .deploy();
         return Dmn.convertToString(dmnModelInstance);

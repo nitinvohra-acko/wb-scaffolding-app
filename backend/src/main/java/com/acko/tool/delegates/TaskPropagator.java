@@ -21,8 +21,8 @@ public class TaskPropagator implements JavaDelegate {
 
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
-        ProposalBusinessEntity proposalBusinessEntity = ProposalBusinessEntity.builder().proposalId(delegateExecution.getVariable("proposalId").toString()).build();
-        Task<Object> task = Task.builder().id(UUID.randomUUID().toString()).type("proposal").businessEntityImpl(proposalBusinessEntity).build();
+        ProposalBusinessEntity proposalBusinessEntity = ProposalBusinessEntity.builder().proposalUsers(delegateExecution.getVariable("request")).proposalId(delegateExecution.getVariable("proposalId").toString()).build();
+        Task<Object> task = Task.builder().id(delegateExecution.getVariable("task_id").toString()).status("in_progress").type("proposal").businessEntityImpl(proposalBusinessEntity).build();
         tasksService.createOrUpdateTasks(List.of(task));
     }
 }

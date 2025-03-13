@@ -21,6 +21,5 @@ public class ProposalBusinessEntity {
 	private String proposalId;
 	private String proposalStatus;
 	private List<String> memberIds;
-	private String height;
-	private String weight;
+	Object proposalUsers;
 }
