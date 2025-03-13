@@ -4,42 +4,38 @@ import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
-import org.springframework.beans.factory.annotation.Value;
+import org.keycloak.admin.client.resource.RealmResource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.acko.tool.config.properties.KeycloakConfigProperties;
+
+import lombok.RequiredArgsConstructor;
+
 @Configuration
+@RequiredArgsConstructor
 public class KeycloakConfig {
 
-//	final static String serverUrl = "http://localhost:8080";
-	public final static String realm = "master";
-	final static String clientId = "admin-cli";
-	final static String userName = "admin";
-	final static String password = "admin"; ////////////////////////TODO
+	private final KeycloakConfigProperties keycloakConfigProperties;
 	
-	@Value("${keycloak.serverUrl}")
-	private String serverUrl;
-
 	@Bean
-	public Keycloak keycloak() {
-
-		return KeycloakBuilder.builder()
-				.serverUrl(serverUrl)
-				.realm(realm)
+	public Keycloak adminKeycloak() {
+		Keycloak keycloak = KeycloakBuilder.builder()
+				.serverUrl(keycloakConfigProperties.getServerUrl())
+				.realm(keycloakConfigProperties.getRealm())
 				.grantType(OAuth2Constants.PASSWORD)
-				.username(userName)
-				.password(password)
-				.clientId(clientId)
-//              .clientSecret(clientSecret)
+				.username(keycloakConfigProperties.getAdminUserName())
+				.password(keycloakConfigProperties.getAdminPassword())
+				.clientId(keycloakConfigProperties.getClientId())
 				.resteasyClient(new ResteasyClientBuilderImpl()
 						.connectionPoolSize(10)
 						.build())
 				.build();
-
-//            List<UserRepresentation> users = keycloak.realm(realm)
-//            	      .users()
-//            	      .searchByUsername("admin", true);
-//            System.out.println(users);
-
+        return keycloak;
+	}
+	
+	@Bean
+	public RealmResource adminRealmResource(Keycloak adminKeycloak) {
+		return adminKeycloak.realm(keycloakConfigProperties.getRealm());
 	}
 }

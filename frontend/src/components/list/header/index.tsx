@@ -1,20 +1,17 @@
 'use client';
+
 import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
-  AppBar,
-  Toolbar,
-  Typography,
-  TextField,
-  Button,
-  IconButton,
-  Box,
   Tooltip,
-} from '@mui/material';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import AddOneIcon from '@mui/icons-material/Add';
-import SortIcon from '@mui/icons-material/Sort';
-import { styled } from '@mui/system';
-import Filter from './Filter';
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from '@/components/ui/tooltip';
+import { Filter, Plus, Search, SortAsc } from 'lucide-react';
+import Searching from './Searching';
+import FilterComponent from './Filter'; // renamed to avoid conflict with `Filter` icon
 
 interface HeaderProps {
   title: string;
@@ -23,12 +20,6 @@ interface HeaderProps {
   onSort: () => void;
   handleNewTask: (data: any) => void;
 }
-
-const SearchInput = styled(TextField)(({ theme }) => ({
-  marginLeft: theme.spacing(2),
-  marginRight: theme.spacing(2),
-  flexGrow: 1,
-}));
 
 const Header: React.FC<HeaderProps> = ({
   title,
@@ -42,42 +33,26 @@ const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <Box position="static" bgcolor={'background.paper'}>
-      <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Typography
-          variant="h6"
-          component="div"
-          sx={{ flexGrow: 0, color: 'primary.main' }}
-        >
-          {title}
-        </Typography>
+    <div className="bg-white border-b shadow-sm px-4 py-3 flex items-center justify-between">
+      {/* Left: Title */}
+      <h1 className="text-lg font-semibold text-primary">{title}</h1>
 
-        <Box sx={{ display: 'flex' }}>
-          {/* <Tooltip title="Add task">
-            <Button
-              startIcon={<AddOneIcon />}
-              onClick={() => {
-                handleNewTask("task");
-              }}
-            >
-              Add Task
-            </Button>
-          </Tooltip> */}
-          <SearchInput
-            variant="outlined"
-            size="small"
-            placeholder="Search..."
-            onChange={handleSearchChange}
-          />
-          <Filter />
-          {/* <Tooltip title="Sort">
-            <IconButton color="inherit" onClick={onSort}>
-              <SortIcon />
-            </IconButton>
-          </Tooltip> */}
-        </Box>
-      </Toolbar>
-    </Box>
+      {/* Right: Controls */}
+      <div className="flex items-center gap-2">
+        {/* Searching Component (custom) */}
+        <Searching />
+
+        {/* Filter Component (custom) */}
+        <FilterComponent />
+
+        {/* Optional inline search input */}
+        {/* <Input
+          placeholder="Search..."
+          className="w-[200px] md:w-[250px]"
+          onChange={handleSearchChange}
+        /> */}
+      </div>
+    </div>
   );
 };
 

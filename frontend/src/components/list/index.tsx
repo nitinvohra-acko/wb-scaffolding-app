@@ -1,14 +1,14 @@
 'use client';
-import React, { useCallback, useEffect, useState } from 'react';
-import MemberTable from './table';
-import { Box, Button, Typography } from '@mui/material';
-import TableHeader from './header';
-import AddTaskModal from './component/addTaskModal';
 
-import useTasks from '@/store/tasklist';
+import { Skeleton } from '@/components/ui/skeleton';
 import useTaskLists from '@/hooks/useTaskLists';
+import useTasks from '@/store/tasklist';
 import { TaskRequest } from '@/types/task';
-const INIT_FILTER = {
+import React, { useEffect, useState } from 'react';
+import TableHeader from './header';
+import MemberTable from './table';
+
+const INIT_FILTER: TaskRequest = {
   searchable_fields: [],
   filters: [],
   sort: [],
@@ -16,47 +16,42 @@ const INIT_FILTER = {
   page_no: 1,
   page_size: 10,
 };
+
 const DataTableComponent: React.FC = () => {
-  const { taskResponse } = useTasks.getState();
-  // const [allTask, setAllTask] = useState(null);
+  const { taskResponse, status } = useTasks.getState();
   const [openAddTask, setOpenAddTask] = useState(false);
-  // const [loading, setLoading] = useState(false);
   const { fetchTaskLists } = useTaskLists();
+
   useEffect(() => {
-    // if (!taskResponse) {
-    fetchTaskLists(INIT_FILTER as TaskRequest);
-    // }
+    fetchTaskLists(INIT_FILTER);
   }, []);
-  // const fetchAlltask = async () => {
-  //   try {
-  //     const response: any = await apiClient('/task', 'GET');
-  //     setAllTask(response);
-  //   } catch (err) {
-  //     console.log('error', err);
-  //   }
-  // };
-  if (!taskResponse) {
-    return <>loading..</>;
+
+  if (status === 'loading') {
+    return (
+      <div className="flex flex-col gap-4">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-96 w-full" />
+      </div>
+    );
   }
+
   return (
     <>
       {taskResponse?.result?.length > 0 ? (
-        <Box>
+        <>
           <TableHeader
             title="Task Data"
             onSearch={() => {}}
             onFilter={() => {}}
             onSort={() => {}}
-            handleNewTask={() => {
-              setOpenAddTask(true);
-            }}
+            handleNewTask={() => setOpenAddTask(true)}
           />
-          <Box sx={{ my: 2 }}>
-            <MemberTable data={taskResponse?.result} />
-          </Box>
-        </Box>
+          <div className="my-4">
+            <MemberTable />
+          </div>
+        </>
       ) : (
-        <Typography>...Loading</Typography>
+        <p className="text-center text-gray-500">No data available</p>
       )}
     </>
   );

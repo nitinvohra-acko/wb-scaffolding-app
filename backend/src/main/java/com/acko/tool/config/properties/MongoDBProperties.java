@@ -10,10 +10,6 @@ import lombok.Data;
 @ConfigurationProperties(prefix = "spring.data.mongodb")
 public class MongoDBProperties {
     private String uri;
-    private String host1;
-    private String host2;
-    private String host3;
-    private String host4;
     private String port;
     private String database;
 }

@@ -1,42 +1,43 @@
-import { Box, Divider, Tabs, Tab } from "@mui/material";
-import React from "react";
+'use client';
+
+import React from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const RightSection: React.FC = () => {
-  const [activeTab, setActiveTab] = React.useState(0);
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue);
-  };
+  const [activeTab, setActiveTab] = React.useState('introduction');
 
   return (
-    <Box sx={{ width: "75%", padding: 2 }}>
-      <Tabs
-        value={activeTab}
-        onChange={handleTabChange}
-        textColor="primary"
-        indicatorColor="primary"
-      >
-        <Tab label="Introduction" />
-        {/* <Tab label="Demographics" />
-        <Tab label="Medical details" />
-        <Tab label="End note" /> */}
+    <div className="w-full md:w-3/4 p-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="introduction">Introduction</TabsTrigger>
+          {/* <TabsTrigger value="demographics">Demographics</TabsTrigger>
+          <TabsTrigger value="medical">Medical details</TabsTrigger>
+          <TabsTrigger value="endnote">End note</TabsTrigger> */}
+        </TabsList>
+
+        <TabsContent value="introduction">
+          <div className="border border-gray-300 rounded-xl p-4 text-sm text-gray-700">
+            Hi, I'm Dr. [Your Name] from Acko Health Insurance. Thank you for
+            choosing us...
+          </div>
+        </TabsContent>
+
+        {/* 
+        <TabsContent value="demographics">
+          <div className="border border-gray-300 rounded-xl p-4">Demographics content...</div>
+        </TabsContent>
+
+        <TabsContent value="medical">
+          <div className="border border-gray-300 rounded-xl p-4">Medical details content...</div>
+        </TabsContent>
+
+        <TabsContent value="endnote">
+          <div className="border border-gray-300 rounded-xl p-4">End note content...</div>
+        </TabsContent>
+        */}
       </Tabs>
-      <Divider sx={{ my: 2 }} />
-      {activeTab === 0 && (
-        <Box
-          sx={{
-            height: 50,
-            border: "solid 1px gray",
-            padding: 2,
-            borderRadius: 8,
-          }}
-        >
-          "Hi, I'm Dr. [Your Name] from Acko Health Insurance. Thank you for
-          choosing us...
-        </Box>
-      )}
-      {/* Add content for other tabs as needed */}
-    </Box>
+    </div>
   );
 };
 

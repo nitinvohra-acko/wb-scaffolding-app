@@ -54,11 +54,6 @@ public class SearchController {
     public Object getTaskSearchFields(
         @PathVariable(value = "entity") String entity
     ) throws NoSuchFieldException {
-        HashMap<String, Object> response = new HashMap<>();
-        List<String> list = reflectionUtil.getFieldPaths(searchUtils.isEntityValid(entity), "");
-        for(int i= 0; i<list.size(); i++){
-            jsonUtils.setKeyInObject(response, list.get(i), new HashMap<>());
-        }
-        return response;
+        return searchService.getCombinedSearchFields(entity);
     }
 }
