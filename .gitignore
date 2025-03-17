@@ -45,6 +45,7 @@ build/
 ### VS Code ###
 .vscode/
 
+yarn.lock
 
 
 

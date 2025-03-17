@@ -1,0 +1,30 @@
+package com.acko.tool.controller;
+
+import com.acko.tool.entity.action.Action;
+import com.acko.tool.entity.action.EventActionMetadata;
+import com.acko.tool.service.action.ActionService;
+import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/action")
+@AllArgsConstructor
+public class ActionController {
+    private final ActionService actionService;
+
+    @PostMapping("/metadata")
+    public ResponseEntity<EventActionMetadata> saveMetadata(@RequestBody EventActionMetadata eventActionDTO) {
+        // Handle saving metadata
+        return ResponseEntity.ok(actionService.getMetadata(eventActionDTO));
+    }
+
+    @PostMapping("/save_action")
+    public ResponseEntity<Action> saveAction(@RequestBody Action saveActionDTO) {
+        // Handle saving action
+        return ResponseEntity.ok(actionService.saveAction(saveActionDTO));
+    }
+}
