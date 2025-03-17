@@ -22,6 +22,7 @@ const UserDetailPage = () => {
   const userId = params?.id;
   const [user, setUser] = useState<User | null>();
   const { fetchUser, loading, error } = useUserDetails();
+  console.log(params);
   const fetchUserResponse = useCallback(async () => {
     if (userId) {
       const response = await fetchUser(userId as string);

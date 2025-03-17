@@ -1,3 +1,5 @@
+import { FilterField, SearchableFieldsTypetype } from './common';
+
 export interface UsersResponse {
   searchableFields: SearchableFieldsTypetype[];
   filters: FilterField[];
@@ -17,26 +19,12 @@ export interface UsersRequest {
   pageSize: number;
 }
 
-export interface SearchableFields {}
 export interface FilterOption {
   value: string;
   count: number;
-  is_selected: boolean;
+  isSelected: boolean;
 }
 
-export interface FilterField {
-  fieldDisplayName: string;
-  fieldName: string;
-  fieldType: string;
-  options: FilterOption[];
-}
-
-export interface SearchableFieldsTypetype {
-  fieldDisplayName: string;
-  fieldName: string;
-  fieldType: string;
-  value: string | null;
-}
 export interface User {
   username: string;
   email: string;

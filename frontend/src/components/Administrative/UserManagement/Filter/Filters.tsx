@@ -21,7 +21,7 @@ import { useShallow } from 'zustand/shallow';
 import useTasks from '@/store/tasklist';
 import useTaskLists from '@/hooks/useTaskLists';
 import Filter from './Filter';
-import { FilterField, TaskRequest, TaskResponse } from '@/types/task';
+
 import {
   SlidersHorizontal,
   Filter as FilterIcon,
@@ -31,6 +31,7 @@ import {
 import useUsersStore from '@/store/users';
 import { UsersRequest, UsersResponse } from '@/types/users';
 import useUsers from '@/hooks/useUsers';
+import { FilterField } from '@/types/common';
 
 const Filters = () => {
   const { usersResponse, hoist, initFilters } = useUsersStore(
@@ -64,7 +65,7 @@ const Filters = () => {
 
   const handleClear = () => {
     hoist({
-      ...(usersResponse as TaskResponse),
+      ...(usersResponse as UsersResponse),
       filters: initFilters as FilterField[],
       pageNo: 1,
     });
@@ -74,7 +75,7 @@ const Filters = () => {
         ...useUsersStore.getState().usersResponse,
       };
       delete req.result;
-      await fetchUsersLists(req as TaskRequest);
+      await fetchUsersLists(req as UsersRequest);
       setIsOpen(false);
     }, 100);
   };

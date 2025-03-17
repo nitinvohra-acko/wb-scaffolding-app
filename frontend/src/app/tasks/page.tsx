@@ -1,11 +1,10 @@
-'use client';
+import TaskDataPage from '@/components/Tasks';
 import React from 'react';
-import UserManagment from '@/components/Administrative/UserManagement';
 
 const page = () => {
   return (
     <div>
-      <UserManagment />
+      <TaskDataPage />
     </div>
   );
 };

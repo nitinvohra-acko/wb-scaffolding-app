@@ -3,9 +3,10 @@
 import MultiSelect1 from '../MultiSelectV1';
 import { FC, useCallback, useMemo } from 'react';
 import useTasks from '@/store/tasklist';
-import { FilterField, TaskResponse } from '@/types/task';
 import { useShallow } from 'zustand/shallow';
 import useUsersStore from '@/store/users';
+import { UsersRequest, UsersResponse } from '@/types/users';
+import { FilterField } from '@/types/common';
 
 interface Props {
   filter: FilterField;
@@ -24,9 +25,9 @@ const Index: FC<Props> = ({ filter }) => {
       if (f.fieldName === filter.fieldName) {
         return {
           ...filter,
-          options: f.options.map((option) => ({
+          options: f?.options?.map((option) => ({
             ...option,
-            is_selected: filterValue.includes(option.value),
+            isSelected: filterValue.includes(option.value),
           })),
         };
       }
@@ -35,7 +36,7 @@ const Index: FC<Props> = ({ filter }) => {
 
     if (res) {
       hoist({
-        ...(usersResponse as TaskResponse),
+        ...(usersResponse as UsersResponse),
         filters: res as FilterField[],
       });
     }
@@ -45,10 +46,10 @@ const Index: FC<Props> = ({ filter }) => {
     <div>
       <MultiSelect1
         label={filter?.fieldName}
-        options={filter?.options}
+        options={filter?.options ?? []}
         value={
           filter?.options
-            ?.filter((f) => f.is_selected)
+            ?.filter((f) => f.isSelected)
             ?.map((f) => f.value) as string[]
         }
         onChange={handleChange}

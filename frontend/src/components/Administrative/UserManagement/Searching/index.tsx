@@ -67,7 +67,7 @@ const SearchBar = () => {
       };
       req.pageNo = 1;
       delete req.result;
-      await fetchUsersLists(req as TaskRequest);
+      await fetchUsersLists(req as UsersRequest);
     }, 100);
   };
 

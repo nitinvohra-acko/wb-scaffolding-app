@@ -10,8 +10,9 @@ import React, { useEffect, useState } from 'react';
 import UserFilters from '../Filter';
 import UserSearch from '../Searching';
 import UserTable from '../Table';
+import { UsersRequest } from '@/types/users';
 
-const INIT_FILTER: TaskRequest = {
+const INIT_FILTER: UsersRequest = {
   searchableFields: [],
   filters: [],
   sort: [],

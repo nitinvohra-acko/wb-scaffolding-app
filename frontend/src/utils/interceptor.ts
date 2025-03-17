@@ -15,7 +15,6 @@ export async function apiClient<TResponse, TBody = unknown>(
   try {
     const token = await getCookie('access_token'); //Cookies.get('access_token');
     const { body, customHeaders } = options;
-    console.log(token, 'token');
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),

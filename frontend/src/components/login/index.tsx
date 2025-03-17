@@ -85,7 +85,7 @@ export default function Login() {
         path: '/',
       });
 
-      window.location.href = '/list';
+      window.location.href = '/tasks';
     } catch (error: any) {
       setError(error.message || 'An error occurred during login.');
     } finally {

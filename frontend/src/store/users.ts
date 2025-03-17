@@ -1,4 +1,5 @@
-import { FilterField, UsersRequest, UsersResponse } from '@/types/users';
+import { FilterField } from '@/types/common';
+import { UsersRequest, UsersResponse } from '@/types/users';
 import { create, StoreApi } from 'zustand';
 import { combine, devtools } from 'zustand/middleware';
 

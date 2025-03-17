@@ -4,8 +4,8 @@ import React, { ChangeEvent, FC, useEffect, useMemo, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils'; // optional if you use `classnames` or ShadCN’s utility
-import { FilterOption } from '@/types/task';
 import { ChevronDown, ChevronUp, Search, X } from 'lucide-react';
+import { FilterOption } from '@/types/common';
 
 interface MultiSelectFilterProps {
   options: FilterOption[];

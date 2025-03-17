@@ -35,9 +35,7 @@ export async function GET(req: NextRequest) {
     }
 
     const tokens = await response.json();
-    console.log('Tokens received:', tokens);
-
-    const responseHeaders = NextResponse.redirect(new URL('/list', req.url));
+    const responseHeaders = NextResponse.redirect(new URL('/tasks', req.url));
     // Set cookies for all tokens
     responseHeaders.cookies.set('access_token', tokens.access_token, {
       httpOnly: true,

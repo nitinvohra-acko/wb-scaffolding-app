@@ -1,27 +1,33 @@
 'use client';
 
-import React, { useState } from 'react';
+import { Activity, Filter, LayoutDashboard, Users } from 'lucide-react';
+import Link from 'next/link';
+import React, { ReactNode, useState } from 'react';
 
 const categories: Record<
   string,
-  { name: string; description: string; url?: string }
+  { name: string; description: string; url?: string; icon: ReactNode }
 > = {
   'service-status': {
     name: 'Services health status',
     description: 'Search through our proposals catalog',
+    icon: <Activity className="h-5 w-5" />,
   },
   users: {
     name: 'User management',
     description: 'Find customer policy and take action',
+    icon: <Users className="h-5 w-5" />,
   },
   'entity-config': {
     name: 'Filter config',
     description: 'Search for users and its associated data',
+    icon: <Filter className="h-5 w-5" />,
   },
   dashboard: {
     name: 'Dashboard',
     description: 'Search for PPMC assessments',
     url: process.env.NEXT_PUBLIC_KIBANA_HEALTH + '/app/dashboards',
+    icon: <LayoutDashboard className="h-5 w-5" />,
   },
 };
 
@@ -51,18 +57,27 @@ const LandingPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 justify-center">
           {Object.entries(categories).map(([key, category]) =>
             featureList.includes(key) ? (
-              <div
+              <Link
                 key={key}
-                onClick={() => handleCategoryClick(key, category.url)}
-                className={`rounded-2xl p-5 cursor-pointer transition-all duration-200 shadow-sm hover:shadow-lg transform ${
-                  selectedCategory === key
-                    ? 'scale-105 bg-[#752cff] text-white'
-                    : 'bg-white text-gray-900'
-                }`}
+                href={category.url ? category.url : `/administrative/${key}`}
+                target={category.url && '_blank'}
               >
-                <h2 className="text-xl font-semibold mb-1">{category.name}</h2>
-                {/* <p className="text-sm">{category.description}</p> */}
-              </div>
+                <div
+                  key={key}
+                  // onClick={() => handleCategoryClick(key, category.url)}
+                  className={`flex items-center rounded-2xl p-5 cursor-pointer transition-all duration-200 shadow-sm hover:shadow-lg transform ${
+                    selectedCategory === key
+                      ? 'scale-105 bg-[#752cff] text-white'
+                      : 'bg-white text-gray-900'
+                  }`}
+                >
+                  <span className="mr-2">{category?.icon}</span>
+                  <h2 className="text-xl font-semibold mb-1">
+                    {category.name}
+                  </h2>
+                  {/* <p className="text-sm">{category.description}</p> */}
+                </div>
+              </Link>
             ) : null,
           )}
         </div>

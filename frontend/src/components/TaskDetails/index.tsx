@@ -1,3 +1,4 @@
+'use client';
 import { apiClient } from '@/utils/interceptor';
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
@@ -5,9 +6,8 @@ import { DataRow } from './constants';
 import LeftSection from './Overview';
 import RightSection from './tabs';
 
-const PageLayout: React.FC<{ pageId: string[] }> = ({ pageId }) => {
+const PageLayout: React.FC = ({}) => {
   const params = useParams();
-  console.log('params', params);
   const [userData, setUserData] = useState<DataRow | undefined>();
   const [taskDetail, setTaskDetail] = useState(null);
 
