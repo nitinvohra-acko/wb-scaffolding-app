@@ -1,16 +1,12 @@
 package com.acko.tool.service;
 
-import com.acko.tool.dtos.GenericRuleObject;
 import lombok.extern.log4j.Log4j2;
 import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
-import org.camunda.bpm.engine.runtime.ProcessInstance;
-import org.camunda.bpm.model.dmn.Dmn;
 import org.camunda.bpm.model.dmn.DmnModelInstance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -29,17 +25,29 @@ public class RuleEngineService {
     @Autowired
     RuntimeService runtimeService;
 
-    public Object execute(String ruleId, Map<String, Object> stringObjectMap) {
+    public Object startBpmnProcess(String ruleId, Map<String, Object> stringObjectMap) {
         ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
                 .processDefinitionKey(ruleId)
                 .latestVersion()
                 .singleResult();
-        ProcessInstance processInstance = runtimeService
+        return runtimeService
                 .startProcessInstanceById(processDefinition.getId(), stringObjectMap);
+    }
+
+    public Object execute(String ruleId, Map<String, Object> stringObjectMap) {
+        String decisionDefinitionId = repositoryService
+                .createDecisionDefinitionQuery()
+                .decisionDefinitionKey(ruleId)
+                .latestVersion().singleResult().getId();
+        DmnModelInstance dmnModelInstance = processEngine.getRepositoryService().getDmnModelInstance(decisionDefinitionId);
+        if (Objects.nonNull(dmnModelInstance)) {
+            return processEngine.getDecisionService()
+                    .evaluateDecisionById(decisionDefinitionId).variables(stringObjectMap).evaluate();
+        }
         return null;
     }
 
-    public Object deployDmnXml(String name, String genericRuleObject) {
+    public Object deployBpmnXml(String name, String genericRuleObject) {
         processEngine.getRepositoryService()
                 .createDeployment()
                 .name(name)
@@ -49,15 +57,14 @@ public class RuleEngineService {
         return genericRuleObject;
     }
 
-    public Object deployDmn(GenericRuleObject genericRuleObject) {
-        DmnModelInstance dmnModelInstance = genericRuleObject.toDmnModel();
+    public Object deployDmnXml(String name, String genericRuleObject) {
         processEngine.getRepositoryService()
                 .createDeployment()
-                .name(genericRuleObject.getRuleId())
-                .addModelInstance(genericRuleObject.getRuleId()+".bpmn", dmnModelInstance)
+                .name(name)
+                .addString(name + ".dmn", genericRuleObject)
                 .enableDuplicateFiltering(true)
                 .deploy();
-        return Dmn.convertToString(dmnModelInstance);
+        return genericRuleObject;
     }
 
 }

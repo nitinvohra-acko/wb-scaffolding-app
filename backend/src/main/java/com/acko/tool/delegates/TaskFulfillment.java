@@ -10,12 +10,13 @@ import org.springframework.stereotype.Component;
 @Component
 @Log4j2
 @AllArgsConstructor
-public class UpdateHeightWeight implements JavaDelegate {
+public class TaskFulfillment implements JavaDelegate {
 
     private final RapManagerClient rapManagerClient;
 
     @Override
     public void execute(DelegateExecution delegateExecution){
+
         String proposalId = delegateExecution.getVariable("proposalId").toString();
         Object request = delegateExecution.getVariable("request");
         Object proposalOutput = rapManagerClient.updatePostPaymentMemberDetailsToProposal(proposalId, request);

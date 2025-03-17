@@ -25,20 +25,21 @@ public class WorkflowService {
         if (Objects.isNull(request.getReferenceId())) {
             throw new RuntimeException("Reference ID cannot be null");
         }
-        ProcessInstance scheduleProcessInstance = runtimeService.createProcessInstanceQuery()
+
+        ProcessInstance workflowProcessInstance = runtimeService.createProcessInstanceQuery()
                 .superProcessInstanceId(taskId)
                 .processDefinitionKey(INITIATE_WORKFLOW_DEFINITION_KEY)
                 .singleResult();
 
-        log.debug("Proposal ID: {}, Schedule Process ID: {}", request.getReferenceId(), scheduleProcessInstance.getId());
+        log.debug("Proposal ID: {}, Workflow Process ID: {}", request.getReferenceId(), workflowProcessInstance.getId());
 
-        runtimeService.createMessageCorrelation("UpdateHeightWeightApiCallMessage")
+        runtimeService.createMessageCorrelation("start-workflow")
                 .setVariable("proposalId", request.getReferenceId())
                 .setVariable("request", request)
-                .processInstanceId(scheduleProcessInstance.getId())
+                .processInstanceId(workflowProcessInstance.getId())
                 .correlate();
 
-        log.info("Message fired to process instance {} to schedule assessment. Proposal ID: {}", scheduleProcessInstance.getId(), request.getReferenceId());
+        log.info("Message fired to process instance {}. Proposal ID: {}", workflowProcessInstance.getId(), request.getReferenceId());
         return "success";
     }
 }
