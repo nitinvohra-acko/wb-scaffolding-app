@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1mipdlo" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.21.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <bpmn:process id="InitiateWorkflow" name="Workflow" isExecutable="true">
+    <bpmn:startEvent id="start-workflow" name="start">
+      <bpmn:outgoing>Flow_1rto2w2</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:endEvent id="end-workflow" name="end">
+      <bpmn:incoming>Flow_0n5qhx6</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="TaskFulfillment" name="Call API" camunda:class="com.acko.tool.delegates.TaskFulfillment">
+      <bpmn:incoming>Flow_17qjadp</bpmn:incoming>
+      <bpmn:outgoing>Flow_0hvjhw7</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="TaskPropagator" name="Task Propagator" camunda:class="com.acko.tool.delegates.TaskPropagator">
+      <bpmn:incoming>Flow_0hvjhw7</bpmn:incoming>
+      <bpmn:outgoing>Flow_1sgz2dm</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0hvjhw7" sourceRef="TaskFulfillment" targetRef="TaskPropagator" />
+    <bpmn:sequenceFlow id="Flow_1rto2w2" sourceRef="start-workflow" targetRef="task_identification" />
+    <bpmn:sequenceFlow id="Flow_17qjadp" sourceRef="task_identification" targetRef="TaskFulfillment" />
+    <bpmn:serviceTask id="task_identification" name="Task Identification" camunda:class="com.acko.tool.delegates.TaskIdentification">
+      <bpmn:incoming>Flow_1rto2w2</bpmn:incoming>
+      <bpmn:outgoing>Flow_17qjadp</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1sgz2dm" sourceRef="TaskPropagator" targetRef="emit_event" />
+    <bpmn:sequenceFlow id="Flow_0n5qhx6" sourceRef="emit_event" targetRef="end-workflow" />
+    <bpmn:serviceTask id="emit_event" name="Event" camunda:class="com.acko.tool.delegates.EventEmitDelegate">
+      <bpmn:incoming>Flow_1sgz2dm</bpmn:incoming>
+      <bpmn:outgoing>Flow_0n5qhx6</bpmn:outgoing>
+    </bpmn:serviceTask>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="InitiateWorkflow">
+      <bpmndi:BPMNShape id="Event_12rw8vu_di" bpmnElement="end-workflow">
+        <dc:Bounds x="812" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="821" y="225" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1kd8my2_di" bpmnElement="TaskPropagator">
+        <dc:Bounds x="570" y="200" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1lum0xo_di" bpmnElement="task_identification">
+        <dc:Bounds x="260" y="60" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0spmtei_di" bpmnElement="emit_event">
+        <dc:Bounds x="670" y="60" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_06mji7f_di" bpmnElement="TaskFulfillment">
+        <dc:Bounds x="430" y="110" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="start-workflow">
+        <dc:Bounds x="152" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="160" y="225" width="22" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0hvjhw7_di" bpmnElement="Flow_0hvjhw7">
+        <di:waypoint x="530" y="150" />
+        <di:waypoint x="620" y="150" />
+        <di:waypoint x="620" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1rto2w2_di" bpmnElement="Flow_1rto2w2">
+        <di:waypoint x="188" y="200" />
+        <di:waypoint x="224" y="200" />
+        <di:waypoint x="224" y="100" />
+        <di:waypoint x="260" y="100" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_17qjadp_di" bpmnElement="Flow_17qjadp">
+        <di:waypoint x="360" y="100" />
+        <di:waypoint x="395" y="100" />
+        <di:waypoint x="395" y="150" />
+        <di:waypoint x="430" y="150" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1sgz2dm_di" bpmnElement="Flow_1sgz2dm">
+        <di:waypoint x="670" y="240" />
+        <di:waypoint x="720" y="240" />
+        <di:waypoint x="720" y="140" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0n5qhx6_di" bpmnElement="Flow_0n5qhx6">
+        <di:waypoint x="770" y="100" />
+        <di:waypoint x="830" y="100" />
+        <di:waypoint x="830" y="182" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

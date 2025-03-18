@@ -10,6 +10,9 @@ camunda.bpm:
     properties:
       enforceHistoryTimeToLive: false
       enableDefaultDbHistoryEventHandler: false
+acko:
+  rap-manager-service:
+    url: https://health-rap-manager-service-uat.internal.ackodev.com
 
 management:
   endpoint:
@@ -105,5 +108,17 @@ keycloak:
   serverUrl: http://keycloak:8080
   realm: master
   clientId: admin-cli
+
+acko:
+  rap-manager-service:
+    url: https://health-rap-manager-service-uat.internal.ackodev.com
+
+management:
+  endpoint:
+    health:
+      show-details: "ALWAYS"
+
+
   adminUserName: admin
   adminPassword: admin
+

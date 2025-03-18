@@ -17,4 +17,6 @@ public class ProposalBusinessEntity {
 	private String proposalId;
 	private String proposalStatus;
 	private List<String> memberIds;
+	private Object proposalTaskUpdates;
+	private List<String> taskPropagatorUpdates;
 }
