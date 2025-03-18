@@ -29,33 +29,9 @@ public class Question {
         @JsonProperty("rule_id")
         private String ruleId;
 
-    }
+        @JsonProperty("section")
+        private String section;
 
-    @Data
-    class QuestionConfig {
-        @JsonProperty("sub_questions")
-        private List<SubQuestion> subQuestions;
-
-        @JsonProperty("option")
-        private List<Option> options;
-
-        @JsonProperty("order")
-        private int order;
-
-        @JsonProperty("question_text")
-        private List<String> questionText;
-
-        @JsonProperty("sub_question_mapping")
-        private Map<String, List<String>> subQuestionMapping;
-
-        @JsonProperty("question_id")
-        private String questionId;
-
-        @JsonProperty("type")
-        private String type;
-
-        @JsonProperty("required")
-        private int required;
     }
 
     @Data
@@ -87,3 +63,4 @@ public class Question {
         @JsonProperty("required")
         private int required;
     }
+

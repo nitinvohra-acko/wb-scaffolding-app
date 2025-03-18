@@ -11,4 +11,6 @@ public class QuestionConfigRequest {
     private String ruleId;
 
     private Map<String, Object> ruleAttributes;
+
+    private String proposalId;
 }
