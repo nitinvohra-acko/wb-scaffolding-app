@@ -16,10 +16,16 @@ public class TaskFulfillment implements JavaDelegate {
 
     @Override
     public void execute(DelegateExecution delegateExecution){
-
-        String proposalId = delegateExecution.getVariable("proposalId").toString();
-        Object request = delegateExecution.getVariable("request");
-        Object proposalOutput = rapManagerClient.updatePostPaymentMemberDetailsToProposal(proposalId, request);
-        delegateExecution.setVariable("response",proposalOutput);
+        String taskDelegate = delegateExecution.getVariable("delegate").toString();
+        switch (taskDelegate) {
+            case "UpdateHeightWeight":
+                String proposalId = delegateExecution.getVariable("reference_id").toString();
+                Object request = delegateExecution.getVariable("request");
+                Object proposalOutput = rapManagerClient.updatePostPaymentMemberDetailsToProposal(proposalId, request);
+                delegateExecution.setVariable("response", proposalOutput);
+                break;
+            case "CompleteTelemer":
+                delegateExecution.setVariable("output", "Telemer done");
+        }
     }
 }

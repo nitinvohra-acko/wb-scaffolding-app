@@ -10,26 +10,18 @@
       <output id="Output_1" label="Delegate" name="delegate" typeRef="string" />
       <rule id="DecisionRule_0cethx1">
         <inputEntry id="UnaryTests_0j011t4">
-          <text>updateHeightWeight</text>
+          <text>"updateHeightWeight"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_118wm4j">
-          <text>UpdateHeightWeight</text>
+          <text>"UpdateHeightWeight"</text>
         </outputEntry>
       </rule>
       <rule id="DecisionRule_18t0hz6">
         <inputEntry id="UnaryTests_1qrmsqu">
-          <text>telemerComplete</text>
+          <text>"telemerComplete"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_00uu2hw">
-          <text>CompleteTelemer</text>
-        </outputEntry>
-      </rule>
-      <rule id="DecisionRule_17wu8oj">
-        <inputEntry id="UnaryTests_16ub8pj">
-          <text></text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_0kkzx22">
-          <text></text>
+          <text>"CompleteTelemer"</text>
         </outputEntry>
       </rule>
     </decisionTable>

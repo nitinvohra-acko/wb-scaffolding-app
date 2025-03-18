@@ -10,6 +10,9 @@ camunda.bpm:
     properties:
       enforceHistoryTimeToLive: false
       enableDefaultDbHistoryEventHandler: false
+acko:
+  rap-manager-service:
+    url: https://health-rap-manager-service-uat.internal.ackodev.com
 
 management:
   endpoint:
