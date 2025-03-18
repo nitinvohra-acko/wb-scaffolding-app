@@ -7,7 +7,6 @@ import RightSection from './tabs';
 
 const PageLayout: React.FC<{ pageId: string[] }> = ({ pageId }) => {
   const params = useParams();
-  console.log('params', params);
   const [userData, setUserData] = useState<DataRow | undefined>();
   const [taskDetail, setTaskDetail] = useState(null);
 
@@ -28,7 +27,7 @@ const PageLayout: React.FC<{ pageId: string[] }> = ({ pageId }) => {
   };
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full ">
       <LeftSection taskData={taskDetail} />
       <RightSection />
     </div>

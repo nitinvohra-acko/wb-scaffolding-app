@@ -21,6 +21,7 @@ const useTaskLists = () => {
             body: taskRequest,
           },
         );
+
         initialRequest && hoistInitFilters(response?.filters);
         hoist(response);
         setStatus('success');

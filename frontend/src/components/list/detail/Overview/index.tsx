@@ -14,9 +14,9 @@ import { Mail, Phone } from 'lucide-react';
 import React from 'react';
 
 const LeftSection: React.FC<{ taskData: any }> = ({ taskData }) => {
-  if (!taskData) {
-    return <p className="text-sm text-gray-500">Nothing to display</p>;
-  }
+  // if (!taskData) {
+  //   return <p className="text-sm text-gray-500">Nothing to display</p>;
+  // }
 
   return (
     <Card className="w-full md:w-1/4 border-r border-gray-300 p-4">

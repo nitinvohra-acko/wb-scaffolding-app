@@ -2,17 +2,18 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Telemer from './telemer';
 
 const RightSection: React.FC = () => {
-  const [activeTab, setActiveTab] = React.useState('introduction');
-
+  const [activeTab, setActiveTab] = React.useState('telemer');
+  console.log('active tab', activeTab);
   return (
     <div className="w-full md:w-3/4 p-4">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-4">
-          <TabsTrigger value="introduction">Introduction</TabsTrigger>
-          {/* <TabsTrigger value="demographics">Demographics</TabsTrigger>
-          <TabsTrigger value="medical">Medical details</TabsTrigger>
+          {/* <TabsTrigger value="introduction">Introduction</TabsTrigger> */}
+          <TabsTrigger value="telemer">Telemer</TabsTrigger>
+          {/* <TabsTrigger value="medical">Medical details</TabsTrigger>
           <TabsTrigger value="endnote">End note</TabsTrigger> */}
         </TabsList>
 
@@ -23,19 +24,17 @@ const RightSection: React.FC = () => {
           </div>
         </TabsContent>
 
-        {/* 
-        <TabsContent value="demographics">
-          <div className="border border-gray-300 rounded-xl p-4">Demographics content...</div>
+        <TabsContent value="telemer">
+          <Telemer />
         </TabsContent>
 
-        <TabsContent value="medical">
+        {/* <TabsContent value="medical">
           <div className="border border-gray-300 rounded-xl p-4">Medical details content...</div>
         </TabsContent>
 
         <TabsContent value="endnote">
           <div className="border border-gray-300 rounded-xl p-4">End note content...</div>
-        </TabsContent>
-        */}
+        </TabsContent> */}
       </Tabs>
     </div>
   );
