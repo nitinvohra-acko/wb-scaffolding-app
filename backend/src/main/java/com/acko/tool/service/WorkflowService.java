@@ -19,4 +19,9 @@ public class WorkflowService {
     public Object initiateWorkflow(Map<String,Object> request) {
         return ruleEngineService.startBpmnProcess("InitiateWorkflow", request);
     }
+
+    public Object sendEventToWorkflow(String workflowName, String messageName, Map<String,Object> request){
+        ruleEngineService.sendEventToProcess(workflowName,messageName,request);
+        return "success";
+    }
 }

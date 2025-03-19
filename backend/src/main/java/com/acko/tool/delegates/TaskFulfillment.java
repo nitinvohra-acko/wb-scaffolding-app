@@ -1,6 +1,7 @@
 package com.acko.tool.delegates;
 
 import com.acko.tool.clients.RapManagerClient;
+import com.acko.tool.service.RuleEngineService;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
@@ -14,18 +15,19 @@ public class TaskFulfillment implements JavaDelegate {
 
     private final RapManagerClient rapManagerClient;
 
+    private final RuleEngineService ruleEngineService;
+
     @Override
     public void execute(DelegateExecution delegateExecution){
         String taskDelegate = delegateExecution.getVariable("delegate").toString();
         switch (taskDelegate) {
             case "UpdateHeightWeight":
-                String proposalId = delegateExecution.getVariable("reference_id").toString();
-                Object request = delegateExecution.getVariable("request");
-                Object proposalOutput = rapManagerClient.updatePostPaymentMemberDetailsToProposal(proposalId, request);
-                delegateExecution.setVariable("response", proposalOutput);
+                ruleEngineService.startBpmnProcess("UpdateHeightWeightProcess", delegateExecution.getVariables());
                 break;
             case "CompleteTelemer":
-                delegateExecution.setVariable("output", "Telemer done");
+                delegateExecution.setVariable("status", "done");
+                ruleEngineService.startBpmnProcess("StartTelemerWorkflow",delegateExecution.getVariables());
+                //run telemer process
         }
     }
 }

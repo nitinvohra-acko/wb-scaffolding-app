@@ -5,10 +5,12 @@ import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.RepositoryService;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
+import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.model.dmn.DmnModelInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -65,6 +67,20 @@ public class RuleEngineService {
                 .enableDuplicateFiltering(true)
                 .deploy();
         return genericRuleObject;
+    }
+
+    public void sendEventToProcess(String waitEvent, String eventName, Map<String,Object> request){
+        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery()
+                .superProcessInstanceId(request.get("workflow_id").toString())
+                .processDefinitionKey("StartTelemerWorkflow")
+                .singleResult();
+
+        runtimeService.createMessageCorrelation(eventName)
+                .setVariable("eventPayload", eventName)
+                .setVariable("request", request)
+                .processInstanceId(processInstance.getId())
+                .correlate();
+        log.info("Pushed Event Successfully {}", eventName);
     }
 
 }

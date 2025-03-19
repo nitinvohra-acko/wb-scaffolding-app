@@ -45,4 +45,7 @@ public class TaskPropagator implements JavaDelegate {
         }
         tasksService.createOrUpdateTasks(List.of(task));
     }
+
+    //read json -> which fields to update
+    //
 }
