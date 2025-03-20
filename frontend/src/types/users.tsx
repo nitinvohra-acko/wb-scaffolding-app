@@ -1,8 +1,8 @@
-import { FilterField, SearchableFieldsTypetype } from './common';
+import { FilterField, FilterFields, SearchableFieldsTypetype } from './common';
 
 export interface UsersResponse {
   searchableFields: SearchableFieldsTypetype[];
-  filters: FilterField[];
+  filters: FilterFields[];
   sort: any;
   searchStr: string;
   result: User[];
@@ -12,7 +12,7 @@ export interface UsersResponse {
 }
 export interface UsersRequest {
   searchableFields: SearchableFieldsTypetype[];
-  filters: FilterField[];
+  filters: FilterFields[];
   sort: any;
   searchStr: string;
   pageNo: number;
@@ -29,8 +29,8 @@ export interface User {
   username: string;
   email: string;
   password: string;
-  first_name: string;
-  last_name: string;
+  firstName: string;
+  lastName: string;
   group: string;
   active: boolean;
   id: string;

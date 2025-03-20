@@ -2,10 +2,12 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import WidgetLayout from '@/components/Widgets/speed-dial/layout';
+import { useParams } from 'next/navigation';
 
 const RightSection: React.FC = () => {
   const [activeTab, setActiveTab] = React.useState('introduction');
-
+  const params = useParams();
   return (
     <div className="w-full md:w-3/4 p-4">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -37,6 +39,7 @@ const RightSection: React.FC = () => {
         </TabsContent>
         */}
       </Tabs>
+      <WidgetLayout itemId={params?.slug?.[0]!} />
     </div>
   );
 };

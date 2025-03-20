@@ -22,3 +22,16 @@ export interface SearchableFieldsTypetype {
   fieldType: string;
   value: string | null;
 }
+
+export interface FilterFields {
+  type: 'term' | 'range';
+  fieldId: string;
+  fieldName: string;
+  attributes: {
+    options: {
+      name: string;
+      count: number;
+    }[];
+    value: string[] | { from: string; to: string };
+  };
+}

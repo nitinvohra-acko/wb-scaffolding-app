@@ -1,4 +1,4 @@
-import { FilterField } from '@/types/common';
+import { FilterFields } from '@/types/common';
 import { UsersRequest, UsersResponse } from '@/types/users';
 import { create, StoreApi } from 'zustand';
 import { combine, devtools } from 'zustand/middleware';
@@ -6,7 +6,7 @@ import { combine, devtools } from 'zustand/middleware';
 interface StateType {
   usersResponse: UsersResponse | null;
   usersRequest: UsersRequest | null;
-  initFilters: FilterField[] | null;
+  initFilters: FilterFields[] | null;
   status: 'success' | 'loading' | 'error';
 }
 

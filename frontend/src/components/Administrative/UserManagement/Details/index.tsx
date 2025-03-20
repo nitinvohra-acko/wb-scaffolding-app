@@ -25,10 +25,10 @@ import {
 } from '@/components/ui/select';
 
 const GROUPS = [
-  { id: 'ops', name: 'Operations' },
+  // { id: 'ops', name: 'Operations' },
   { id: 'under_writer', name: 'Underwriter' },
   { id: 'doctor', name: 'Doctor' },
-  { id: 'comms', name: 'Comms' },
+  // { id: 'comms', name: 'Comms' },
 ];
 
 const ROLE_MAP: Record<string, Record<string, string>> = {

@@ -1,8 +1,8 @@
-import { FilterField, SearchableFieldsTypetype } from './common';
+import { FilterField, FilterFields, SearchableFieldsTypetype } from './common';
 
 export interface TaskResponse {
   searchableFields: SearchableFieldsTypetype[];
-  filters: FilterField[];
+  filters: FilterFields[];
   sort: any;
   searchStr: string;
   result: any;
@@ -12,7 +12,7 @@ export interface TaskResponse {
 }
 export interface TaskRequest {
   searchableFields: SearchableFieldsTypetype[];
-  filters: FilterField[];
+  filters: FilterFields[];
   sort: any;
   searchStr: string;
   pageNo: number;

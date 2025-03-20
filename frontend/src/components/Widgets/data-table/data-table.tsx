@@ -15,20 +15,22 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FilterPanel } from './filter-panel';
 import { FilterIcon, Search, X } from 'lucide-react';
-import { FilterField, SearchableFieldsTypetype } from '@/types/common';
+import { FilterFields, SearchableFieldsTypetype } from '@/types/common';
 
 interface DataTableProps<T> {
-  tableTitle: string;
   data: T[];
+  tableTitle: string;
   columns: ColumnDef[];
   totalCount: number;
   pageSize: number;
   pageNo: number;
   searchableFields: SearchableFieldsTypetype[];
-  filters: FilterField[];
+  filters: FilterFields[];
+  //   sortOptions: SortOption[]
   searchStr: string;
   onSearch: (searchStr: string) => void;
-  onFilter: (filters: FilterField[]) => void;
+  onFilter: (filters: FilterFields[]) => void;
+  //   onSort: (sortOption: SortOption | null) => void
   onPageChange: (pageNo: number) => void;
   onPageSizeChange: (pageSize: number) => void;
   renderCell: (row: T, column: ColumnDef) => React.ReactNode;
@@ -41,17 +43,19 @@ export interface ColumnDef {
 }
 
 export function DataTable<T>({
-  tableTitle,
   data,
+  tableTitle,
   columns,
   totalCount,
   pageSize,
   pageNo,
   searchableFields,
   filters,
+  //   sortOptions,
   searchStr,
   onSearch,
   onFilter,
+  //   onSort,
   onPageChange,
   onPageSizeChange,
   renderCell,
@@ -59,15 +63,15 @@ export function DataTable<T>({
 }: DataTableProps<T>) {
   const [localSearchStr, setLocalSearchStr] = useState(searchStr);
   const [showFilters, setShowFilters] = useState(false);
-  const [localFilters, setLocalFilters] = useState<FilterField[]>(filters);
-
-  useEffect(() => {
-    setLocalFilters(filters);
-  }, [filters]);
+  //   const [localSortOptions, setLocalSortOptions] = useState<SortOption[]>(sortOptions)
 
   useEffect(() => {
     setLocalSearchStr(searchStr);
   }, [searchStr]);
+
+  //   useEffect(() => {
+  //     setLocalSortOptions(sortOptions)
+  //   }, [sortOptions])
 
   const handleSearch = () => {
     onSearch(localSearchStr);
@@ -84,94 +88,40 @@ export function DataTable<T>({
     onSearch('');
   };
 
-  const handleApplyFilters = () => {
-    onFilter(localFilters);
-    setShowFilters(false);
+  const handleApplyFilters = (updatedFilters: FilterFields[]) => {
+    onFilter(updatedFilters);
   };
 
-  const handleClearFilters = () => {
-    const clearedFilters = localFilters.map((filter) => {
-      if (['string', 'term'].includes(filter.fieldType)) {
-        return {
-          ...filter,
-          options: filter?.options?.map((option) => ({
-            ...option,
-            isSelected: false,
-          })),
-        };
-      } else if (filter.fieldType === 'range') {
-        return {
-          ...filter,
-          rangeValue: { from: null, to: null },
-        };
-      }
-      return filter;
-    });
-    setLocalFilters(clearedFilters);
+  const handleClearFilters = (updatedFilters: FilterFields[]) => {
+    // This is now handled inside the FilterPanel component
+    onFilter(updatedFilters);
   };
 
-  const handleFilterChange = (
-    fieldName: string,
-    optionValue: string,
-    checked: boolean,
-  ) => {
-    setLocalFilters((prev) =>
-      prev.map((filter) => {
-        if (
-          filter.fieldName === fieldName &&
-          ['string', 'term'].includes(filter.fieldType)
-        ) {
-          return {
-            ...filter,
-            options: filter?.options?.map((option) => {
-              if (option.value === optionValue) {
-                return { ...option, isSelected: checked };
-              }
-              return option;
-            }),
-          };
-        }
-        return filter;
-      }),
-    );
-  };
+  //   const handleSortChange = (sortOption: SortOption | null) => {
+  //     // Update local sort options to reflect the selected sort
+  //     if (sortOption) {
+  //       const updatedSortOptions = localSortOptions.map((option) => ({
+  //         ...option,
+  //         is_selected: option.field_id === sortOption.field_id,
+  //         order: option.field_id === sortOption.field_id ? sortOption.order : option.order,
+  //       }))
+  //       setLocalSortOptions(updatedSortOptions)
+  //     } else {
+  //       // Clear all selections
+  //       const updatedSortOptions = localSortOptions.map((option) => ({
+  //         ...option,
+  //         is_selected: false,
+  //       }))
+  //       setLocalSortOptions(updatedSortOptions)
+  //     }
 
-  const handleRangeFilterChange = (
-    fieldName: string,
-    range: { from: Date | null; to: Date | null },
-  ) => {
-    setLocalFilters((prev) =>
-      prev.map((filter) => {
-        if (filter.fieldName === fieldName && filter.fieldType === 'range') {
-          return {
-            ...filter,
-            rangeValue: range,
-          };
-        }
-        return filter;
-      }),
-    );
-  };
+  //     onSort(sortOption)
+  //   }
 
-  const handleSelectAllFilter = (fieldName: string, checked: boolean) => {
-    setLocalFilters((prev) =>
-      prev.map((filter) => {
-        if (
-          filter.fieldName === fieldName &&
-          ['string', 'term'].includes(filter.fieldType)
-        ) {
-          return {
-            ...filter,
-            options: filter?.options?.map((option) => ({
-              ...option,
-              isSelected: checked,
-            })),
-          };
-        }
-        return filter;
-      }),
-    );
-  };
+  //   const getSelectedSortOption = (): SortOption | null => {
+  //     const selected = localSortOptions.find((option) => option.is_selected)
+  //     return selected || null
+  //   }
 
   const totalPages = Math.ceil(totalCount / pageSize);
 
@@ -203,6 +153,11 @@ export function DataTable<T>({
               <Search size={16} />
             </button>
           </div>
+          {/* <SortDropdown
+            sortOptions={localSortOptions}
+            selectedSort={getSelectedSortOption()}
+            onSortChange={handleSortChange}
+          /> */}
           <Button
             variant="outline"
             size="icon"
@@ -263,10 +218,7 @@ export function DataTable<T>({
 
         {showFilters && (
           <FilterPanel
-            filters={localFilters}
-            onFilterChange={handleFilterChange}
-            onRangeFilterChange={handleRangeFilterChange}
-            onSelectAll={handleSelectAllFilter}
+            filters={filters}
             onApply={handleApplyFilters}
             onClear={handleClearFilters}
             onClose={() => setShowFilters(false)}

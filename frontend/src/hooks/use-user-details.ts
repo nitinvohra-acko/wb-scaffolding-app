@@ -1,7 +1,4 @@
-'use client';
-
-import useUsersStore from '@/store/users';
-import { User, UsersRequest, UsersResponse } from '@/types/users';
+import { User } from '@/types/users';
 import { apiClient } from '@/utils/interceptor';
 import { useCallback, useState } from 'react';
 

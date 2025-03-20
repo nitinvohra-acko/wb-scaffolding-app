@@ -10,7 +10,7 @@ import type { TaskRequest } from '@/types/task';
 import useTasks from '@/store/tasklist';
 import useTaskLists from '@/hooks/useTaskLists';
 import Link from 'next/link';
-import { FilterField } from '@/types/common';
+import { FilterField, FilterFields } from '@/types/common';
 
 const INIT_FILTER: TaskRequest = {
   searchableFields: [],
@@ -48,7 +48,7 @@ export default function TaskDataPage() {
   };
 
   // Handle filter
-  const handleFilter = (filters: FilterField[]) => {
+  const handleFilter = (filters: FilterFields[]) => {
     const request: TaskRequest = {
       ...taskData!,
       filters,

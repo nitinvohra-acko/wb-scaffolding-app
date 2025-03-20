@@ -1,33 +1,39 @@
 'use client';
 
-import { Activity, Filter, LayoutDashboard, Users } from 'lucide-react';
+import {
+  Activity,
+  Filter,
+  LayoutDashboard,
+  Users,
+  Workflow,
+} from 'lucide-react';
 import Link from 'next/link';
 import React, { ReactNode, useState } from 'react';
 
 const categories: Record<
   string,
-  { name: string; description: string; url?: string; icon: ReactNode }
+  { name: string; description?: string; url?: string; icon: ReactNode }
 > = {
   'service-status': {
     name: 'Services health status',
-    description: 'Search through our proposals catalog',
     icon: <Activity className="h-5 w-5" />,
   },
   users: {
     name: 'User management',
-    description: 'Find customer policy and take action',
     icon: <Users className="h-5 w-5" />,
   },
   'entity-config': {
     name: 'Filter config',
-    description: 'Search for users and its associated data',
     icon: <Filter className="h-5 w-5" />,
   },
   dashboard: {
-    name: 'Dashboard',
-    description: 'Search for PPMC assessments',
+    name: 'Configure Kibana Dashboard',
     url: process.env.NEXT_PUBLIC_KIBANA_HEALTH + '/app/dashboards',
     icon: <LayoutDashboard className="h-5 w-5" />,
+  },
+  'automation-rules': {
+    name: 'Automation Rules',
+    icon: <Workflow className="h-5 w-5" />,
   },
 };
 
@@ -36,6 +42,7 @@ const featureList: string[] = [
   'users',
   'entity-config',
   'dashboard',
+  'automation-rules',
 ];
 
 const LandingPage = () => {

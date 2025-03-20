@@ -10,7 +10,7 @@ import useTaskLists from '@/hooks/useTaskLists';
 import Link from 'next/link';
 import { UsersRequest } from '@/types/users';
 import useUsersStore from '@/store/users';
-import { FilterField } from '@/types/common';
+import { FilterField, FilterFields } from '@/types/common';
 import useUsers from '@/hooks/useUsers';
 import { Badge } from '@/components/ui/badge';
 
@@ -52,13 +52,12 @@ export default function usersResponsePage() {
   };
 
   // Handle filter
-  const handleFilter = (filters: FilterField[]) => {
+  const handleFilter = (filters: FilterFields[]) => {
     const request: UsersRequest = {
       ...usersResponse!,
       filters,
       pageNo: 1, // Reset to first page on new filter
     };
-    console.log(request, 'req');
     fetchData(request);
   };
 

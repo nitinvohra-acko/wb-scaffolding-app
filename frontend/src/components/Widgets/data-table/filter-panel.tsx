@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -18,109 +18,270 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { format } from 'date-fns';
-import { FilterField } from '@/types/common';
+import { format, parse } from 'date-fns';
+import { FilterFields } from '@/types/common';
 
 interface FilterPanelProps {
-  filters: FilterField[];
-  onFilterChange: (
-    fieldName: string,
-    optionValue: string,
-    checked: boolean,
-  ) => void;
-  onRangeFilterChange: (
-    fieldName: string,
-    range: { from: Date | null; to: Date | null },
-  ) => void;
-  onSelectAll: (fieldName: string, checked: boolean) => void;
-  onApply: () => void;
-  onClear: () => void;
+  filters: FilterFields[];
+  onApply: (filters: FilterFields[]) => void;
+  onClear: (filters: FilterFields[]) => void;
   onClose: () => void;
 }
 
 export function FilterPanel({
   filters,
-  onFilterChange,
-  onRangeFilterChange,
-  onSelectAll,
   onApply,
   onClear,
   onClose,
 }: FilterPanelProps) {
+  const [localFilters, setLocalFilters] = useState<FilterFields[]>(filters);
   const [searchValues, setSearchValues] = useState<Record<string, string>>({});
+  const checkboxRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
-  const handleSearchChange = (fieldName: string, value: string) => {
+  useEffect(() => {
+    setLocalFilters(filters);
+  }, [filters]);
+
+  const handleSearchChange = (fieldId: string, value: string) => {
     setSearchValues((prev) => ({
       ...prev,
-      [fieldName]: value,
+      [fieldId]: value,
     }));
   };
 
-  const getFilteredOptions = (filter: FilterField) => {
-    if (!['string', 'range'].includes(filter.fieldType)) return [];
+  const getFilteredOptions = (filter: FilterFields) => {
+    if (filter.type !== 'term') return [];
 
-    const searchValue = searchValues[filter.fieldName] || '';
-    if (!searchValue) return filter.options;
+    const searchValue = searchValues[filter.fieldId] || '';
+    if (!searchValue) return filter.attributes.options;
 
-    return filter?.options?.filter((option) =>
-      option.value.toLowerCase().includes(searchValue.toLowerCase()),
+    return filter.attributes.options.filter((option) =>
+      option.name.toLowerCase().includes(searchValue.toLowerCase()),
     );
   };
 
-  const isAllSelected = (filter: FilterField) => {
-    if (!['string', 'range'].includes(filter.fieldType)) return false;
-    return filter?.options?.every((option) => option.isSelected);
+  const isOptionSelected = (
+    filter: FilterFields,
+    optionName: string,
+  ): boolean => {
+    if (filter.type !== 'term') return false;
+    const values = filter.attributes.value as string[];
+    return values.includes(optionName);
   };
 
-  const isSomeSelected = (filter: FilterField) => {
-    if (!['string', 'range'].includes(filter.fieldType)) return false;
+  const isAllSelected = (filter: FilterFields): boolean => {
+    if (filter.type !== 'term') return false;
+    const values = filter.attributes.value as string[];
     return (
-      filter?.options?.some((option) => option.isSelected) &&
-      !isAllSelected(filter)
+      filter.attributes.options.length > 0 &&
+      values.length === filter.attributes.options.length
     );
   };
 
-  const renderstringFilter = (filter: FilterField) => {
+  const isSomeSelected = (filter: FilterFields): boolean => {
+    if (filter.type !== 'term') return false;
+    const values = filter.attributes.value as string[];
+    return (
+      values.length > 0 && values.length < filter.attributes.options.length
+    );
+  };
+
+  const handleOptionChange = (
+    filter: FilterFields,
+    optionName: string,
+    checked: boolean,
+  ) => {
+    setLocalFilters((prev) =>
+      prev.map((f) => {
+        if (f.fieldId === filter.fieldId && f.type === 'term') {
+          const currentValues = f.attributes.value as string[];
+          let newValues: string[];
+
+          if (checked) {
+            newValues = [...currentValues, optionName];
+          } else {
+            newValues = currentValues.filter((v) => v !== optionName);
+          }
+
+          return {
+            ...f,
+            attributes: {
+              ...f.attributes,
+              value: newValues,
+            },
+          };
+        }
+        return f;
+      }),
+    );
+  };
+
+  const handleSelectAll = (filter: FilterFields, checked: boolean) => {
+    setLocalFilters((prev) =>
+      prev.map((f) => {
+        if (f.fieldId === filter.fieldId && f.type === 'term') {
+          const newValues = checked
+            ? f.attributes.options.map((option) => option.name)
+            : [];
+
+          return {
+            ...f,
+            attributes: {
+              ...f.attributes,
+              value: newValues,
+            },
+          };
+        }
+        return f;
+      }),
+    );
+  };
+
+  const handleRangeChange = (
+    filter: FilterFields,
+    key: 'from' | 'to',
+    date: Date | null,
+  ) => {
+    setLocalFilters((prev) =>
+      prev.map((f) => {
+        if (f.fieldId === filter.fieldId && f.type === 'range') {
+          const currentRange = f.attributes.value as {
+            from: string;
+            to: string;
+          };
+          const newRange = { ...currentRange };
+
+          if (date) {
+            newRange[key] = format(date, 'yyyy-MM-dd');
+          } else {
+            newRange[key] = '';
+          }
+
+          return {
+            ...f,
+            attributes: {
+              ...f.attributes,
+              value: newRange,
+            },
+          };
+        }
+        return f;
+      }),
+    );
+  };
+
+  const handleClearRange = (filter: FilterFields) => {
+    setLocalFilters((prev) =>
+      prev.map((f) => {
+        if (f.fieldId === filter.fieldId && f.type === 'range') {
+          return {
+            ...f,
+            attributes: {
+              ...f.attributes,
+              value: { from: '', to: '' },
+            },
+          };
+        }
+        return f;
+      }),
+    );
+  };
+
+  const handleApplyFilters = () => {
+    onApply(localFilters);
+    onClose();
+  };
+
+  const handleClearFilters = () => {
+    const clearedFilters = localFilters.map((filter) => {
+      if (filter.type === 'term') {
+        return {
+          ...filter,
+          attributes: {
+            ...filter.attributes,
+            value: [],
+          },
+        };
+      } else if (filter.type === 'range') {
+        return {
+          ...filter,
+          attributes: {
+            ...filter.attributes,
+            value: { from: '', to: '' },
+          },
+        };
+      }
+      return filter;
+    });
+    onClear(clearedFilters);
+    onClose();
+  };
+
+  // Update indeterminate state for checkboxes
+  useEffect(() => {
+    localFilters.forEach((filter) => {
+      if (filter.type === 'term') {
+        const selectAllId = `select-all-${filter.fieldId}`;
+        const checkbox = checkboxRefs.current[selectAllId];
+
+        if (checkbox) {
+          checkbox.indeterminate = isSomeSelected(filter);
+        }
+      }
+    });
+  }, [localFilters]);
+
+  const parseDate = (dateStr: string): Date | null => {
+    if (!dateStr) return null;
+    try {
+      return parse(dateStr, 'yyyy-MM-dd', new Date());
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const renderTermFilter = (filter: FilterFields) => {
     return (
       <div className="space-y-3">
         <Input
           placeholder="Search"
-          value={searchValues[filter.fieldName] || ''}
-          onChange={(e) => handleSearchChange(filter.fieldName, e.target.value)}
+          value={searchValues[filter.fieldId] || ''}
+          onChange={(e) => handleSearchChange(filter.fieldId, e.target.value)}
           className="mb-2"
         />
 
         <div className="flex items-center space-x-2">
           <Checkbox
-            id={`select-all-${filter.fieldName}`}
+            id={`select-all-${filter.fieldId}`}
             checked={isAllSelected(filter)}
-            // indestringinate={isSomeSelected(filter)}
+            // ref={(node) => {
+            //   checkboxRefs.current[`select-all-${filter.fieldId}`] = node
+            //   if (node) {
+            //     node?.indeterminate = isSomeSelected(filter)
+            //   }
+            // }}
             onCheckedChange={(checked) => {
-              onSelectAll(filter.fieldName, checked === true);
+              handleSelectAll(filter, checked === true);
             }}
           />
-          <Label htmlFor={`select-all-${filter.fieldName}`}>Select All</Label>
+          <Label htmlFor={`select-all-${filter.fieldId}`}>Select All</Label>
         </div>
 
         <div className="space-y-2 mt-2">
-          {getFilteredOptions(filter)?.map((option) => (
-            <div key={option.value} className="flex items-center space-x-2">
+          {getFilteredOptions(filter).map((option) => (
+            <div key={option.name} className="flex items-center space-x-2">
               <Checkbox
-                id={`${filter.fieldName}-${option.value}`}
-                checked={option.isSelected}
+                id={`${filter.fieldId}-${option.name}`}
+                checked={isOptionSelected(filter, option.name)}
                 onCheckedChange={(checked) => {
-                  onFilterChange(
-                    filter.fieldName,
-                    option.value,
-                    checked === true,
-                  );
+                  handleOptionChange(filter, option.name, checked === true);
                 }}
               />
               <Label
-                htmlFor={`${filter.fieldName}-${option.value}`}
+                htmlFor={`${filter.fieldId}-${option.name}`}
                 className="flex-1"
               >
-                {option.value}
+                {option.name}
               </Label>
               <span className="text-xs text-gray-500">({option.count})</span>
             </div>
@@ -130,8 +291,10 @@ export function FilterPanel({
     );
   };
 
-  const renderRangeFilter = (filter: FilterField) => {
-    const range = filter.rangeValue || { from: null, to: null };
+  const renderRangeFilter = (filter: FilterFields) => {
+    const range = filter.attributes.value as { from: string; to: string };
+    const fromDate = parseDate(range.from);
+    const toDate = parseDate(range.to);
 
     return (
       <div className="space-y-4">
@@ -144,23 +307,14 @@ export function FilterPanel({
                 className="w-full justify-start text-left font-normal"
               >
                 <Calendar className="mr-2 h-4 w-4" />
-                {range.from ? (
-                  format(range.from, 'PPP')
-                ) : (
-                  <span>Pick a date</span>
-                )}
+                {fromDate ? format(fromDate, 'PPP') : <span>Pick a date</span>}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
               <CalendarComponent
                 mode="single"
-                selected={range.from || undefined}
-                onSelect={(date) =>
-                  onRangeFilterChange(filter.fieldName, {
-                    ...range,
-                    from: date!,
-                  })
-                }
+                selected={fromDate || undefined}
+                onSelect={(date) => handleRangeChange(filter, 'from', date!)}
                 initialFocus
               />
             </PopoverContent>
@@ -176,16 +330,14 @@ export function FilterPanel({
                 className="w-full justify-start text-left font-normal"
               >
                 <Calendar className="mr-2 h-4 w-4" />
-                {range.to ? format(range.to, 'PPP') : <span>Pick a date</span>}
+                {toDate ? format(toDate, 'PPP') : <span>Pick a date</span>}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
               <CalendarComponent
                 mode="single"
-                selected={range.to || undefined}
-                onSelect={(date) =>
-                  onRangeFilterChange(filter.fieldName, { ...range, to: date! })
-                }
+                selected={toDate || undefined}
+                onSelect={(date) => handleRangeChange(filter, 'to', date!)}
                 initialFocus
               />
             </PopoverContent>
@@ -197,9 +349,7 @@ export function FilterPanel({
             variant="ghost"
             size="sm"
             className="mt-2"
-            onClick={() =>
-              onRangeFilterChange(filter.fieldName, { from: null, to: null })
-            }
+            onClick={() => handleClearRange(filter)}
           >
             Clear Range
           </Button>
@@ -222,22 +372,22 @@ export function FilterPanel({
       <div className="max-h-[500px] overflow-y-auto">
         <Accordion
           type="multiple"
-          defaultValue={filters.map((f) => f.fieldName)}
+          defaultValue={localFilters.map((f) => f.fieldId)}
         >
-          {filters.map((filter) => (
-            <AccordionItem key={filter.fieldName} value={filter.fieldName}>
+          {localFilters.map((filter) => (
+            <AccordionItem key={filter.fieldId} value={filter.fieldId}>
               <AccordionTrigger className="px-4">
                 <div className="flex justify-between w-full">
-                  <span>{filter.fieldDisplayName}</span>
+                  <span>{filter.fieldName}</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="px-4 pb-4">
-                {filter.fieldType === 'string' ? (
-                  renderstringFilter(filter)
-                ) : filter.fieldType === 'range' ? (
+                {filter.type === 'term' ? (
+                  renderTermFilter(filter)
+                ) : filter.type === 'range' ? (
                   renderRangeFilter(filter)
                 ) : (
-                  <div>Unsupported filter type: {filter.fieldType}</div>
+                  <div>Unsupported filter type: {filter.type}</div>
                 )}
               </AccordionContent>
             </AccordionItem>
@@ -246,10 +396,10 @@ export function FilterPanel({
       </div>
 
       <div className="flex items-center justify-between p-4 border-t">
-        <Button variant="outline" onClick={onClear}>
+        <Button variant="outline" onClick={handleClearFilters}>
           Clear All
         </Button>
-        <Button onClick={onApply}>Apply</Button>
+        <Button onClick={handleApplyFilters}>Apply</Button>
       </div>
     </div>
   );
