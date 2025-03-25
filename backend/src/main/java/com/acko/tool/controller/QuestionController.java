@@ -3,7 +3,6 @@ package com.acko.tool.controller;
 import com.acko.tool.dtos.AnswerRequest;
 import com.acko.tool.dtos.QuestionConfigRequest;
 import com.acko.tool.dtos.QuestionConfigResponse;
-import com.acko.tool.entity.Answer;
 import com.acko.tool.entity.Question;
 import com.acko.tool.service.QuestionService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -45,7 +44,7 @@ public class QuestionController {
     }
 
     @PostMapping(path= "/getAnswers", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Answer>> getAnswers(
+    public ResponseEntity<AnswerRequest> getAnswers(
             @RequestBody Map<String,String> request) throws JsonProcessingException {
         return ResponseEntity.ok(questionService.getAnswers(request));
     }

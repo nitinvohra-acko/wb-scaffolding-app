@@ -13,6 +13,8 @@ public class QuestionAnswerDTO {
 
     private List<String> question;
 
+    private String section;
+
     private List<Map<String, Object>> answer;
 
     @JsonProperty("updated_by")

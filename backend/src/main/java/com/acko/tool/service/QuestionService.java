@@ -69,7 +69,7 @@ public class QuestionService {
         return eligibleMembers;
     }
 
-    public List<Answer> getAnswers(Map<String,String> request){
+    public AnswerRequest getAnswers(Map<String,String> request){
             String referenceId = request.get("reference_id");
             String source = request.get("source");
             String journey = request.get("journey");
@@ -77,22 +77,26 @@ public class QuestionService {
     }
 
 
+//    public void dumpAnswers(AnswerRequest answerRequest) {
+//        for (QuestionAnswerDTO question : answerRequest.getQuestions()) {
+//            for (Map<String, Object> answerDetail : question.getAnswer()) {
+//                Answer document = new Answer();
+//                document.setJourney(answerRequest.getJourney());
+//                document.setReferenceId(answerRequest.getReferenceId());
+//                document.setSource(answerRequest.getSource());
+//                document.setQuestionId(question.getQuestionId());
+//                document.setUpdatedBy(question.getUpdatedBy());
+//                document.setUserId((String) answerDetail.get("user_id"));
+//                document.setAnswer(answerDetail.get("answer"));
+//                document.setAnswerId(answerDetail.get("answer_id"));
+//                answerRepository.save(document);
+//            }
+//        }
+//    }
     public void dumpAnswers(AnswerRequest answerRequest) {
-        for (QuestionAnswerDTO question : answerRequest.getQuestions()) {
-            for (Map<String, Object> answerDetail : question.getAnswer()) {
-                Answer document = new Answer();
-                document.setJourney(answerRequest.getJourney());
-                document.setReferenceId(answerRequest.getReferenceId());
-                document.setSource(answerRequest.getSource());
-                document.setQuestionId(question.getQuestionId());
-                document.setUpdatedBy(question.getUpdatedBy());
-                document.setUserId((String) answerDetail.get("user_id"));
-                document.setAnswer(answerDetail.get("answer"));
-                document.setAnswerId(answerDetail.get("answer_id"));
-                answerRepository.save(document);
-            }
-        }
+        answerRepository.save(answerRequest);
     }
+
 
     public List<Question> fetchAllTasks() {
         return questionRepository.findAll();
