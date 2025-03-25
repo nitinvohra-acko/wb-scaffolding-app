@@ -71,13 +71,12 @@ public class RuleEngineService {
 
     public void sendEventToProcess(String waitEvent, String eventName, Map<String,Object> request){
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery()
-                .superProcessInstanceId(request.get("workflow_id").toString())
+                .processInstanceId(request.get("workflow_id").toString())
                 .processDefinitionKey("StartTelemerWorkflow")
                 .singleResult();
 
         runtimeService.createMessageCorrelation(eventName)
-                .setVariable("eventPayload", eventName)
-                .setVariable("request", request)
+                .setVariable("event", request.get("decision").toString())
                 .processInstanceId(processInstance.getId())
                 .correlate();
         log.info("Pushed Event Successfully {}", eventName);
