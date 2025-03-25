@@ -11,6 +11,7 @@ import useTasks from '@/store/tasklist';
 import useTaskLists from '@/hooks/useTaskLists';
 import Link from 'next/link';
 import { FilterField, FilterFields } from '@/types/common';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 const INIT_FILTER: TaskRequest = {
   searchableFields: [],
@@ -21,11 +22,13 @@ const INIT_FILTER: TaskRequest = {
   pageSize: 10,
 };
 export default function TaskDataPage() {
+  const { page } = useAnalytics();
   const { taskResponse: taskData, status } = useTasks.getState();
   const { fetchTaskLists: fetchData, loading } = useTaskLists();
 
   useEffect(() => {
     fetchData(INIT_FILTER);
+    page('Task Data Page');
   }, []);
 
   // Define your columns

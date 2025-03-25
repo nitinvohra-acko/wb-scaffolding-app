@@ -1,7 +1,10 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import './globals.css';
+import { KeycloakProvider } from '@/providers/KeycloakProvider';
+import { AnalyticsProvider } from '@/providers/AnalyticsProvider';
+import { ActivityProvider } from '@/providers/ActivityProvider';
 import Navbars from '@/components/Navbars';
 
 export default function RootLayout({
@@ -10,9 +13,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html>
+    <html lang="en">
       <body>
-        <Navbars>{children}</Navbars>
+        <KeycloakProvider>
+          <ActivityProvider>
+            <AnalyticsProvider>
+              <Navbars>{children}</Navbars>
+            </AnalyticsProvider>
+          </ActivityProvider>
+        </KeycloakProvider>
       </body>
     </html>
   );

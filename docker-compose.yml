@@ -88,6 +88,10 @@ services:
       - KC_DB_PASSWORD=root_password
       - KC_DB_URL=jdbc:mysql://mysql_container:3306/keycloak?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       - KC_FEATURES=token-exchange,admin-fine-grained-authz
+      - KC_CORS=true
+      - KC_CORS_ALLOWED_ORIGINS=*
+      - KC_CORS_ALLOWED_HEADERS="Authorization, Content-Type"
+      - KC_CORS_ALLOWED_METHODS="GET, POST, PUT, DELETE, OPTIONS"
       # - KC_HOSTNAME=keycloak
     ports:
       - "8080:8080" # Expose Keycloak on port 8080
