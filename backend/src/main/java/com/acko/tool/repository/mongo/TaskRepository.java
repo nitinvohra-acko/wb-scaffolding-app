@@ -1,4 +1,4 @@
-package com.acko.tool.repository;
+package com.acko.tool.repository.mongo;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 

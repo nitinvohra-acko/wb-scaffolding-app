@@ -2,49 +2,84 @@ package com.acko.tool.service;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.keycloak.admin.client.Keycloak;
+import org.apache.commons.collections4.CollectionUtils;
+import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Service;
 
+import com.acko.tool.dto.UserDTO;
+
+import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class KeycloakService {
 
-	private final Keycloak adminKeycloak;
+	private final RealmResource adminRealmResource;
 
-    public void createUser(String username, String firstName, String lastName, String email, String password) {
+    public UserRepresentation createUser(UserDTO userRequest) {
         // Create a new user object
-        UserRepresentation user = new UserRepresentation();
-        user.setUsername(username);
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setEmail(email);
-        user.setEnabled(true);
+        UserRepresentation keycloakUser = new UserRepresentation();
+        keycloakUser.setUsername(userRequest.getUsername());
+        keycloakUser.setFirstName(userRequest.getFirstName());
+        keycloakUser.setLastName(userRequest.getLastName());
+        keycloakUser.setEmail(userRequest.getEmail());
+        keycloakUser.setGroups(Collections.singletonList(userRequest.getGroup()));
+        keycloakUser.setEnabled(userRequest.isActive());
         
-     // Create the user credential (password)
+        // Create the user credential (password)
         CredentialRepresentation passwordCredential = new CredentialRepresentation();
         passwordCredential.setType(CredentialRepresentation.PASSWORD);
-        passwordCredential.setValue(password);
-        passwordCredential.setTemporary(false); 
+        passwordCredential.setValue(userRequest.getPassword());
+        passwordCredential.setTemporary(false);
         
-        user.setCredentials(Collections.singletonList(passwordCredential));
+        keycloakUser.setCredentials(Collections.singletonList(passwordCredential));
 
         // Create the user in the Keycloak system
-        adminKeycloak.realm("master").users().create(user);
+        Response response = adminRealmResource.users().create(keycloakUser);
+        
+        if (response.getStatus() >= 400 && response.getStatus() <= 599) {
+        	log.error(response.readEntity(String.class));
+        	throw new RuntimeException("Exception occurred while creating user in keycloak");
+        }
+		return getUserByUsername(userRequest.getUsername());
     }
     
-    public UserRepresentation getUserById(String userId) {
+	public UserRepresentation updateUser(String userId, UserDTO userRequest) {
+		UserRepresentation keycloakUser = adminRealmResource.users().get(userId).toRepresentation();
+		if (keycloakUser == null) {
+			throw new RuntimeException("User does not exist in keycloak");
+		}
+		keycloakUser.setUsername(userRequest.getUsername());
+		keycloakUser.setFirstName(userRequest.getFirstName());
+		keycloakUser.setLastName(userRequest.getLastName());
+		keycloakUser.setEmail(userRequest.getEmail());
+		keycloakUser.setGroups(Collections.singletonList(userRequest.getGroup()));
+		keycloakUser.setEnabled(userRequest.isActive());
 
+		if (userRequest.getPassword() != null) {
+			CredentialRepresentation passwordCredential = new CredentialRepresentation();
+			passwordCredential.setType(CredentialRepresentation.PASSWORD);
+			passwordCredential.setValue(userRequest.getPassword());
+			passwordCredential.setTemporary(false);
+		}
+
+		adminRealmResource.users().get(userId).update(keycloakUser);
+
+		return keycloakUser;
+	}
+    
+    public UserRepresentation getUserById(String userId) {
         // Fetch the user by ID
-        UserResource userResource = adminKeycloak.realm("master").users().get(userId);
+        UserResource userResource = adminRealmResource.users().get(userId);
         UserRepresentation user = userResource.toRepresentation();
         
         // Fetch user roles (realm roles)
@@ -63,4 +98,12 @@ public class KeycloakService {
 
         return user;
     }
+    
+	public UserRepresentation getUserByUsername(String username) {
+		List<UserRepresentation> userRepresentation = adminRealmResource.users().search(username, 0, 1);
+		if (CollectionUtils.isNotEmpty(userRepresentation)) {
+			return userRepresentation.get(0);
+		}
+		return null;
+	}
 }

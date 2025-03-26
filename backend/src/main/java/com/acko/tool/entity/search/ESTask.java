@@ -1,21 +1,22 @@
 package com.acko.tool.entity.search;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import java.util.Date;
 import java.util.Map;
-import lombok.Data;
+
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.elasticsearch.annotations.*;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
+
+import lombok.Data;
 
 
 @Data
-@Document(indexName = "tasks")
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@Document(indexName = "#{@environment.getProperty('elasticsearch.taskIndex')}")
 public class ESTask {
-
+	
     @Id
     private String id;
 

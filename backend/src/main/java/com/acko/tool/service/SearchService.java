@@ -1,45 +1,42 @@
 package com.acko.tool.service;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
-import co.elastic.clients.elasticsearch.core.search.Hit;
-import com.acko.tool.entity.search.SearchFilterAggregatedOption;
-import com.acko.tool.entity.search.SearchParam;
-import com.acko.tool.entity.search.SearchParamField;
-import com.acko.tool.entity.search.TaskSearch;
-import com.acko.tool.entity.search.TaskSearchFilter;
-import com.acko.tool.entity.search.TaskSearchableField;
-import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import com.acko.tool.exception.ResourceNotFoundException;
-import com.acko.tool.repository.SearchParamRepository;
-import com.acko.tool.utils.ReflectionUtil;
-import com.acko.tool.utils.SearchUtils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.BooleanUtils;
-import org.elasticsearch.action.search.SearchRequest;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
 
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.stereotype.Service;
+
+import com.acko.tool.config.properties.ElasticSearchConfigProperties;
+import com.acko.tool.entity.search.SearchFilterAggregatedOption;
+import com.acko.tool.entity.search.SearchParam;
+import com.acko.tool.entity.search.SearchParamField;
+import com.acko.tool.entity.search.TaskSearch;
+import com.acko.tool.entity.search.TaskSearchFilter;
+import com.acko.tool.entity.search.TaskSearchableField;
+import com.acko.tool.exception.ResourceNotFoundException;
+import com.acko.tool.repository.mongo.SearchParamRepository;
+import com.acko.tool.utils.ReflectionUtil;
+import com.acko.tool.utils.SearchUtils;
+
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.Hit;
+import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 @Service
 @AllArgsConstructor
 @Log4j2
 public class SearchService {
-    private final ElasticsearchClient elasticSearchClient;
+	private final ElasticSearchConfigProperties elasticSearchConfigProperties; 
+	private final ElasticsearchClient elasticSearchClient;
     private final SearchParamRepository searchParamRepository;
     private final SearchUtils searchUtils;
     private final ReflectionUtil reflectionUtil;
@@ -111,7 +108,7 @@ public class SearchService {
         Query finalQuery = Query.of(q -> q.bool(b -> b.must(finalMustQueries)));
 
         SearchResponse<Map> elasticResponse = elasticSearchClient.search(s -> s
-                .index("tasks")
+                .index(elasticSearchConfigProperties.getTaskIndex())
                 .query(finalQuery)
                 .aggregations(aggregationBuilders)
                 .from((response.getPageNo() - 1) * response.getPageSize())

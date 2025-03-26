@@ -1,7 +1,7 @@
-package com.acko.tool.entity.search;
+package com.acko.tool.entity;
 
 import java.util.Date;
-import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
@@ -12,24 +12,28 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
-@Document("SearchParam")
+@Document("User")
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Data
 @NoArgsConstructor
-public class SearchParam {
-    @Id
-    private String id;
+public class User {
 
-    @NonNull
-    private String entity;
-    private List<SearchParamField> params;
-    private boolean isActive = true;
-    @CreatedDate
-    private Date createdDate;
+	@Id
+	private String id;
+	private String username;
+	private String email;
+	private String firstName;
+	private String lastName;
+	private String group;
+	private boolean active;
+	private Map<String, Object> customAttributes;
+	
+	@CreatedDate
+	private Date createdDate;
 
-    @LastModifiedDate
-    private Date updatedDate;
+	@LastModifiedDate
+	private Date updatedDate;
+	
 }
