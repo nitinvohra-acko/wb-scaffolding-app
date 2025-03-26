@@ -19,6 +19,6 @@ public class CompleteTelemer implements JavaDelegate {
         log.info("Completed Telemer for this case");
         delegateExecution.setVariable("task_status", "telemer_completed");
         delegateExecution.setVariable("changes","Telemer Completed");
-        taskPropagatorUtils.taskPropagatorFunction(delegateExecution);
+     //   taskPropagatorUtils.taskPropagatorFunction(delegateExecution);
     }
 }

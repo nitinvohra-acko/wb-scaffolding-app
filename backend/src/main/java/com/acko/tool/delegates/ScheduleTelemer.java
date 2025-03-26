@@ -20,6 +20,6 @@ public class ScheduleTelemer implements JavaDelegate {
         delegateExecution.setVariable("task_status", "telemer_scheduled");
         //add jolt for
         //delegateExecution.setVariable();
-        taskPropagatorUtils.taskPropagatorFunction(delegateExecution);
+     //   taskPropagatorUtils.taskPropagatorFunction(delegateExecution);
     }
 }

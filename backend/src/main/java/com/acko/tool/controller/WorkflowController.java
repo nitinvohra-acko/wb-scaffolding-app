@@ -21,8 +21,8 @@ public class WorkflowController {
     }
 
     @PostMapping(path = "/workflow/send-event", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Object sendEventToWorkflow(@RequestParam(value = "event-name") String eventName, @RequestBody Map<String,Object> request) {
-        return workflowService.sendEventToWorkflow("StartTelemerWorkflow",eventName,request);
+    public Object sendEventToWorkflow(@RequestParam(value = "workflow") String workflowName, @RequestParam(value = "event-name") String eventName, @RequestBody Map<String,Object> request) {
+        return workflowService.sendEventToWorkflow(workflowName,eventName,request);
     }
 
 }

@@ -8,11 +8,9 @@
     </bpmn:startEvent>
     <bpmn:sequenceFlow id="Flow_176ftef" sourceRef="start_telemer" targetRef="telemer_pending" />
     <bpmn:endEvent id="end_telemer_event" name="end telemer">
-      <bpmn:incoming>Flow_0iu2mps</bpmn:incoming>
-      <bpmn:incoming>Flow_0zbyccg</bpmn:incoming>
-      <bpmn:incoming>Flow_1td5pdt</bpmn:incoming>
+      <bpmn:incoming>Flow_15pbaq7</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_0iu2mps" sourceRef="complete_telemer" targetRef="end_telemer_event" />
+    <bpmn:sequenceFlow id="Flow_0iu2mps" sourceRef="complete_telemer" targetRef="PublishEventToKafka" />
     <bpmn:serviceTask id="telemer_pending" name="Pending Telemer" camunda:class="com.acko.tool.delegates.RequestTelemerCallback">
       <bpmn:incoming>Flow_176ftef</bpmn:incoming>
       <bpmn:outgoing>Flow_1s8pqic</bpmn:outgoing>
@@ -51,8 +49,8 @@
       <bpmn:incoming>Flow_1m7o6d5</bpmn:incoming>
     </bpmn:task>
     <bpmn:sequenceFlow id="Flow_1m7o6d5" sourceRef="telemer_schedule" targetRef="Activity_1v8fknf" />
-    <bpmn:sequenceFlow id="Flow_0zbyccg" sourceRef="telemer_partially_done_event" targetRef="end_telemer_event" />
-    <bpmn:sequenceFlow id="Flow_1td5pdt" sourceRef="telemer_reschedule_event" targetRef="end_telemer_event" />
+    <bpmn:sequenceFlow id="Flow_0zbyccg" sourceRef="telemer_partially_done_event" targetRef="PublishEventToKafka" />
+    <bpmn:sequenceFlow id="Flow_1td5pdt" sourceRef="telemer_reschedule_event" targetRef="PublishEventToKafka" />
     <bpmn:exclusiveGateway id="Gateway_1w8cwjh">
       <bpmn:incoming>Flow_1i41lv0</bpmn:incoming>
       <bpmn:outgoing>RepeatTelemerFlow</bpmn:outgoing>
@@ -60,15 +58,22 @@
       <bpmn:outgoing>RescheduleTelemerFlow</bpmn:outgoing>
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="Flow_1i41lv0" sourceRef="post_schedule_event" targetRef="Gateway_1w8cwjh" />
-    <bpmn:sequenceFlow id="RepeatTelemerFlow" name="Repeat Telemer" sourceRef="Gateway_1w8cwjh" targetRef="telemer_partially_done_event" >
-          <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${event == 'REPEAT_TELEMER_REQUIRED'}</bpmn:conditionExpression>
-</bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="CompleteTelemerFow" name="Complete Telemer" sourceRef="Gateway_1w8cwjh" targetRef="complete_telemer" >
-          <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${event == 'TELEMER_COMPLETED'}</bpmn:conditionExpression>
-</bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="RescheduleTelemerFlow" name="Rechedule Telemer" sourceRef="Gateway_1w8cwjh" targetRef="telemer_reschedule_event" >
-          <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${event == 'TELEMER_RESCHEDULED'}</bpmn:conditionExpression>
-</bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="RepeatTelemerFlow" name="Repeat Telemer" sourceRef="Gateway_1w8cwjh" targetRef="telemer_partially_done_event">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${event == 'REPEAT_TELEMER_REQUIRED'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="CompleteTelemerFow" name="Complete Telemer" sourceRef="Gateway_1w8cwjh" targetRef="complete_telemer">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${event == 'TELEMER_COMPLETED'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="RescheduleTelemerFlow" name="Rechedule Telemer" sourceRef="Gateway_1w8cwjh" targetRef="telemer_reschedule_event">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${event == 'TELEMER_RESCHEDULED'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:serviceTask id="PublishEventToKafka" name="Publish Event" camunda:class="com.acko.tool.delegates.PublishEventToKafka">
+      <bpmn:incoming>Flow_0zbyccg</bpmn:incoming>
+      <bpmn:incoming>Flow_0iu2mps</bpmn:incoming>
+      <bpmn:incoming>Flow_1td5pdt</bpmn:incoming>
+      <bpmn:outgoing>Flow_15pbaq7</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_15pbaq7" sourceRef="PublishEventToKafka" targetRef="end_telemer_event" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="StartTelemerWorkflow">
@@ -78,19 +83,31 @@
           <dc:Bounds x="151" y="295" width="62" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0tk72al_di" bpmnElement="end_telemer_event">
-        <dc:Bounds x="1182" y="252" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="1227.5" y="263" width="59" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_04ln6vz_di" bpmnElement="telemer_pending">
         <dc:Bounds x="324" y="230" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1hyq7he_di" bpmnElement="complete_telemer">
+        <dc:Bounds x="1020" y="230" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_16coy0g_di" bpmnElement="telemer_partially_done_event">
+        <dc:Bounds x="1020" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0m4pvat_di" bpmnElement="telemer_reschedule_event">
+        <dc:Bounds x="1020" y="360" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0crs1g5_di" bpmnElement="telemer_schedule">
         <dc:Bounds x="650" y="230" width="100" height="80" />
         <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0ae9plz_di" bpmnElement="post_schedule_event">
+        <dc:Bounds x="792" y="252" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="774" y="215" width="71" height="27" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_1k5pfm8_di" bpmnElement="wait_for_event">
         <dc:Bounds x="532" y="252" width="36" height="36" />
@@ -102,25 +119,17 @@
         <dc:Bounds x="480" y="390" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0ae9plz_di" bpmnElement="post_schedule_event">
-        <dc:Bounds x="792" y="252" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="774" y="215" width="71" height="27" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_1w8cwjh_di" bpmnElement="Gateway_1w8cwjh" isMarkerVisible="true">
         <dc:Bounds x="875" y="245" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_16coy0g_di" bpmnElement="telemer_partially_done_event">
-        <dc:Bounds x="1020" y="80" width="100" height="80" />
-        <bpmndi:BPMNLabel />
+      <bpmndi:BPMNShape id="Event_0tk72al_di" bpmnElement="end_telemer_event">
+        <dc:Bounds x="1352" y="252" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1398" y="263" width="59" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1hyq7he_di" bpmnElement="complete_telemer">
-        <dc:Bounds x="1020" y="230" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0m4pvat_di" bpmnElement="telemer_reschedule_event">
-        <dc:Bounds x="1020" y="360" width="100" height="80" />
+      <bpmndi:BPMNShape id="Activity_1mmyt4q_di" bpmnElement="PublishEventToKafka">
+        <dc:Bounds x="1210" y="230" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_176ftef_di" bpmnElement="Flow_176ftef">
@@ -129,7 +138,7 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0iu2mps_di" bpmnElement="Flow_0iu2mps">
         <di:waypoint x="1120" y="270" />
-        <di:waypoint x="1182" y="270" />
+        <di:waypoint x="1210" y="270" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1s8pqic_di" bpmnElement="Flow_1s8pqic">
         <di:waypoint x="424" y="270" />
@@ -151,13 +160,13 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0zbyccg_di" bpmnElement="Flow_0zbyccg">
         <di:waypoint x="1120" y="120" />
-        <di:waypoint x="1200" y="120" />
-        <di:waypoint x="1200" y="252" />
+        <di:waypoint x="1260" y="120" />
+        <di:waypoint x="1260" y="230" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1td5pdt_di" bpmnElement="Flow_1td5pdt">
         <di:waypoint x="1120" y="400" />
-        <di:waypoint x="1200" y="400" />
-        <di:waypoint x="1200" y="288" />
+        <di:waypoint x="1260" y="400" />
+        <di:waypoint x="1260" y="320" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1i41lv0_di" bpmnElement="Flow_1i41lv0">
         <di:waypoint x="828" y="270" />
@@ -185,6 +194,10 @@
         <bpmndi:BPMNLabel>
           <dc:Bounds x="933" y="366" width="53" height="27" />
         </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15pbaq7_di" bpmnElement="Flow_15pbaq7">
+        <di:waypoint x="1310" y="270" />
+        <di:waypoint x="1352" y="270" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

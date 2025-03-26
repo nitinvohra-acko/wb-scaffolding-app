@@ -19,6 +19,6 @@ public class RequestTelemerCallback implements JavaDelegate {
         log.info("User requested Telemer for this case");
         delegateExecution.setVariable("task_status", "telemer_initiated");
         delegateExecution.setVariable("changes","Telemer Initiated");
-        taskPropagatorUtils.taskPropagatorFunction(delegateExecution);
+       // taskPropagatorUtils.taskPropagatorFunction(delegateExecution);
     }
 }

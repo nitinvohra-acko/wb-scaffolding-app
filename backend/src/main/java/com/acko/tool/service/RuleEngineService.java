@@ -69,14 +69,14 @@ public class RuleEngineService {
         return genericRuleObject;
     }
 
-    public void sendEventToProcess(String waitEvent, String eventName, Map<String,Object> request){
+    public void sendEventToProcess(String workflowName, String eventName, Map<String,Object> request){
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery()
                 .processInstanceId(request.get("workflow_id").toString())
-                .processDefinitionKey("StartTelemerWorkflow")
+                .processDefinitionKey(workflowName)
                 .singleResult();
 
         runtimeService.createMessageCorrelation(eventName)
-                .setVariable("event", request.get("decision").toString())
+                .setVariable("event", Objects.nonNull(request.get("decision"))?request.get("decision").toString():null)
                 .processInstanceId(processInstance.getId())
                 .correlate();
         log.info("Pushed Event Successfully {}", eventName);
