@@ -1,4 +1,3 @@
-'use client';
 import useTasks from '@/store/tasklist';
 import { TaskRequest, TaskResponse } from '@/types/task';
 import { apiClient } from '@/utils/interceptor';

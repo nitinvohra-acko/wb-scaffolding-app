@@ -26,7 +26,7 @@ const SearchBar = () => {
   );
 
   const { fetchTaskLists } = useTaskLists();
-  const [searchStr, setSearchStr] = useState(taskResponse?.search_str ?? '');
+  const [searchStr, setSearchStr] = useState(taskResponse?.searchStr ?? '');
 
   const handleQueryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchStr(event.target.value);
@@ -36,7 +36,7 @@ const SearchBar = () => {
     if (event.key === 'Enter') {
       hoist({
         ...(taskResponse as TaskResponse),
-        search_str: searchStr.trim(),
+        searchStr: searchStr.trim(),
       });
 
       setTimeout(async () => {
@@ -44,7 +44,7 @@ const SearchBar = () => {
           ...useTasks.getState().taskResponse,
         };
         req.filters = [];
-        req.page_no = 1;
+        req.pageNo = 1;
         delete req.result;
         await fetchTaskLists(req as TaskRequest);
       }, 100);
@@ -55,22 +55,22 @@ const SearchBar = () => {
     setSearchStr('');
     hoist({
       ...(taskResponse as TaskResponse),
-      search_str: '',
+      searchStr: '',
     });
 
     setTimeout(async () => {
       const req = {
         ...useTasks.getState().taskResponse,
       };
-      req.page_no = 1;
+      req.pageNo = 1;
       delete req.result;
       await fetchTaskLists(req as TaskRequest);
     }, 100);
   };
 
   const searchableText = useMemo(() => {
-    return taskResponse?.searchable_fields
-      ?.map((field) => field?.field_display_name)
+    return taskResponse?.searchableFields
+      ?.map((field) => field?.fieldDisplayName)
       ?.join(', ');
   }, [taskResponse]);
 

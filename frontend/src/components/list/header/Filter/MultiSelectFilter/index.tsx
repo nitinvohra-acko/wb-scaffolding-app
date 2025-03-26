@@ -20,7 +20,7 @@ const Index: FC<Props> = ({ filter }) => {
 
   const handleChange = (filterValue: string[]) => {
     const res = taskResponse?.filters?.map((f) => {
-      if (f.field_name === filter.field_name) {
+      if (f.fieldName === filter.fieldName) {
         return {
           ...filter,
           options: f.options.map((option) => ({
@@ -43,7 +43,7 @@ const Index: FC<Props> = ({ filter }) => {
   return (
     <div>
       <MultiSelect1
-        label={filter?.field_name}
+        label={filter?.fieldName}
         options={filter?.options}
         value={
           filter?.options

@@ -1,7 +1,7 @@
 import { apiClient } from '@/utils/interceptor';
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { DataRow } from '../constants';
+import { DataRow } from './constants';
 import LeftSection from './Overview';
 import RightSection from './tabs';
 

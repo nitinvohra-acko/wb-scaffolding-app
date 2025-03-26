@@ -2,6 +2,7 @@
 
 import React from 'react';
 import './globals.css';
+import { AnalyticsProvider } from '@/providers/AnalyticsProvider';
 import Navbars from '@/components/Navbars';
 
 export default function RootLayout({
@@ -10,9 +11,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html>
+    <html lang="en">
       <body>
-        <Navbars>{children}</Navbars>
+        <AnalyticsProvider>
+          <Navbars>{children}</Navbars>
+        </AnalyticsProvider>
       </body>
     </html>
   );
