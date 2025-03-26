@@ -24,7 +24,7 @@ const Home: React.FC = () => {
           </button>
         </div>
       )}
-      {showHealthProfile && <HealthProfile />}
+      {showHealthProfile && <HealthProfile readonly={false} />}
     </div>
   );
 };

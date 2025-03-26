@@ -7,9 +7,7 @@ import { CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import TeleMerInfo from './formComponents/introduction';
-import { question_Data as config } from '../constant';
-import TelemerRadio from './formComponents/telemer_radio';
+// import TeleMerInfo from './formComponents/introduction';
 
 export default function HealthProfile() {
   const [activeSection, setActiveSection] = useState<string>('demographic');
@@ -273,21 +271,21 @@ export default function HealthProfile() {
     );
   };
 
-  const IntroductionSection = (data: any) => {
-    return (
-      <CardContent>
-        <div>
-          {data.questions.map((item: any, index: number) => {
-            return (
-              <div key={index}>
-                <TeleMerInfo label={item.question_config.question_text} />
-              </div>
-            );
-          })}
-        </div>
-      </CardContent>
-    );
-  };
+  //   const IntroductionSection = (data: any) => {
+  //     return (
+  //       <CardContent>
+  //         <div>
+  //           {data.questions.map((item: any, index: number) => {
+  //             return (
+  //               <div key={index}>
+  //                 <TeleMerInfo label={item.question_config.question_text} />
+  //               </div>
+  //             );
+  //           })}
+  //         </div>
+  //       </CardContent>
+  //     );
+  //   };
 
   return (
     <div className=" mx-auto  pb-20">
