@@ -19,34 +19,36 @@ const SectionAccordian: React.FC<{
         <ChevronDown className="w-6 h-6 text-purple-500" />
       </div>
 
-      {activeSection === title && (
-        <CardContent className="p-3 pt-0">
-          <div
-            className="bg-white border-gray-50 rounded-md p-4"
-            style={{
-              boxShadow: '0px 0px 1px #171a1f12, 0px 0px 2px #171a1f1F',
-            }}
+      <CardContent
+        className={`p-3 pt-0 content ${
+          activeSection === title ? 'block opacity-1' : 'hidden opacity-0'
+        }`}
+      >
+        <div
+          className="bg-white border-gray-50 rounded-md p-4"
+          style={{
+            boxShadow: '0px 0px 1px #171a1f12, 0px 0px 2px #171a1f1F',
+          }}
+        >
+          {children}
+        </div>
+        <div className="flex justify-center space-x-4 mt-6">
+          <Button
+            variant="outline"
+            onClick={() => navigateToSection('previous')}
+            className="px-6"
           >
-            {children}
-          </div>
-          <div className="flex justify-center space-x-4 mt-6">
-            <Button
-              variant="outline"
-              onClick={() => navigateToSection('previous')}
-              className="px-6"
-            >
-              Previous
-            </Button>
-            <Button
-              variant="default"
-              onClick={() => navigateToSection('next')}
-              className="px-6 bg-gray-900"
-            >
-              Next
-            </Button>
-          </div>
-        </CardContent>
-      )}
+            Previous
+          </Button>
+          <Button
+            variant="default"
+            onClick={() => navigateToSection('next')}
+            className="px-6 bg-gray-900"
+          >
+            Next
+          </Button>
+        </div>
+      </CardContent>
     </Card>
   );
 };

@@ -10,6 +10,7 @@ import WidgetMap from './widgetMap';
 import { question_Data4 } from '../constant4';
 import SectionAccordian from './section';
 import useTelemer from '../hooks/useTelemer';
+import useTelemerStore from '../store/telemer';
 
 const sectionList = [
   'introduction',
@@ -23,7 +24,10 @@ export default function HealthProfile({ readonly }: { readonly: Boolean }) {
   const [memberForm, setMemberForm] = useState({});
   const [globalQuestion, setGlobalQuestion] =
     useState<QuestionsType[]>(question_Data4);
+
   const { fetchTelemerConfig, loading } = useTelemer();
+  const hoistResponse = useTelemerStore().hoistResponse;
+  const store = useTelemerStore((store) => store);
 
   const { control, getValues, reset, trigger, formState, watch } = useForm({
     mode: 'onChange',
@@ -331,11 +335,12 @@ export default function HealthProfile({ readonly }: { readonly: Boolean }) {
       console.log('_question', _questions, question_id, value, user_id);
       updateObjectByKey(_questions, 'question_id', question_id, value, user_id);
       setGlobalQuestion(_questions);
+      hoistResponse(_questions);
     },
     [globalQuestion],
   );
   useEffect(() => {
-    console.log('global lgo', globalQuestion);
+    console.log('global lgo', store.memberResponse, getValues());
   }, [globalQuestion]);
 
   const renderQuestion = useCallback(
