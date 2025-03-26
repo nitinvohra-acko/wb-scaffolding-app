@@ -4,6 +4,7 @@ import com.acko.tool.model.KafkaMessage;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 public class KafkaConsumerService {
 
@@ -30,10 +32,15 @@ public class KafkaConsumerService {
             JsonNode jsonNode = objectMapper.readTree(message);
             KafkaMessage kafkaMessage = objectMapper.treeToValue(jsonNode, KafkaMessage.class);
             Map<String, Object> payload = new HashMap<>();
-            payload.put("eventid", kafkaMessage.getEventType());
-            Object response = ruleEngineService.execute("MainEvent", payload);
+            payload.put("event_id", kafkaMessage.getEventType());
+            Object response = ruleEngineService.execute("InternalKafkaEventDecision", payload);
             Map<String, Object> responseMap = objectMapper.convertValue( ((List<?>) response).get(0), new TypeReference<Map<String, Object>>() {});
-            ruleEngineService.startBpmnProcess(responseMap.get("action").toString(), kafkaMessage.getPayload());
+            if (responseMap.get("action_type").toString().equalsIgnoreCase("bpmn")){
+                ruleEngineService.startBpmnProcess(responseMap.get("workflow_name").toString(), kafkaMessage.getPayload());
+            } else if (responseMap.get("action_type").toString().equalsIgnoreCase("bpmn_event")){
+                workflowService.sendEventToWorkflow(responseMap.get("workflow_name").toString(),responseMap.get("event_name").toString(), kafkaMessage.getPayload());
+            }
+            else log.info("No action taken");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -45,14 +52,17 @@ public class KafkaConsumerService {
             JsonNode jsonNode = objectMapper.readTree(message);
             KafkaMessage kafkaMessage = objectMapper.treeToValue(jsonNode, KafkaMessage.class);
             Map<String, Object> payload = new HashMap<>();
-            payload.put("eventid", kafkaMessage.getEventType());
-            Object response = ruleEngineService.execute("MainEvent", payload);
+            payload.put("event_id", kafkaMessage.getEventType());
+            Object response = ruleEngineService.execute("ExternalKafkaEventDecision", payload);
             Map<String, Object> responseMap = objectMapper.convertValue( ((List<?>) response).get(0), new TypeReference<Map<String, Object>>() {});
-            //ruleEngineService.startBpmnProcess(responseMap.get("action").toString(), kafkaMessage.getPayload());
-            if(responseMap.get("isBPMN").equals("false")){
-                workflowService.sendEventToWorkflow("StartTelemerWorkflow",kafkaMessage.getEventType(), kafkaMessage.getPayload());
+            if (responseMap.get("action_type").toString().equalsIgnoreCase("bpmn")){
+                ruleEngineService.startBpmnProcess(responseMap.get("workflow_name").toString(), kafkaMessage.getPayload());
+            } else if (responseMap.get("action_type").toString().equalsIgnoreCase("bpmn_event")){
+                workflowService.sendEventToWorkflow(responseMap.get("workflow_name").toString(),responseMap.get("event_name").toString(), kafkaMessage.getPayload());
             }
+            else log.info("No action taken");
         } catch (Exception e) {
+            log.error(e.getMessage());
             e.printStackTrace();
         }
     }

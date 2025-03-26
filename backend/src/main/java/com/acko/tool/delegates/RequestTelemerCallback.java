@@ -17,6 +17,9 @@ public class RequestTelemerCallback implements JavaDelegate {
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
         log.info("User requested Telemer for this case");
+        //todo: check delegate execution here and create task for telemer
+        //todo: add task_status as telemer_callback_requested
+        //todo: save process instance id in task
         delegateExecution.setVariable("task_status", "telemer_initiated");
         delegateExecution.setVariable("changes","Telemer Initiated");
        // taskPropagatorUtils.taskPropagatorFunction(delegateExecution);
