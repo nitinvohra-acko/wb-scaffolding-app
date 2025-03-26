@@ -16,8 +16,8 @@ public class WorkflowController {
     private final WorkflowService workflowService;
 
     @PutMapping(path = "/initiate/workflow", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Object initiateWorkflow(@RequestBody Map<String,Object> request) {
-        return workflowService.initiateWorkflow(request);
+    public Object initiateWorkflow(@RequestParam(value = "workflow") String workflowName, @RequestBody Map<String,Object> request) {
+        return workflowService.initiateWorkflow(workflowName,request);
     }
 
     @PostMapping(path = "/workflow/send-event", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
