@@ -1,9 +1,7 @@
 'use client';
-
 import { useCallback, useEffect, useState } from 'react';
 import { CheckCircle } from 'lucide-react';
 import TeleMerInfo from './formComponents/introduction';
-import { questionData } from '../constant1';
 import { formInitState, getUniqueMembers, updateObjectByKey } from './utils';
 import { QuestionsType, QuestionConfig, member } from './type';
 import { useForm } from 'react-hook-form';
@@ -11,6 +9,7 @@ import React from 'react';
 import WidgetMap from './widgetMap';
 import { question_Data4 } from '../constant4';
 import SectionAccordian from './section';
+import useTelemer from '../hooks/useTelemer';
 
 const sectionList = [
   'introduction',
@@ -24,6 +23,7 @@ export default function HealthProfile({ readonly }: { readonly: Boolean }) {
   const [memberForm, setMemberForm] = useState({});
   const [globalQuestion, setGlobalQuestion] =
     useState<QuestionsType[]>(question_Data4);
+  const { fetchTelemerConfig, loading } = useTelemer();
 
   const { control, getValues, reset, trigger, formState, watch } = useForm({
     mode: 'onChange',
@@ -54,6 +54,7 @@ export default function HealthProfile({ readonly }: { readonly: Boolean }) {
     setActiveSection(sectionList[newIndex]);
   };
   useEffect(() => {
+    fetchTelemerConfig();
     const uniqueMembers = getUniqueMembers(question_Data4);
     let memberQuestion = {};
     uniqueMembers.map((member) => {
@@ -71,39 +72,6 @@ export default function HealthProfile({ readonly }: { readonly: Boolean }) {
       };
     });
     setMemberForm(memberQuestion);
-  }, []);
-
-  useEffect(() => {
-    let allQuestions: any = [];
-    questionData.forEach((item) => {
-      allQuestions = [...allQuestions, ...item.questions];
-    });
-    let uniqueMembers: any[] = [];
-    questionData.map((items) => {
-      items.members.map((member) => {
-        if (
-          !uniqueMembers
-            ?.map((m) => m.parameters.id.value)
-            .includes(member.parameters.id.value)
-        ) {
-          // push that member in unique list
-          uniqueMembers.push(member);
-        }
-      });
-    });
-    // pick one by one members and iterat on questions
-    uniqueMembers.map((member) => {
-      questionData.forEach((_questionData) => {
-        if (
-          _questionData.members.find(
-            (m) => m.parameters.id.value === member.parameters.id.value,
-          )
-        ) {
-          // push that question in for this member
-          member.pusj;
-        }
-      });
-    });
   }, []);
 
   const toggleSection = (section: string) => {
@@ -360,6 +328,7 @@ export default function HealthProfile({ readonly }: { readonly: Boolean }) {
   const handleAnswerChange = useCallback(
     (question_id: string, user_id: string, value: string | string[]) => {
       const _questions: QuestionsType[] = [...globalQuestion];
+      console.log('_question', _questions, question_id, value, user_id);
       updateObjectByKey(_questions, 'question_id', question_id, value, user_id);
       setGlobalQuestion(_questions);
     },
@@ -563,71 +532,6 @@ export default function HealthProfile({ readonly }: { readonly: Boolean }) {
                         )}
                       </div>
                     );
-
-                    // if (question.type === 'telemer_info') {
-                    //   return (
-                    //     <div key={index + '' + ndx}>
-                    //       <TeleMerInfo label={question.question_text} />
-                    //     </div>
-                    //   );
-                    // }
-                    // return (
-                    //   <div key={index + '' + ndx}>
-                    //     Question text: {question.question_text}
-                    //     <div>
-                    //       {members.map((member, index) => {
-                    //         return (
-                    //           <div key={index}>
-                    //             <div className="font-bold">
-                    //               {member.parameters.name?.value}
-                    //             </div>
-
-                    //             {question.type === 'telemer_radio_group' && (
-                    //               <TelemerRadio
-                    //                 questionText={null}
-                    //                 question_id={question.question_id}
-                    //                 options={question.option}
-                    //                 handleChange={(value) => {
-                    //                   handleFormUpdate(
-                    //                     question.question_id,
-                    //                     value,
-                    //                     member.parameters.user_id?.value,
-                    //                     section,
-                    //                   );
-                    //                 }}
-                    //               />
-                    //             )}
-                    //             {question.type === 'telemer_multi_select' && (
-                    //               <TelemerSelect
-                    //                 questionText={null}
-                    //                 options={question.option}
-                    //                 handleChange={(options) => {
-                    //                   console.log('options', options);
-                    //                   handleFormUpdate(
-                    //                     question.question_id,
-                    //                     options,
-                    //                     member.parameters.user_id?.value,
-                    //                     section,
-                    //                   );
-                    //                 }}
-                    //               />
-                    //             )}
-                    //             {question.type === 'telemer_textarea' && (
-                    //               <TelemerTextarea
-                    //                 heading=""
-                    //                 placeholder="write something"
-                    //                 value={''}
-                    //                 onChange={(v) => {
-                    //                   console.log('textarea', v);
-                    //                 }}
-                    //               />
-                    //             )}
-                    //           </div>
-                    //         );
-                    //       })}
-                    //     </div>
-                    //   </div>
-                    // );
                   })}
               </>
             </SectionAccordian>
