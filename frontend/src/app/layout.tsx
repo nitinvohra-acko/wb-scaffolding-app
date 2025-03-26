@@ -2,9 +2,7 @@
 
 import React from 'react';
 import './globals.css';
-import { KeycloakProvider } from '@/providers/KeycloakProvider';
 import { AnalyticsProvider } from '@/providers/AnalyticsProvider';
-import { ActivityProvider } from '@/providers/ActivityProvider';
 import Navbars from '@/components/Navbars';
 
 export default function RootLayout({
@@ -15,13 +13,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <KeycloakProvider>
-          <ActivityProvider>
-            <AnalyticsProvider>
-              <Navbars>{children}</Navbars>
-            </AnalyticsProvider>
-          </ActivityProvider>
-        </KeycloakProvider>
+        <AnalyticsProvider>
+          <Navbars>{children}</Navbars>
+        </AnalyticsProvider>
       </body>
     </html>
   );

@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/select';
 import { LogOut, User } from 'lucide-react';
 import useAuth from '@/hooks/useAuth';
+import useAuthStore from '@/store/auth';
 
 type UserStatus = 'available' | 'away' | 'break' | 'busy' | 'offline';
 
@@ -30,9 +31,10 @@ interface UserMenuProps {
 
 export default function UserMenu({ onLogout }: UserMenuProps) {
   const [status, setStatus] = useState<UserStatus>(
-    (localStorage.getItem('user-status') as UserStatus) ?? 'available',
+    (localStorage?.getItem('user-status') as UserStatus) ?? 'available',
   );
-  const { fetchAuthDetails, tokenDetails } = useAuth();
+  const { fetchAuthDetails } = useAuth();
+  const { authUser } = useAuthStore();
   const statusColors: Record<UserStatus, string> = {
     available: 'bg-green-500',
     away: 'bg-yellow-500',
@@ -47,15 +49,16 @@ export default function UserMenu({ onLogout }: UserMenuProps) {
   useEffect(() => {
     fetchAuthDetails();
   }, []);
-  if (!tokenDetails) {
+  if (!authUser) {
     return <></>;
   }
+  console.log(authUser);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full mx-4">
           <Avatar className="h-8 w-8">
-            <AvatarFallback>{tokenDetails?.name.charAt(0)}</AvatarFallback>
+            <AvatarFallback>{authUser?.name?.charAt(0)}</AvatarFallback>
           </Avatar>
           <span
             className={`absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border border-white ${statusColors[status]}`}
@@ -65,11 +68,9 @@ export default function UserMenu({ onLogout }: UserMenuProps) {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">
-              {tokenDetails.name}
-            </p>
+            <p className="text-sm font-medium leading-none">{authUser.name}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              {tokenDetails.email}
+              {authUser.email}
             </p>
           </div>
         </DropdownMenuLabel>

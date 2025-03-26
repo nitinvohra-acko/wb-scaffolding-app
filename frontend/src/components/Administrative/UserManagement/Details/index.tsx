@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import useUserDetails from '@/hooks/use-user-details';
+import useUserDetails from '@/hooks/useUserDetails';
 import { Button } from '@/components/ui/button';
 import {
   Card,

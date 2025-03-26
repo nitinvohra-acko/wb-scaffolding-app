@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Save, Filter, Search, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Card,
   CardContent,
@@ -48,81 +49,116 @@ type FieldConfig = {
 };
 
 // Sample data - in a real app, this would come from an API
-const availableFieldConfigs: FieldConfig[] = [
-  {
-    fieldDisplayName: 'Proposal Id',
-    fieldName: 'proposal_id',
-    variableName: 'taskProperty.proposal_id',
-    fieldType: 'String',
-    isSearchable: true,
-    isFilterable: false,
-    filterType: 'term',
-  },
-  {
-    fieldDisplayName: 'taskProperty -> proposal_status',
-    fieldName: null,
-    variableName: 'taskProperty.proposal_status',
-    fieldType: 'String',
-    isSearchable: false,
-    isFilterable: false,
-  },
-  {
-    fieldDisplayName: 'taskProperty -> member_ids',
-    fieldName: null,
-    variableName: 'taskProperty.member_ids',
-    fieldType: 'String',
-    isSearchable: false,
-    isFilterable: false,
-  },
-  {
-    fieldDisplayName: 'Status',
-    fieldName: 'status',
-    variableName: 'status',
-    fieldType: 'string',
-    isSearchable: true,
-    isFilterable: true,
-    filterType: 'term',
-  },
-  {
-    fieldDisplayName: 'Assignee',
-    fieldName: 'assignee',
-    variableName: 'assignee',
-    fieldType: 'string',
-    isSearchable: true,
-    isFilterable: true,
-    filterType: 'term',
-  },
-  {
-    fieldDisplayName: 'Created Date',
-    fieldName: 'created_date',
-    variableName: 'taskProperty.metadata.created_at',
-    fieldType: 'date',
-    isSearchable: false,
-    isFilterable: true,
-    filterType: 'range',
-  },
-  {
-    fieldDisplayName: 'Amount',
-    fieldName: 'amount',
-    variableName: 'taskProperty.financial.amount',
-    fieldType: 'number',
-    isSearchable: false,
-    isFilterable: true,
-    filterType: 'range',
-  },
-];
+// const availableFieldConfigs: FieldConfig[] = [
+//   {
+//     fieldDisplayName: 'Proposal Id',
+//     fieldName: 'proposal_id',
+//     variableName: 'taskProperty.proposal_id',
+//     fieldType: 'String',
+//     isSearchable: true,
+//     isFilterable: false,
+//     filterType: 'term',
+//   },
+//   {
+//     fieldDisplayName: 'taskProperty -> proposal_status',
+//     fieldName: null,
+//     variableName: 'taskProperty.proposal_status',
+//     fieldType: 'String',
+//     isSearchable: false,
+//     isFilterable: false,
+//   },
+//   {
+//     fieldDisplayName: 'taskProperty -> member_ids',
+//     fieldName: null,
+//     variableName: 'taskProperty.member_ids',
+//     fieldType: 'String',
+//     isSearchable: false,
+//     isFilterable: false,
+//   },
+//   {
+//     fieldDisplayName: 'Status',
+//     fieldName: 'status',
+//     variableName: 'status',
+//     fieldType: 'string',
+//     isSearchable: true,
+//     isFilterable: true,
+//     filterType: 'term',
+//   },
+//   {
+//     fieldDisplayName: 'Assignee',
+//     fieldName: 'assignee',
+//     variableName: 'assignee',
+//     fieldType: 'string',
+//     isSearchable: true,
+//     isFilterable: true,
+//     filterType: 'term',
+//   },
+//   {
+//     fieldDisplayName: 'Created Date',
+//     fieldName: 'created_date',
+//     variableName: 'taskProperty.metadata.created_at',
+//     fieldType: 'date',
+//     isSearchable: false,
+//     isFilterable: true,
+//     filterType: 'range',
+//   },
+//   {
+//     fieldDisplayName: 'Amount',
+//     fieldName: 'amount',
+//     variableName: 'taskProperty.financial.amount',
+//     fieldType: 'number',
+//     isSearchable: false,
+//     isFilterable: true,
+//     filterType: 'range',
+//   },
+// ];
 
 export default function FieldConfigManagement() {
-  // State to track the current configuration of all fields
-  const [fieldConfigs, setFieldConfigs] = useState<FieldConfig[]>([
-    ...availableFieldConfigs,
-  ]);
-  // Track if there are unsaved changes
+  const [fieldConfigs, setFieldConfigs] = useState<FieldConfig[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
-  // Track the original state to detect changes
-  const [originalConfigs, setOriginalConfigs] = useState<FieldConfig[]>([
-    ...availableFieldConfigs,
-  ]);
+  const [originalConfigs, setOriginalConfigs] = useState<FieldConfig[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch field configurations from API
+  useEffect(() => {
+    const fetchConfigs = async () => {
+      try {
+        // Replace with your actual API endpoint
+        const response = await fetch('/search/fields/proposal');
+        const data = await response.json();
+        setFieldConfigs(data);
+        setOriginalConfigs(data);
+      } catch (error) {
+        console.error('Error fetching configurations:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchConfigs();
+  }, []);
+
+  // Function to handle field name changes
+  const handleFieldNameChange = (index: number, value: string) => {
+    const newConfigs = [...fieldConfigs];
+    newConfigs[index] = {
+      ...newConfigs[index],
+      fieldName: value,
+    };
+    setFieldConfigs(newConfigs);
+    setHasChanges(true);
+  };
+
+  // Function to handle display name changes
+  const handleDisplayNameChange = (index: number, value: string) => {
+    const newConfigs = [...fieldConfigs];
+    newConfigs[index] = {
+      ...newConfigs[index],
+      fieldDisplayName: value,
+    };
+    setFieldConfigs(newConfigs);
+    setHasChanges(true);
+  };
 
   // Function to handle toggling searchable status
   const toggleSearchable = (index: number) => {
@@ -182,14 +218,6 @@ export default function FieldConfigManagement() {
   const saveConfigurations = () => {
     // In a real app, you would send this to your backend API
     console.log('Saving configurations:', fieldConfigs);
-
-    // Get only the active configurations (searchable or filterable)
-    const activeConfigs = fieldConfigs.filter(
-      (config) => config.isSearchable || config.isFilterable,
-    );
-
-    console.log('Active configurations:', activeConfigs);
-
     // toast({
     //   title: 'Configurations saved',
     //   description: `Saved ${activeConfigs.length} field configurations.`,
@@ -241,119 +269,96 @@ export default function FieldConfigManagement() {
         </CardHeader>
 
         <CardContent>
-          {fieldConfigs.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-8">Loading configurations...</div>
+          ) : fieldConfigs.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               No field configurations available.
             </div>
           ) : (
-            <>
-              {/* <Alert className="mb-4">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Toggle fields to make them searchable or filterable. Click
-                  Save Changes when done.
-                </AlertDescription>
-              </Alert> */}
-
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Display Name</TableHead>
-                    <TableHead>Variable Path</TableHead>
-                    <TableHead>Data Type</TableHead>
-                    <TableHead className="w-[140px]">
-                      <div className="flex items-center">
-                        <Search className="h-4 w-4 mr-2" />
-                        Searchable
-                      </div>
-                    </TableHead>
-                    <TableHead className="w-[140px]">
-                      <div className="flex items-center">
-                        <Filter className="h-4 w-4 mr-2" />
-                        Filterable
-                      </div>
-                    </TableHead>
-                    <TableHead className="w-[180px]">Filter Type</TableHead>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Display Name</TableHead>
+                  <TableHead>Field Name</TableHead>
+                  <TableHead>Data Type</TableHead>
+                  <TableHead className="w-[140px]">
+                    <div className="flex items-center">
+                      <Search className="h-4 w-4 mr-2" />
+                      Searchable
+                    </div>
+                  </TableHead>
+                  <TableHead className="w-[140px]">
+                    <div className="flex items-center">
+                      <Filter className="h-4 w-4 mr-2" />
+                      Filterable
+                    </div>
+                  </TableHead>
+                  <TableHead className="w-[180px]">Filter Type</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {fieldConfigs.map((config, index) => (
+                  <TableRow
+                    key={index}
+                    className={isConfigured(config) ? 'bg-muted/30' : ''}
+                  >
+                    <TableCell>
+                      <Input
+                        value={config.fieldDisplayName}
+                        onChange={(e) =>
+                          handleDisplayNameChange(index, e.target.value)
+                        }
+                        className="max-w-[200px]"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Input
+                        value={config.fieldName || ''}
+                        onChange={(e) =>
+                          handleFieldNameChange(index, e.target.value)
+                        }
+                        placeholder="Enter field name"
+                        className="max-w-[200px]"
+                      />
+                    </TableCell>
+                    <TableCell>{getDataTypeLabel(config.fieldType)}</TableCell>
+                    <TableCell>
+                      <Switch
+                        checked={config.isSearchable}
+                        onCheckedChange={() => toggleSearchable(index)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Switch
+                        checked={config.isFilterable}
+                        onCheckedChange={() => toggleFilterable(index)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {config.isFilterable && (
+                        <Select
+                          value={config.filterType || 'term'}
+                          onValueChange={(value) =>
+                            updateFilterType(index, value as 'term' | 'range')
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="term">Term</SelectItem>
+                            <SelectItem value="range">Range</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {fieldConfigs.map((config, index) => (
-                    <TableRow
-                      key={index}
-                      className={isConfigured(config) ? 'bg-muted/30' : ''}
-                    >
-                      <TableCell className="font-medium">
-                        {config.fieldDisplayName}
-                        {config.fieldName && (
-                          <div className="text-xs text-muted-foreground mt-1">
-                            Field: {config.fieldName}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="font-mono text-xs">
-                        {config.variableName}
-                      </TableCell>
-                      <TableCell>
-                        {getDataTypeLabel(config.fieldType)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <Switch
-                            checked={config.isSearchable}
-                            onCheckedChange={() => toggleSearchable(index)}
-                            id={`searchable-${index}`}
-                          />
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <Switch
-                            checked={config.isFilterable}
-                            onCheckedChange={() => toggleFilterable(index)}
-                            id={`filterable-${index}`}
-                          />
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {config.isFilterable ? (
-                          <Select
-                            value={config.filterType || 'term'}
-                            onValueChange={(value) =>
-                              updateFilterType(index, value as 'term' | 'range')
-                            }
-                            disabled={!config.isFilterable}
-                          >
-                            <SelectTrigger className="w-[140px]">
-                              <SelectValue placeholder="Select type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="term">Term</SelectItem>
-                              <SelectItem value="range">Range</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className="text-muted-foreground text-sm">
-                                  Enable filterable first
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Enable filterable to select a filter type</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </CardContent>
-
         <CardFooter className="flex justify-between border-t p-6">
           <div className="text-sm text-muted-foreground">
             {hasChanges ? (

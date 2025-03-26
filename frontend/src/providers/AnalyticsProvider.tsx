@@ -1,24 +1,23 @@
 'use client';
 
 import { createContext, useEffect } from 'react';
-import { useAuthStore } from '@/store/useAuthStore';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import useAuthStore from '@/store/auth';
 
 export const AnalyticsContext = createContext({});
 
 export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
-  const { user, isAuthenticated } = useAuthStore();
+  const { authUser } = useAuthStore();
   const { identify } = useAnalytics();
 
   useEffect(() => {
-    if (isAuthenticated && user) {
+    if (authUser?.email) {
       identify({
-        email: user.email,
-        name: user.name,
-        preferred_username: user.preferred_username,
+        email: authUser.email,
+        name: authUser.name,
       });
     }
-  }, [isAuthenticated, user, identify]);
+  }, [authUser, identify]);
 
   return <>{children}</>;
 }

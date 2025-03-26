@@ -1,5 +1,6 @@
 'use client';
 
+import useAuthStore from '@/store/auth';
 import useUsersStore from '@/store/users';
 import { User, UsersRequest, UsersResponse } from '@/types/users';
 import { apiClient } from '@/utils/interceptor';
@@ -9,12 +10,14 @@ const useAuth = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [tokenDetails, setTokenDetails] = useState<any>();
+  const { hoist } = useAuthStore();
   const fetchAuthDetails = useCallback(async () => {
     try {
       setLoading(true);
       const response: User = await apiClient(`/api/user/token/info`, 'GET');
       if (response) {
         setTokenDetails(response);
+        hoist(response);
       }
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
