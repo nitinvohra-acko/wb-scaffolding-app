@@ -15,7 +15,6 @@ public class WorkflowService {
     @Autowired
     private RuleEngineService ruleEngineService;
 
-
     public Object initiateWorkflow(String workflowName, Map<String,Object> request) {
         return ruleEngineService.startBpmnProcess(workflowName, request);
     }
