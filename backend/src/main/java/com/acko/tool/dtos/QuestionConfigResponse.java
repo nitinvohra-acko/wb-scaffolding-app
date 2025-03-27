@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
 
 @Builder
 @Data
@@ -24,7 +25,5 @@ public class QuestionConfigResponse {
     private String section;
 
     @JsonProperty("eligible_members")
-    private List<String> eligibleMembers;
-
+    private List<EligibleMember> eligibleMembers;
 }
-
