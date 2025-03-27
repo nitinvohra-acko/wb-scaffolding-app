@@ -32,7 +32,7 @@ const RightSection: React.FC<PropsType> = ({
         </TabsContent>
 
         <TabsContent value="telemer">
-          {taskDetail?.status !== 'in-progress' ? (
+          {taskDetail?.status === 'in-progress' ? (
             <Telemer layout={layout} handleLayout={handleLayout} />
           ) : (
             <div className="font-bold text-green-700 ">
