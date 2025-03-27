@@ -95,7 +95,6 @@ jwt:
     converter:
       resource-id: my-client
       principal-attribute: preferred_username
-          
 
 elasticsearch:
   url: http://elasticsearch:9200
