@@ -12,28 +12,55 @@ import React, { ReactNode, useState } from 'react';
 
 const categories: Record<
   string,
-  { name: string; description?: string; url?: string; icon: ReactNode }
+  {
+    name: string;
+    description?: string;
+    url?: string;
+    icon: ReactNode;
+    color: string;
+    textColor: string;
+  }
 > = {
   'service-status': {
     name: 'Services health status',
-    icon: <Activity className="h-5 w-5" />,
+    description: 'Monitor your service health metrics',
+    icon: <Activity className="h-6 w-6" />,
+    color:
+      'from-blue-500/10 to-blue-500/5 hover:from-blue-500/20 hover:to-blue-500/10',
+    textColor: 'text-blue-700',
   },
   users: {
     name: 'User management',
-    icon: <Users className="h-5 w-5" />,
+    description: 'Manage user access and roles',
+    icon: <Users className="h-6 w-6" />,
+    color:
+      'from-purple-500/10 to-purple-500/5 hover:from-purple-500/20 hover:to-purple-500/10',
+    textColor: 'text-purple-700',
   },
   'entity-config': {
     name: 'Filter config',
-    icon: <Filter className="h-5 w-5" />,
+    description: 'Configure data filtering rules',
+    icon: <Filter className="h-6 w-6" />,
+    color:
+      'from-green-500/10 to-green-500/5 hover:from-green-500/20 hover:to-green-500/10',
+    textColor: 'text-green-700',
   },
   dashboard: {
     name: 'Configure Kibana Dashboard',
+    description: 'Customize your analytics view',
     url: process.env.NEXT_PUBLIC_KIBANA_HEALTH + '/app/dashboards',
-    icon: <LayoutDashboard className="h-5 w-5" />,
+    icon: <LayoutDashboard className="h-6 w-6" />,
+    color:
+      'from-orange-500/10 to-orange-500/5 hover:from-orange-500/20 hover:to-orange-500/10',
+    textColor: 'text-orange-700',
   },
   'automation-rules': {
     name: 'Automation Rules',
-    icon: <Workflow className="h-5 w-5" />,
+    description: 'Set up automated workflows',
+    icon: <Workflow className="h-6 w-6" />,
+    color:
+      'from-red-500/10 to-red-500/5 hover:from-red-500/20 hover:to-red-500/10',
+    textColor: 'text-red-700',
   },
 };
 
@@ -46,47 +73,90 @@ const featureList: string[] = [
 ];
 
 const LandingPage = () => {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-
-  const handleCategoryClick = (key: string, url?: string) => {
-    window?.open(url ? url : `/administrative/${key}`, url && '_blank');
-  };
+  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
 
   return (
-    <div className="min-h-[95vh] flex items-center bg-[radial-gradient(70%_70%_at_20%_20%,rgba(103,77,226,0.27)_0%,rgba(176,159,242,0.06)_100%)] -m-5 pb-10">
-      <div className="w-full max-w-7xl mx-auto px-4">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold">
-            What are you <span className="text-[#752cff]">looking</span> for?
+    <div>
+      <div className="max-w-7xl mx-auto px-4  sm:px-6 lg:px-8">
+        <div className="text-center space-y-4 mb-16">
+          <h1 className="text-4xl md:text-4xl font-bold tracking-tight text-gray-900">
+            What are you{' '}
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">
+              looking
+            </span>{' '}
+            for?
           </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Select from our suite of administrative tools to manage your
+            services
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 justify-center">
-          {Object.entries(categories).map(([key, category]) =>
-            featureList.includes(key) ? (
-              <Link
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {featureList.map((key) => {
+            const category = categories[key];
+            const isHovered = hoveredCategory === key;
+
+            return (
+              <a
                 key={key}
                 href={category.url ? category.url : `/administrative/${key}`}
-                target={category.url && '_blank'}
+                target={category.url ? '_blank' : undefined}
+                className={`
+                  block group relative overflow-hidden
+                  rounded-2xl bg-gradient-to-br ${category.color}
+                  transition-all duration-300 ease-out
+                  transform hover:scale-[1.02] hover:shadow-xl
+                `}
+                onMouseEnter={() => setHoveredCategory(key)}
+                onMouseLeave={() => setHoveredCategory(null)}
               >
-                <div
-                  key={key}
-                  // onClick={() => handleCategoryClick(key, category.url)}
-                  className={`flex items-center rounded-2xl p-5 cursor-pointer transition-all duration-200 shadow-sm hover:shadow-lg transform ${
-                    selectedCategory === key
-                      ? 'scale-105 bg-[#752cff] text-white'
-                      : 'bg-white text-gray-900'
-                  }`}
-                >
-                  <span className="mr-2">{category?.icon}</span>
-                  <h2 className="text-xl font-semibold mb-1">
+                <div className="p-8">
+                  <div
+                    className={`
+                    ${category.textColor} 
+                    rounded-full w-12 h-12 
+                    flex items-center justify-center 
+                    bg-white/80 backdrop-blur-sm
+                    mb-4 transition-transform duration-300
+                    group-hover:scale-110
+                  `}
+                  >
+                    {category.icon}
+                  </div>
+
+                  <h2
+                    className={`
+                    text-xl font-semibold text-gray-900
+                    mb-2 transition-transform duration-300
+                    ${isHovered ? 'transform -translate-y-1' : ''}
+                  `}
+                  >
                     {category.name}
                   </h2>
-                  {/* <p className="text-sm">{category.description}</p> */}
+
+                  <p
+                    className={`
+                    text-gray-600 transition-all duration-300
+                    ${isHovered ? 'opacity-100' : 'opacity-70'}
+                  `}
+                  >
+                    {category.description}
+                  </p>
                 </div>
-              </Link>
-            ) : null,
-          )}
+
+                <div
+                  className={`
+                  absolute inset-0 pointer-events-none
+                  bg-gradient-to-br opacity-0
+                  transition-opacity duration-300
+                  ${category.color.replace('hover:', '')}
+                  ${isHovered ? 'opacity-10' : ''}
+                `}
+                />
+              </a>
+            );
+          })}
         </div>
       </div>
     </div>

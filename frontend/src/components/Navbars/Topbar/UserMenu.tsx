@@ -22,6 +22,7 @@ import {
 import { LogOut, User } from 'lucide-react';
 import useAuth from '@/hooks/useAuth';
 import useAuthStore from '@/store/auth';
+import { analyticsService } from '@/services/analytics';
 
 type UserStatus = 'available' | 'away' | 'break' | 'busy' | 'offline';
 
@@ -45,6 +46,15 @@ export default function UserMenu({ onLogout }: UserMenuProps) {
   const onStatusChange = (value: UserStatus) => {
     localStorage.setItem('user-status', value);
     setStatus(value);
+    analyticsService?.track({
+      eventName: 'user_status_change',
+      properties: {
+        previousStatus: status,
+        newStatus: value,
+      },
+      userId: authUser?.id,
+      timestamp: Date.now(),
+    });
   };
   useEffect(() => {
     fetchAuthDetails();

@@ -21,7 +21,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-// import { toast } from '@/hooks/use-toast';
+import { apiClient } from '@/utils/interceptor';
+import { useToast } from '@/hooks/use-toast';
 import {
   Select,
   SelectContent,
@@ -35,7 +36,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-// import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // Define the field configuration type
 type FieldConfig = {
@@ -48,76 +48,13 @@ type FieldConfig = {
   filterType?: 'term' | 'range';
 };
 
-// Sample data - in a real app, this would come from an API
-// const availableFieldConfigs: FieldConfig[] = [
-//   {
-//     fieldDisplayName: 'Proposal Id',
-//     fieldName: 'proposal_id',
-//     variableName: 'taskProperty.proposal_id',
-//     fieldType: 'String',
-//     isSearchable: true,
-//     isFilterable: false,
-//     filterType: 'term',
-//   },
-//   {
-//     fieldDisplayName: 'taskProperty -> proposal_status',
-//     fieldName: null,
-//     variableName: 'taskProperty.proposal_status',
-//     fieldType: 'String',
-//     isSearchable: false,
-//     isFilterable: false,
-//   },
-//   {
-//     fieldDisplayName: 'taskProperty -> member_ids',
-//     fieldName: null,
-//     variableName: 'taskProperty.member_ids',
-//     fieldType: 'String',
-//     isSearchable: false,
-//     isFilterable: false,
-//   },
-//   {
-//     fieldDisplayName: 'Status',
-//     fieldName: 'status',
-//     variableName: 'status',
-//     fieldType: 'string',
-//     isSearchable: true,
-//     isFilterable: true,
-//     filterType: 'term',
-//   },
-//   {
-//     fieldDisplayName: 'Assignee',
-//     fieldName: 'assignee',
-//     variableName: 'assignee',
-//     fieldType: 'string',
-//     isSearchable: true,
-//     isFilterable: true,
-//     filterType: 'term',
-//   },
-//   {
-//     fieldDisplayName: 'Created Date',
-//     fieldName: 'created_date',
-//     variableName: 'taskProperty.metadata.created_at',
-//     fieldType: 'date',
-//     isSearchable: false,
-//     isFilterable: true,
-//     filterType: 'range',
-//   },
-//   {
-//     fieldDisplayName: 'Amount',
-//     fieldName: 'amount',
-//     variableName: 'taskProperty.financial.amount',
-//     fieldType: 'number',
-//     isSearchable: false,
-//     isFilterable: true,
-//     filterType: 'range',
-//   },
-// ];
-
 export default function FieldConfigManagement() {
   const [fieldConfigs, setFieldConfigs] = useState<FieldConfig[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
   const [originalConfigs, setOriginalConfigs] = useState<FieldConfig[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const { toast } = useToast();
 
   // Fetch field configurations from API
   useEffect(() => {
@@ -215,17 +152,39 @@ export default function FieldConfigManagement() {
   };
 
   // Function to save all configurations
-  const saveConfigurations = () => {
-    // In a real app, you would send this to your backend API
-    console.log('Saving configurations:', fieldConfigs);
-    // toast({
-    //   title: 'Configurations saved',
-    //   description: `Saved ${activeConfigs.length} field configurations.`,
-    // });
+  const saveConfigurations = async () => {
+    setIsSaving(true);
+    const payload = {
+      entity: 'proposal',
+      params: fieldConfigs,
+    };
+    try {
+      const response = await apiClient(
+        '/search/params?entity=proposal',
+        'POST',
+        {
+          body: payload,
+        },
+      );
 
-    // Update the original state to match current state
-    setOriginalConfigs([...fieldConfigs]);
-    setHasChanges(false);
+      if (response) {
+        toast({
+          title: 'Success',
+          description: `Successfully saved ${fieldConfigs.length} field configurations.`,
+        });
+        setOriginalConfigs([...fieldConfigs]);
+        setHasChanges(false);
+      }
+    } catch (error) {
+      console.error('Error saving configurations:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save field configurations. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Function to check if a field is configurable (has either searchable or filterable enabled)
@@ -371,11 +330,17 @@ export default function FieldConfigManagement() {
           </div>
           <Button
             onClick={saveConfigurations}
-            disabled={!hasChanges}
+            disabled={!hasChanges || isSaving}
             className="min-w-[120px]"
           >
-            <Save className="h-4 w-4 mr-2" />
-            Save Changes
+            {isSaving ? (
+              'Saving...'
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Save Changes
+              </>
+            )}
           </Button>
         </CardFooter>
       </Card>
