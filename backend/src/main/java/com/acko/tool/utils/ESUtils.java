@@ -7,7 +7,9 @@ import org.springframework.stereotype.Component;
 import com.acko.tool.entity.Task;
 import com.acko.tool.entity.User;
 import com.acko.tool.entity.search.ESTask;
+import com.acko.tool.entity.search.event.ESEvent;
 import com.acko.tool.entity.search.user.ESUser;
+import com.acko.tool.repository.es.ESEventRepository;
 import com.acko.tool.repository.es.ESTaskRepository;
 import com.acko.tool.repository.es.ESUserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,6 +22,7 @@ public class ESUtils {
     private final ObjectMapper objectMapper;
     private final ESTaskRepository esTaskRepository;
     private final ESUserRepository esUserRepository;
+    private final ESEventRepository esEventRepository;
 
 	public ESTask putTaskInES(Task<?> mongoTask, ESTask esTask) {
 		// put the task in ES
@@ -35,5 +38,13 @@ public class ESUtils {
 			esUser = objectMapper.convertValue(mongoUser, ESUser.class);
 		}
 		return esUserRepository.save(esUser);
+	}
+	
+	public ESEvent putEventInES(ESEvent esEvent) {
+		// put the event in ES
+		if (Objects.nonNull(esEvent)) {
+			return esEventRepository.save(esEvent);
+		}
+		return null;
 	}
 }

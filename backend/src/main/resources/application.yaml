@@ -53,6 +53,7 @@ elasticsearch:
   url: http://localhost:9200
   taskIndex: tasks
   userIndex: user
+  eventIndex: event
 
 keycloak:
   serverUrl: http://localhost:8080
@@ -100,6 +101,7 @@ elasticsearch:
   url: http://elasticsearch:9200
   taskIndex: tasks
   userIndex: user
+  eventIndex: event
 
 keycloak:
   serverUrl: http://keycloak:8080
