@@ -386,7 +386,7 @@ export const question_Data4 = [
         },
         {
           section: 'Pre existing conditions',
-          question_id: 'recovered_now',
+          question_id: 'not_recovered_follow_up',
           eligible_members: [
             {
               user_id: '1',
@@ -439,6 +439,17 @@ export const question_Data4 = [
       type: 'telemer_radio_group',
       required: 1,
     },
+    eligible_members: [
+      {
+        user_id: '1',
+        name: 'Rahul',
+      },
+      {
+        user_id: '2',
+        name: 'Smita',
+      },
+    ],
+    question_id: 'recovered_now',
   },
 
   {

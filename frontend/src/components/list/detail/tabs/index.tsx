@@ -6,7 +6,6 @@ import Telemer from './telemer';
 
 const RightSection: React.FC = () => {
   const [activeTab, setActiveTab] = React.useState('telemer');
-  console.log('active tab', activeTab);
   return (
     <div className="w-full md:w-3/4 p-4">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -24,9 +23,7 @@ const RightSection: React.FC = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="telemer">
-          <Telemer />
-        </TabsContent>
+        <TabsContent value="telemer">{/* <Telemer /> */}</TabsContent>
 
         {/* <TabsContent value="medical">
           <div className="border border-gray-300 rounded-xl p-4">Medical details content...</div>

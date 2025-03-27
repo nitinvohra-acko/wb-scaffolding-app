@@ -17,7 +17,7 @@ const LeftSection: React.FC<{ taskData: any }> = ({ taskData }) => {
   // if (!taskData) {
   //   return <p className="text-sm text-gray-500">Nothing to display</p>;
   // }
-
+  console.log('taskData', taskData);
   return (
     <Card className="w-full md:w-1/4 border-r border-gray-300 p-4">
       <CardHeader className="flex flex-row items-center space-x-4 p-0 mb-4">

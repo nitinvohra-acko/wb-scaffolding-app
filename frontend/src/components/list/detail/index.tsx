@@ -18,14 +18,18 @@ const PageLayout: React.FC<{ pageId: string[] }> = ({ pageId }) => {
 
   const fetchTaskDetail = async (id: string) => {
     try {
-      const response = await apiClient('/task/' + id, 'GET');
-
-      setTaskDetail(response as any);
+      const response = await fetch('/task/' + id);
+      if (!response.ok) {
+        throw new Error('something went wrong');
+      }
+      const resp = await response.json();
+      console.log('resp', resp);
+      setTaskDetail(resp);
     } catch (err) {
       console.log('error', err);
     }
   };
-
+  console.log('taskDetail', taskDetail);
   return (
     <div className="flex h-full ">
       <LeftSection taskData={taskDetail} />

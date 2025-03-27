@@ -1,16 +1,25 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CheckCircle } from 'lucide-react';
 import TeleMerInfo from './formComponents/introduction';
-import { formInitState, getUniqueMembers, updateObjectByKey } from './utils';
+import {
+  formInitState,
+  getUniqueMembers,
+  updateObjectByKey,
+  resolver,
+} from './utils';
 import { QuestionsType, QuestionConfig, member } from './type';
-import { useForm } from 'react-hook-form';
+import { Resolver, useForm } from 'react-hook-form';
 import React from 'react';
 import WidgetMap from './widgetMap';
 import { question_Data4 } from '../constant4';
 import SectionAccordian from './section';
 import useTelemer from '../hooks/useTelemer';
 import useTelemerStore from '../store/telemer';
+import QuestionText from './formComponents/questionText';
+import PageLoader from '@/components/ui/loader';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 
 const sectionList = [
   'introduction',
@@ -19,8 +28,16 @@ const sectionList = [
   'Pre existing conditions',
 ];
 
-export default function HealthProfile({ readonly }: { readonly: Boolean }) {
-  const [activeSection, setActiveSection] = useState<string | null>(null);
+interface PropsType {
+  handleLayout: (l: 'vertical' | 'horizontal') => void;
+  layout: 'vertical' | 'horizontal';
+  readonly: boolean;
+}
+export default function HealthProfile({ readonly }: PropsType) {
+  const [activeSection, setActiveSection] = useState<string | null>(
+    'introduction',
+  );
+  const [_loading, _setLoading] = useState(false);
   const [memberForm, setMemberForm] = useState({});
   const [globalQuestion, setGlobalQuestion] =
     useState<QuestionsType[]>(question_Data4);
@@ -28,6 +45,42 @@ export default function HealthProfile({ readonly }: { readonly: Boolean }) {
   const { fetchTelemerConfig, loading } = useTelemer();
   const hoistResponse = useTelemerStore().hoistResponse;
   const store = useTelemerStore((store) => store);
+  const zSchema = useMemo(() => {
+    function questionSchema(config: QuestionsType) {
+      if (
+        !config.question_config?.sub_questions &&
+        config.question_config.required === 1
+      ) {
+      }
+      config.question_config.sub_questions?.map((sub) => {
+        questionSchema(sub);
+      });
+    }
+    let _zObj = {
+      introduction: z.string().min(1, 'Introduction is required'),
+      name_confirmation: z.string().min(1, 'Name confirmation is required'),
+      health_and_habits: z.string().min(1, 'Health and habits is required'),
+      tobacco: z.string().optional(),
+      tobacco_quantity: z.string().optional(),
+      alcohol: z.string().optional(),
+      alcohol_quantity: z.string().optional(),
+      medical_condition: z.array(z.string()).optional(),
+      other_medical_conditions: z.string().optional(),
+      medical_condition_follow_up: z.string().optional(),
+      recovered_now: z.string().optional(),
+      medicine_reasons: z.string().optional(),
+      not_recovered_follow_up: z.string().optional(),
+      experiencing_symptoms: z.array(z.string()).optional(),
+      other_symptoms: z.string().optional(),
+      experiencing_symptoms_follow_up: z.string().optional(),
+      experiencing_symptoms_joint_pain: z.string().optional(),
+      pregnant: z.string().optional(),
+      baby_due: z.string().optional(),
+      pregnant_follow_up: z.string().optional(),
+      past_pregnant: z.string().optional(),
+    };
+    const userSchema = z.object(_zObj);
+  }, []);
 
   const { control, getValues, reset, trigger, formState, watch } = useForm({
     mode: 'onChange',
@@ -37,11 +90,146 @@ export default function HealthProfile({ readonly }: { readonly: Boolean }) {
     //   familyConstraints: isAsp ? familyConstraintsAsp : familyConstraints,
     //   members: previousMembers,
     // } as object,
-    // resolver: resolver as Resolver<
-    //   Record<string, MemberTypeWithMarialStatus>,
-    //   object
-    // >,
+    // resolver: resolver as Resolver<Record<string, any>, object>,
   });
+
+  const handleSubmit = async () => {
+    console.log('submit the form', globalQuestion);
+    try {
+      const myHeaders = new Headers();
+      myHeaders.append('Content-Type', 'application/json');
+      _setLoading(true);
+      const raw = JSON.stringify({
+        journey: 'rap',
+        reference_id: 'a9e283d2-aebf-4fdf-8e4c-6f62d02660e0',
+        source: 'health',
+        questions: [
+          {
+            question_id: 'name_confirmation',
+            question: ['Can you please confirm your name?'],
+            answer: [
+              {
+                user_id: 'L1UoRmLcipomYHNaqnQntw',
+                answer: 'correct',
+                answer_id: 'correct',
+              },
+              {
+                user_id: 'm82gqj1hemhkoprrimc',
+                answer: 'correct',
+                answer_id: 'correct',
+              },
+            ],
+            updated_by: 'uw',
+          },
+          {
+            question_id: 'dob_confirmation',
+            question: ['Can you please confirm your Date of Birth?'],
+            answer: [
+              {
+                user_id: 'L1UoRmLcipomYHNaqnQntw',
+                answer: 'correct',
+                answer_id: 'correct',
+              },
+              {
+                user_id: 'm82gqj1hemhkoprrimc',
+                answer: 'correct',
+                answer_id: 'correct',
+              },
+            ],
+            updated_by: 'uw',
+          },
+          {
+            question_id: 'height_weight_confirmation',
+            question: [
+              "I'm going to read the Height and Weight details you have filled for all the members. Please let me know if all of those are correct",
+            ],
+            answer: [
+              {
+                user_id: 'L1UoRmLcipomYHNaqnQntw',
+                answer: 'correct',
+                answer_id: 'correct',
+              },
+              {
+                user_id: 'm82gqj1hemhkoprrimc',
+                answer: 'correct',
+                answer_id: 'correct',
+              },
+            ],
+            updated_by: 'uw',
+          },
+          {
+            question_id: 'experiencing_symptoms',
+            question: [
+              'Is anyone in this plan currently experiencing any of the following symptoms?',
+            ],
+            answer: [
+              {
+                user_id: 'L1UoRmLcipomYHNaqnQntw',
+                answer: [
+                  'Fatigue',
+                  'Unexplained weight loss',
+                  'Dizziness',
+                  'Change in bowel habit',
+                  'Difficulty in breathing',
+                  'Acidity / Bleeding / Pain in passing stool',
+                  ' Any complaint related to eye-like blurring of vision / cataract / ear / mouth / nose / throat',
+                  'No symptoms',
+                ],
+                answer_id: [
+                  'none',
+                  'bowel',
+                  'breathing',
+                  'stool',
+                  'ent_complaint',
+                  'fatigue',
+                  'weight_loss',
+                  'dizziness',
+                ],
+              },
+              {
+                user_id: 'm82gqj1hemhkoprrimc',
+                answer: ['No symptoms'],
+                answer_id: ['none'],
+              },
+            ],
+            updated_by: 'uw',
+          },
+          {
+            question_id: 'experiencing_symptoms_follow_up',
+            question: [
+              '- Are you currently taking any medicines? ',
+              '- Have you consulted any doctor? ',
+              '- Probe on details (Duration/ongoing medications/hospitalisation/present symptoms/last consultation/reports/complication and recurrence)',
+              '- If not, are you planning to visit any doctor?',
+            ],
+            answer: [
+              {
+                user_id: 'L1UoRmLcipomYHNaqnQntw',
+                answer: 'jjjjdsd',
+                answer_id: 'jjjjdsd',
+              },
+            ],
+            updated_by: 'uw',
+          },
+        ],
+      });
+
+      const response = await fetch('localhost:5010/questions/answers', {
+        method: 'POST',
+        headers: myHeaders,
+        body: raw,
+        redirect: 'follow',
+      });
+      if (!response.ok) {
+        throw new Error('Something went wrong');
+      }
+      const resp = await response.json();
+      _setLoading(true);
+    } catch (err) {
+      _setLoading(true);
+    }
+  };
+
   const navigateToSection = (direction: 'next' | 'previous') => {
     const currentIndex = sectionList.findIndex(
       (section) => section === activeSection,
@@ -54,9 +242,9 @@ export default function HealthProfile({ readonly }: { readonly: Boolean }) {
     } else {
       newIndex = currentIndex > 0 ? currentIndex - 1 : currentIndex;
     }
-
     setActiveSection(sectionList[newIndex]);
   };
+
   useEffect(() => {
     fetchTelemerConfig();
     const uniqueMembers = getUniqueMembers(question_Data4);
@@ -381,13 +569,11 @@ export default function HealthProfile({ readonly }: { readonly: Boolean }) {
       eligible_members: { user_id: string; name: string }[],
     ) => {
       return (
-        <>
-          <div
-            className="font-bold pb-2 text-base"
-            style={{ color: '#171A1FFF' }}
-          >
-            {config.question_text}
-          </div>
+        <div className="py-4 border-b">
+          <QuestionText
+            question_text={config.question_text}
+            required={config.required}
+          />
           <div className="pl-2">
             {/* showing options for each member */}
             {eligible_members &&
@@ -400,7 +586,7 @@ export default function HealthProfile({ readonly }: { readonly: Boolean }) {
                 );
               })}
           </div>
-        </>
+        </div>
       );
     },
     [control, handleAnswerChange, globalQuestion],
@@ -411,7 +597,6 @@ export default function HealthProfile({ readonly }: { readonly: Boolean }) {
       const user_response = Object.keys(response).includes(member.user_id)
         ? response[member.user_id as keyof typeof response]
         : null;
-
       if (
         !(
           user_response &&
@@ -446,7 +631,10 @@ export default function HealthProfile({ readonly }: { readonly: Boolean }) {
                   className="border rounded-md p-2 mb-3"
                   // style={{backgroundColor:""}}
                 >
-                  <div>{conf.question_config.question_text}</div>
+                  <QuestionText
+                    question_text={conf.question_config?.question_text}
+                    required={conf.question_config.required}
+                  />
                   {renderQuestion(conf.question_config, member)}
                 </div>
               ));
@@ -475,7 +663,10 @@ export default function HealthProfile({ readonly }: { readonly: Boolean }) {
                   className="border rounded-md p-2 mb-3 ml-4"
                   // style={{backgroundColor:""}}
                 >
-                  <div>{conf.question_config.question_text}</div>
+                  <QuestionText
+                    question_text={conf.question_config?.question_text}
+                    required={conf.question_config.required}
+                  />
                   {renderQuestion(conf.question_config, member)}
                 </div>
               ));
@@ -494,12 +685,13 @@ export default function HealthProfile({ readonly }: { readonly: Boolean }) {
   }, []);
 
   return (
-    <div className="mx-auto">
+    <div className="mx-auto w-full">
       <div className="flex items-center gap-2 mb-4">
         <h1 className="text-2xl font-bold">Health profile</h1>
         <div className="flex items-center text-purple-500 gap-1">
           <CheckCircle className="w-4 h-4" />
           <span className="text-sm">Auto saved</span>
+          {(loading || _loading) && <PageLoader />}
         </div>
       </div>
       {/* {IntroductionSection(
@@ -517,6 +709,8 @@ export default function HealthProfile({ readonly }: { readonly: Boolean }) {
               toggleSection={toggleSection}
               activeSection={activeSection}
               navigateToSection={navigateToSection}
+              handleSubmit={handleSubmit}
+              sectionList={sectionList}
             >
               <>
                 {globalQuestion

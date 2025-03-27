@@ -33,7 +33,7 @@ const TelemerRadio: React.FC<propsType> = ({
     [options],
   );
   return (
-    <div className="mb-6 flex gap-4">
+    <div className="mb-4 flex gap-4">
       <p className="font-bold font-italic text-gray-600">{label}</p>
       <Controller
         control={control}

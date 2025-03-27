@@ -31,7 +31,7 @@ interface UserMenuProps {
 
 export default function UserMenu({ onLogout }: UserMenuProps) {
   const [status, setStatus] = useState<UserStatus>(
-    (localStorage?.getItem('user-status') as UserStatus) ?? 'available',
+    (localStorage!?.getItem('user-status') as UserStatus) ?? 'available',
   );
   const { fetchAuthDetails } = useAuth();
   const { authUser } = useAuthStore();
@@ -43,7 +43,7 @@ export default function UserMenu({ onLogout }: UserMenuProps) {
     offline: 'bg-gray-500',
   };
   const onStatusChange = (value: UserStatus) => {
-    localStorage.setItem('user-status', value);
+    localStorage?.setItem('user-status', value);
     setStatus(value);
   };
   useEffect(() => {

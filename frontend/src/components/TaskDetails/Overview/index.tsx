@@ -11,15 +11,29 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Mail, Phone } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
+import CustomerDashboard from './horizontal';
 
-const LeftSection: React.FC<{ taskData: any }> = ({ taskData }) => {
+const LeftSection: React.FC<{
+  taskData: any;
+  layout: 'vertical' | 'horizontal';
+}> = ({ taskData, layout }) => {
+  const [detail, setDetail] = useState([
+    { label: 'Email', value: '' },
+    { label: 'Phone', value: '' },
+    { label: 'Name', value: '' },
+    { label: 'Email', value: '' },
+  ]);
   if (!taskData) {
     return <p className="text-sm text-gray-500">Nothing to display</p>;
   }
-
+  console.log('taskDetail', taskData);
+  return <CustomerDashboard layout={layout} />;
   return (
-    <Card className="w-full md:w-1/4 border-r border-gray-300 p-4">
+    <Card
+      className={`w-full border-r border-gray-300 p-4 flex`}
+      style={{ background: '#F2F2FDFF' }}
+    >
       <CardHeader className="flex flex-row items-center space-x-4 p-0 mb-4">
         <Avatar className="bg-purple-700 text-white">
           <AvatarFallback>{taskData?.assignee?.[0]}</AvatarFallback>
@@ -45,9 +59,18 @@ const LeftSection: React.FC<{ taskData: any }> = ({ taskData }) => {
         </div>
       </CardHeader>
 
-      <CardContent className="p-0 space-y-6">
+      <CardContent
+        className={`${
+          layout === 'horizontal'
+            ? 'p-0 space-y-6 w-full'
+            : ' flex p-0 space-y-6 w-full gap-2'
+        }`}
+      >
         {/* Task Details */}
-        <div>
+        <div
+          style={{ minWidth: '200px' }}
+          className="border rounded-sm bg-white p-2"
+        >
           <h4 className="text-base font-semibold mb-2">Task details</h4>
           <ul className="text-sm space-y-1 text-muted-foreground">
             <li>
@@ -67,10 +90,13 @@ const LeftSection: React.FC<{ taskData: any }> = ({ taskData }) => {
             </li>
           </ul>
         </div>
-        <Separator />
+        {/* <Separator orientation={layout} /> */}
 
         {/* General Info */}
-        <div>
+        <div
+          className="w-20 border rounded-sm bg-white p-2"
+          style={{ minWidth: '200px' }}
+        >
           <h4 className="text-base font-semibold mb-2">General info</h4>
           <ul className="text-sm space-y-1 text-muted-foreground">
             <li>
@@ -81,10 +107,13 @@ const LeftSection: React.FC<{ taskData: any }> = ({ taskData }) => {
             </li>
           </ul>
         </div>
-        <Separator />
+        {/* <Separator orientation={layout} /> */}
 
         {/* Existing ACKO Policy Details */}
-        <div>
+        <div
+          style={{ minWidth: '200px' }}
+          className="border rounded-sm bg-white p-2"
+        >
           <h4 className="text-base font-semibold mb-2">
             Existing ACKO policy details
           </h4>
@@ -103,10 +132,13 @@ const LeftSection: React.FC<{ taskData: any }> = ({ taskData }) => {
             </li>
           </ul>
         </div>
-        <Separator />
+        {/* <Separator orientation={layout} /> */}
 
         {/* Claims Details */}
-        <div>
+        <div
+          style={{ minWidth: '200px' }}
+          className="border rounded-sm bg-white p-2"
+        >
           <h4 className="text-base font-semibold mb-2">Claims details</h4>
           <ul className="text-sm space-y-1 text-muted-foreground">
             <li>
@@ -114,10 +146,10 @@ const LeftSection: React.FC<{ taskData: any }> = ({ taskData }) => {
             </li>
           </ul>
         </div>
-        <Separator />
+        {/* <Separator orientation={layout} /> */}
 
         {/* Actions */}
-        <div className="space-y-2">
+        <div className="space-y-2" style={{ minWidth: '200px' }}>
           <Button className="w-full">Plan change</Button>
           <Button variant="outline" className="w-full">
             Proposal edit
@@ -129,3 +161,13 @@ const LeftSection: React.FC<{ taskData: any }> = ({ taskData }) => {
 };
 
 export default LeftSection;
+/* Container 187 */
+// .container {
+//     position: absolute;
+//     top: 82px;
+//     left: 110px;
+//     width: 1847px;
+//     height: 176px;
+//     background: #F2F2FDFF;
+//     border-radius: 8px;
+//   }

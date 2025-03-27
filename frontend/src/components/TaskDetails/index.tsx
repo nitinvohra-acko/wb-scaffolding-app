@@ -2,14 +2,13 @@
 import { apiClient } from '@/utils/interceptor';
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { DataRow } from './constants';
-import LeftSection from './Overview';
+import LeftSection from './Overview/horizontal';
 import RightSection from './tabs';
 
 const PageLayout: React.FC = ({}) => {
   const params = useParams();
-  const [userData, setUserData] = useState<DataRow | undefined>();
   const [taskDetail, setTaskDetail] = useState(null);
+  const [layout, setLayout] = useState<'vertical' | 'horizontal'>('horizontal');
 
   useEffect(() => {
     if (Array.isArray(params.slug) && params.slug.length > 0) {
@@ -28,9 +27,13 @@ const PageLayout: React.FC = ({}) => {
   };
 
   return (
-    <div className="flex h-full">
-      <LeftSection taskData={taskDetail} />
-      <RightSection />
+    <div className={`${layout === 'horizontal' ? 'flex' : ''} h-full`}>
+      <LeftSection taskDetail={taskDetail} layout={layout} />
+      <RightSection
+        layout={layout}
+        handleLayout={setLayout}
+        taskDetail={taskDetail}
+      />
     </div>
   );
 };

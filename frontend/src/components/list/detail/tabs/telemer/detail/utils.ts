@@ -138,3 +138,7 @@ export const updateObjectByKey = (
   }
   return arr;
 };
+
+export const resolver = (data: any) => {
+  console.log('data', data);
+};

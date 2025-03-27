@@ -1,6 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useMemo } from 'react';
 
 const SectionAccordian: React.FC<{
   title: string;
@@ -8,7 +9,23 @@ const SectionAccordian: React.FC<{
   children: React.ReactElement;
   activeSection: string | null;
   navigateToSection: (vale: 'previous' | 'next') => void;
-}> = ({ title, children, toggleSection, activeSection, navigateToSection }) => {
+  handleSubmit: Function;
+  sectionList: string[];
+}> = ({
+  title,
+  children,
+  toggleSection,
+  activeSection,
+  navigateToSection,
+  sectionList,
+  handleSubmit,
+}) => {
+  const { isLast, isFirst } = useMemo(() => {
+    return {
+      isLast: sectionList[sectionList.length - 1] === title,
+      isFirst: sectionList[0] === title,
+    };
+  }, [title]);
   return (
     <Card className="mb-4 shadow-sm" style={{ backgroundColor: '#F8F9FAFF' }}>
       <div
@@ -37,15 +54,22 @@ const SectionAccordian: React.FC<{
             variant="outline"
             onClick={() => navigateToSection('previous')}
             className="px-6"
+            disabled={isFirst}
           >
             Previous
           </Button>
           <Button
             variant="default"
-            onClick={() => navigateToSection('next')}
+            onClick={() => {
+              if (isLast) {
+                handleSubmit();
+              } else {
+                navigateToSection('next');
+              }
+            }}
             className="px-6 bg-gray-900"
           >
-            Next
+            {isLast ? 'Submit' : 'Next'}
           </Button>
         </div>
       </CardContent>
