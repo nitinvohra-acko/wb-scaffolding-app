@@ -28,7 +28,7 @@ const LeftSection: React.FC<{
     return <p className="text-sm text-gray-500">Nothing to display</p>;
   }
   console.log('taskDetail', taskData);
-  return <CustomerDashboard layout={layout} />;
+  return <CustomerDashboard layout={layout} taskDetail={taskData} />;
   return (
     <Card
       className={`w-full border-r border-gray-300 p-4 flex`}
