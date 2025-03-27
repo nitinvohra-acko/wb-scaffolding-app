@@ -26,11 +26,6 @@ export default function TaskDataPage() {
   const { taskResponse: taskData, status } = useTasks.getState();
   const { fetchTaskLists: fetchData, loading } = useTaskLists();
 
-  useEffect(() => {
-    fetchData(INIT_FILTER);
-    page('Task Data Page');
-  }, []);
-
   // Define your columns
   const columns: ColumnDef[] = [
     { key: 'assignee', header: 'Assignee' },
@@ -57,7 +52,6 @@ export default function TaskDataPage() {
       filters,
       pageNo: 1, // Reset to first page on new filter
     };
-    console.log(request, 'req');
     fetchData(request);
   };
 
@@ -109,6 +103,10 @@ export default function TaskDataPage() {
 
     return row[column.key];
   };
+  useEffect(() => {
+    fetchData(INIT_FILTER);
+    page('task_listing');
+  }, []);
   if (!taskData) {
     return <>loading...</>;
   }

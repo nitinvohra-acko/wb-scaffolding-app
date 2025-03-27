@@ -32,6 +32,10 @@ const nextConfig: NextConfig = {
         source: '/search/fields/:path*',
         destination: `${process.env.NEXT_PUBLIC_BASE_API}/search/fields/:path*`,
       },
+      {
+        source: '/api/event',
+        destination: `${process.env.NEXT_PUBLIC_BASE_API}/api/event`,
+      },
     ];
   },
 };

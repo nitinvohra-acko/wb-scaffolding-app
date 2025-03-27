@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Plus, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { User } from '@/types/users';
 import { Label } from '@/components/ui/label';
@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 
 const GROUPS = [
   // { id: 'ops', name: 'Operations' },
@@ -56,6 +57,11 @@ const ROLE_MAP: Record<string, Record<string, string>> = {
   },
 };
 
+interface Attribute {
+  key: string;
+  value: string;
+}
+
 const UserDetailPage = () => {
   const router = useRouter();
   const params = useParams();
@@ -65,6 +71,7 @@ const UserDetailPage = () => {
 
   const [selectedGroup, setSelectedGroup] = useState<string>('');
   const [selectedRole, setSelectedRole] = useState<string>('');
+  const [attributes, setAttributes] = useState<Attribute[]>([]);
 
   const fetchUserResponse = useCallback(async () => {
     if (userId) {
@@ -84,10 +91,29 @@ const UserDetailPage = () => {
     setSelectedRole('');
   }, [selectedGroup]);
 
+  const addAttribute = () => {
+    setAttributes([...attributes, { key: '', value: '' }]);
+  };
+
+  const removeAttribute = (index: number) => {
+    setAttributes(attributes.filter((_, i) => i !== index));
+  };
+
+  const updateAttribute = (
+    index: number,
+    field: 'key' | 'value',
+    value: string,
+  ) => {
+    const newAttributes = [...attributes];
+    newAttributes[index][field] = value;
+    setAttributes(newAttributes);
+  };
+
   const handleSubmit = () => {
     console.log('Submitting:', {
       group: selectedGroup,
       role: selectedRole,
+      attributes,
     });
 
     // TODO: Replace with API call or backend submit logic
@@ -206,6 +232,52 @@ const UserDetailPage = () => {
               </Select>
             </div>
           )}
+
+          {/* Attributes Section */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <Label>Attributes</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addAttribute}
+              >
+                <Plus className="h-4 w-4 mr-1" /> Add Attribute
+              </Button>
+            </div>
+
+            {attributes.map((attr, index) => (
+              <div key={index} className="flex gap-4 items-start">
+                <div className="flex-1">
+                  <Input
+                    placeholder="Key"
+                    value={attr.key}
+                    onChange={(e) =>
+                      updateAttribute(index, 'key', e.target.value)
+                    }
+                  />
+                </div>
+                <div className="flex-1">
+                  <Input
+                    placeholder="Value"
+                    value={attr.value}
+                    onChange={(e) =>
+                      updateAttribute(index, 'value', e.target.value)
+                    }
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeAttribute(index)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
         </CardContent>
 
         <CardFooter>

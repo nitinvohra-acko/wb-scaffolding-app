@@ -14,7 +14,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
     if (authUser?.email) {
       identify({
         email: authUser.email,
-        name: authUser.name,
+        name: authUser?.firstName + ' ' + authUser?.lastName,
       });
     }
   }, [authUser, identify]);
