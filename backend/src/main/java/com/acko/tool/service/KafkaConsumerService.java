@@ -26,7 +26,7 @@ public class KafkaConsumerService {
     WorkflowService workflowService;
 
 
-    @KafkaListener(topics = "internal", groupId = "my-group")
+    @KafkaListener(topics = "wb-scaffolding", groupId = "my-group")
     public void consumeInternal(String message) {
         try {
             JsonNode jsonNode = objectMapper.readTree(message);
@@ -46,7 +46,7 @@ public class KafkaConsumerService {
         }
     }
 
-    @KafkaListener(topics = "external", groupId = "my-group")
+    @KafkaListener(topics = "wb-scaffolding", groupId = "my-group")
     public void consumeExternal(String message) {
         try {
             JsonNode jsonNode = objectMapper.readTree(message);

@@ -26,13 +26,15 @@ spring:
       on-profile: local
 
   kafka:
-    bootstrap-servers: localhost:29092,10.89.0.8:29092  # Use localhost:29092 if connecting externally
+    bootstrap-servers: b-2.sureosackodevmsk.spoc7n.c3.kafka.ap-south-1.amazonaws.com:9094,b-1.sureosackodevmsk.spoc7n.c3.kafka.ap-south-1.amazonaws.com:9094,b-3.sureosackodevmsk.spoc7n.c3.kafka.ap-south-1.amazonaws.com:9094
+    max.request.size: 10485880
     consumer:
+      security:
+        protocol: SSL
       group-id: my-group
-      auto-offset-reset: earliest
     producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      security:
+        protocol: SSL
     listener:
       ack-mode: batch
 
@@ -68,6 +70,7 @@ elasticsearch:
   url: http://localhost:9200
   taskIndex: tasks
   userIndex: user
+  eventIndex: event
 
 keycloak:
   serverUrl: http://localhost:8080
@@ -115,6 +118,7 @@ elasticsearch:
   url: http://elasticsearch:9200
   taskIndex: tasks
   userIndex: user
+  eventIndex: event
 
 keycloak:
   serverUrl: http://keycloak:8080
