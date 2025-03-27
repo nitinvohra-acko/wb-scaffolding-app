@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.acko.tool.config.properties.KeycloakConfigProperties;
 import com.acko.tool.dto.UserDTO;
+import com.acko.tool.dto.UserWrapper;
 import com.acko.tool.entity.User;
 import com.acko.tool.entity.search.user.UserSearch;
 import com.acko.tool.service.UserService;
@@ -96,7 +97,12 @@ public class UserController {
 			// Extract Claims from the token
 			Claims claims = jwtTokenUtil.extractClaims(token);
 			String username = claims.getSubject();
-			return claims;
+			User user = getUserById(username);
+
+			return UserWrapper.builder()
+					.tokenInfo(claims)
+					.userInfo(user)
+					.build();
 		} catch (Exception e) {
 			return "Invalid token or token expired";
 		}
