@@ -32,6 +32,7 @@ public class Task<T> {
 	@Id
 	private String id;
 	private String workflowInstanceId;
+	private String referenceTaskId;
 	private String priority;
 	private String assignee;
 	private String type;

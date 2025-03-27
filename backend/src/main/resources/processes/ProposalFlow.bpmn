@@ -25,7 +25,7 @@
         <bpmn:incoming>Flow_1vs0r1y</bpmn:incoming>
         <bpmn:outgoing>Flow_09k7khv</bpmn:outgoing>
       </bpmn:serviceTask>
-      <bpmn:serviceTask id="ProposalAccepted" name="Accepted" camunda:class="com.acko.tool.delegates.InitiateTelemer">
+      <bpmn:serviceTask id="ProposalAccepted" name="Accepted" camunda:class="com.acko.tool.delegates.Accepted">
         <bpmn:incoming>ProposalAcceptedEvent</bpmn:incoming>
         <bpmn:outgoing>Flow_0ob1si9</bpmn:outgoing>
       </bpmn:serviceTask>

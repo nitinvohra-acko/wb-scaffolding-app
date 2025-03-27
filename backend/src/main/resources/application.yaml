@@ -26,7 +26,7 @@ spring:
       on-profile: local
 
   kafka:
-    bootstrap-servers: localhost:29092  # Use localhost:29092 if connecting externally
+    bootstrap-servers: localhost:29092,10.89.0.8:29092  # Use localhost:29092 if connecting externally
     consumer:
       group-id: my-group
       auto-offset-reset: earliest

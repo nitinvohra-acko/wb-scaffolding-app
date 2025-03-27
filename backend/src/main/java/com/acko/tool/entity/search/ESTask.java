@@ -32,6 +32,12 @@ public class ESTask {
     @Field(type = FieldType.Keyword)
     private String status;
 
+    @Field(type = FieldType.Keyword)
+    private String workflowInstanceId;
+
+    @Field(type = FieldType.Keyword)
+    private String referenceTaskId;
+
     @Field(type = FieldType.Integer)
     private Integer calculatedPriority;
 

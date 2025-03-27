@@ -50,7 +50,7 @@
                     <text>"ProposalFlow"</text>
                 </outputEntry>
                 <outputEntry id="LiteralExpression_1wq8t2v">
-                    <text>"FlowEvent"</text>
+                    <text>"AdditionalP2IDecisionEvent"</text>
                 </outputEntry>
             </rule>
             <rule id="DecisionRule_1f0j0lj">

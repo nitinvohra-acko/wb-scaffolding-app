@@ -10,18 +10,19 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+
 @Log4j2
 @Component
 @AllArgsConstructor
-public class ScheduleTelemer implements JavaDelegate {
+public class Accepted implements JavaDelegate {
 
     private final TasksService tasksService;
 
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
-        log.info("UW scheduled Telemer Call");
-        Task<?> telemerTask = tasksService.fetchTaskById(delegateExecution.getVariable("task_id").toString());
-        telemerTask.setStatus("telemer_scheduled");
-        tasksService.createOrUpdateTasks(List.of(telemerTask));
+        String taskId = delegateExecution.getVariable("task_id").toString();
+        Task<?> proposalTask = tasksService.fetchTaskById(taskId);
+        proposalTask.setStatus("proposal_accepted");
+        tasksService.createOrUpdateTasks((List.of(proposalTask)));
     }
 }

@@ -26,7 +26,7 @@
                     <text>"bpmn_event"</text>
                 </outputEntry>
                 <outputEntry id="LiteralExpression_004mq9t">
-                    <text>"StartTelemerWorkflow"</text>
+                    <text>"ProposalFlow"</text>
                 </outputEntry>
                 <outputEntry id="LiteralExpression_1mgq6b3">
                     <text>"TelemerSuccessEvent"</text>
