@@ -31,9 +31,7 @@ interface UserMenuProps {
 }
 
 export default function UserMenu({ onLogout }: UserMenuProps) {
-  const [status, setStatus] = useState<UserStatus>(
-    (localStorage?.getItem('user-status') as UserStatus) ?? 'available',
-  );
+  const [status, setStatus] = useState<UserStatus>('available');
   const { fetchAuthDetails } = useAuth();
   const { authUser } = useAuthStore();
   const statusColors: Record<UserStatus, string> = {
