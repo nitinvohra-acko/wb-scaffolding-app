@@ -13,7 +13,8 @@ camunda.bpm:
 acko:
   rap-manager-service:
     url: https://health-rap-manager-service-uat.internal.ackodev.com
-
+  tool-name:
+    name: Doc_tool
 management:
   endpoint:
     health:
@@ -23,6 +24,17 @@ spring:
   config:
     activate:
       on-profile: local
+
+  kafka:
+    bootstrap-servers: localhost:29092  # Use localhost:29092 if connecting externally
+    consumer:
+      group-id: my-group
+      auto-offset-reset: earliest
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    listener:
+      ack-mode: batch
 
   datasource:
     url: jdbc:mysql://localhost:3306/camunda
@@ -51,7 +63,7 @@ jwt:
     converter:
       resource-id: my-client
       principal-attribute: preferred_username
-          
+
 elasticsearch:
   url: http://localhost:9200
   taskIndex: tasks

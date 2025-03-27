@@ -24,7 +24,8 @@ public class TaskPropagatorUtils {
             String taskStatus = delegateExecution.getVariable("task_status").toString();
             String proposalId = delegateExecution.getVariable("reference_id").toString();
             String assessmentId = Objects.nonNull(delegateExecution.getVariable("assessment_id"))?delegateExecution.getVariable("assessment_id").toString():null;
-            List<String> taskPropagatorUpdates = List.of(delegateExecution.getVariable("delegate").toString());
+            List<String> taskPropagatorUpdates = null;
+//            List.of(delegateExecution.getVariable("delegate").toString());
             Object businessEntityUpdates = delegateExecution.getVariable("request");
             Task<Object> task = Task.builder().id(taskId).status(taskStatus).build();
             switch (businessEntity){

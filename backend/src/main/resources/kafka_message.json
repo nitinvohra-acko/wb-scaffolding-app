@@ -1,0 +1,11 @@
+{
+    "eventId": "12345",
+    "eventType": "TeleMER_Required",
+    "timestamp": "2025-03-26T12:34:56Z",
+    "service" : "CRM",
+    "payload": {
+      "userId": "67890",
+      "userName": "john_doe",
+      "email": "john.doe@example.com"
+    }
+  }

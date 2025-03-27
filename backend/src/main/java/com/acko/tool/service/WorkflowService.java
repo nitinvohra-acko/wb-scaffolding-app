@@ -15,9 +15,8 @@ public class WorkflowService {
     @Autowired
     private RuleEngineService ruleEngineService;
 
-
     public Object initiateWorkflow(String workflowName, Map<String,Object> request) {
-        return ruleEngineService.startBpmnProcess(workflowName, request);
+        return ruleEngineService.startBpmnProcess("StartTelemerWorkflow", request);
     }
 
     public Object sendEventToWorkflow(String workflowName, String messageName, Map<String,Object> request){
