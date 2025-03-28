@@ -45,42 +45,61 @@ export default function HealthProfile({ readonly }: PropsType) {
   const { fetchTelemerConfig, loading } = useTelemer();
   const hoistResponse = useTelemerStore().hoistResponse;
   const store = useTelemerStore((store) => store);
+
   const zSchema = useMemo(() => {
+    let sampleZod = {};
     function questionSchema(config: QuestionsType) {
       if (
         !config.question_config?.sub_questions &&
         config.question_config.required === 1
       ) {
+        let zExpression = null;
+        switch (config.question_config.type) {
+          case 'telemer_radio_group': {
+            zExpression = z
+              .array(z.string())
+              .min(1, 'Please select your option');
+            break;
+          }
+          case 'telemer_multi_select': {
+            zExpression = z.array(z.string()).min(1, 'This field is required.');
+            break;
+          }
+        }
+        sampleZod = { ...sampleZod, [config.question_id]: zExpression };
       }
       config.question_config.sub_questions?.map((sub) => {
         questionSchema(sub);
       });
     }
-    let _zObj = {
-      introduction: z.string().min(1, 'Introduction is required'),
-      name_confirmation: z.string().min(1, 'Name confirmation is required'),
-      health_and_habits: z.string().min(1, 'Health and habits is required'),
-      tobacco: z.string().optional(),
-      tobacco_quantity: z.string().optional(),
-      alcohol: z.string().optional(),
-      alcohol_quantity: z.string().optional(),
-      medical_condition: z.array(z.string()).optional(),
-      other_medical_conditions: z.string().optional(),
-      medical_condition_follow_up: z.string().optional(),
-      recovered_now: z.string().optional(),
-      medicine_reasons: z.string().optional(),
-      not_recovered_follow_up: z.string().optional(),
-      experiencing_symptoms: z.array(z.string()).optional(),
-      other_symptoms: z.string().optional(),
-      experiencing_symptoms_follow_up: z.string().optional(),
-      experiencing_symptoms_joint_pain: z.string().optional(),
-      pregnant: z.string().optional(),
-      baby_due: z.string().optional(),
-      pregnant_follow_up: z.string().optional(),
-      past_pregnant: z.string().optional(),
-    };
-    const userSchema = z.object(_zObj);
-  }, []);
+    question_Data4.map((config) => {
+      questionSchema(config);
+    });
+    // let _zObj = {
+    //   introduction: z.string().min(1, 'Introduction is required'),
+    //   name_confirmation: z.string().min(1, 'Name confirmation is required'),
+    //   health_and_habits: z.string().min(1, 'Health and habits is required'),
+    //   tobacco: z.string().optional(),
+    //   tobacco_quantity: z.string().optional(),
+    //   alcohol: z.string().optional(),
+    //   alcohol_quantity: z.string().optional(),
+    //   medical_condition: z.array(z.string()).optional(),
+    //   other_medical_conditions: z.string().optional(),
+    //   medical_condition_follow_up: z.string().optional(),
+    //   recovered_now: z.string().optional(),
+    //   medicine_reasons: z.string().optional(),
+    //   not_recovered_follow_up: z.string().optional(),
+    //   experiencing_symptoms: z.array(z.string()).optional(),
+    //   other_symptoms: z.string().optional(),
+    //   experiencing_symptoms_follow_up: z.string().optional(),
+    //   experiencing_symptoms_joint_pain: z.string().optional(),
+    //   pregnant: z.string().optional(),
+    //   baby_due: z.string().optional(),
+    //   pregnant_follow_up: z.string().optional(),
+    //   past_pregnant: z.string().optional(),
+    // };
+    return z.record(z.string(), sampleZod);
+  }, [question_Data4]);
 
   const { control, getValues, reset, trigger, formState, watch } = useForm({
     mode: 'onChange',
@@ -90,7 +109,7 @@ export default function HealthProfile({ readonly }: PropsType) {
     //   familyConstraints: isAsp ? familyConstraintsAsp : familyConstraints,
     //   members: previousMembers,
     // } as object,
-    // resolver: resolver as Resolver<Record<string, any>, object>,
+    resolver: zodResolver(zSchema),
   });
 
   const handleSubmit = async () => {
@@ -214,7 +233,7 @@ export default function HealthProfile({ readonly }: PropsType) {
         ],
       });
 
-      const response = await fetch('localhost:5010/questions/answers', {
+      const response = await fetch('/questions/answers', {
         method: 'POST',
         headers: myHeaders,
         body: raw,
@@ -224,9 +243,48 @@ export default function HealthProfile({ readonly }: PropsType) {
         throw new Error('Something went wrong');
       }
       const resp = await response.json();
-      _setLoading(true);
+      runWorkflow();
     } catch (err) {
-      _setLoading(true);
+      _setLoading(false);
+      console.log('error at submit');
+    }
+  };
+
+  const runWorkflow = async () => {
+    const myHeaders = new Headers();
+    try {
+      myHeaders.append('Content-Type', 'application/json');
+
+      const raw = JSON.stringify({
+        eventId: '00420',
+        eventType: 'telemer_decision',
+        timestamp: 1742983346000,
+        serviceName: 'CRM',
+        payload: {
+          task_id: '67e50c89d7ddbd37281279fd',
+          workflow_id: 'acf8cb7e-0ae5-11f0-92ca-aa3842aadbdb',
+          decision: 'TELEMER_COMPLETED',
+          assignee: 'anurag.khard@acko.tech',
+          type: 'proposal',
+          proposalId: 'a9e283d2-aebf-4fdf-8e4c-6f62d026601c',
+          proposalStatus: 'payment_done',
+          memberIds: ['m82swi7a19nfy65rzan', 'm82gqj4demhkoprrimc'],
+        },
+      });
+
+      const response = await fetch(
+        '/kafka/publish?key=telemer_decision&topic=external',
+        {
+          method: 'POST',
+          headers: myHeaders,
+          body: raw,
+          redirect: 'follow',
+        },
+      );
+      const resp = await response.json();
+    } catch (err) {
+      _setLoading(false);
+      console.log('error at WF run');
     }
   };
 
@@ -246,7 +304,7 @@ export default function HealthProfile({ readonly }: PropsType) {
   };
 
   useEffect(() => {
-    fetchTelemerConfig();
+    // fetchTelemerConfig();
     const uniqueMembers = getUniqueMembers(question_Data4);
     let memberQuestion = {};
     uniqueMembers.map((member) => {
@@ -520,15 +578,16 @@ export default function HealthProfile({ readonly }: PropsType) {
   const handleAnswerChange = useCallback(
     (question_id: string, user_id: string, value: string | string[]) => {
       const _questions: QuestionsType[] = [...globalQuestion];
-      console.log('_question', _questions, question_id, value, user_id);
+      // console.log('_question', _questions, question_id, value, user_id);
       updateObjectByKey(_questions, 'question_id', question_id, value, user_id);
       setGlobalQuestion(_questions);
       hoistResponse(_questions);
+      // trigger(user_id.question_id);
     },
     [globalQuestion],
   );
   useEffect(() => {
-    console.log('global lgo', store.memberResponse, getValues());
+    console.log('global lgo', getValues(), formState.errors);
   }, [globalQuestion]);
 
   const renderQuestion = useCallback(

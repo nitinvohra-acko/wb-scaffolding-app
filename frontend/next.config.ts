@@ -32,6 +32,14 @@ const nextConfig: NextConfig = {
         source: '/search/fields/:path*',
         destination: `${process.env.NEXT_PUBLIC_BASE_API}/search/fields/:path*`,
       },
+      {
+        source: '/kafka/publish/:path*',
+        destination: `${process.env.NEXT_PUBLIC_BASE_API}/kafka/publish/:path*`,
+      },
+      {
+        source: '/questions/answers/:path*',
+        destination: `${process.env.NEXT_PUBLIC_BASE_API}/questions/answers/:path*`,
+      },
     ];
   },
 };

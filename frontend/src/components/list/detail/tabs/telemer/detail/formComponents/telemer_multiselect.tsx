@@ -84,6 +84,7 @@ const TelemerSelect: React.FC<propsType> = ({
             field: { onChange, value = getSelectValue },
             fieldState: { error },
           }) => {
+            // console.log('Error in checkbox', error);
             return (
               <div className=" pt-2">
                 <div className="py-2 grid grid-cols-6 gap-2 border-b border-gray-100">
