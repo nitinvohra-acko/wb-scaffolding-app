@@ -12,7 +12,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class Event {
-    private String eventId;
-    private String eventDescription;
+public class AssignTaskProperties {
+    private String assignTo;
+    private String condition;
+    private String assignmentStrategy;
+    private String userId;
 }

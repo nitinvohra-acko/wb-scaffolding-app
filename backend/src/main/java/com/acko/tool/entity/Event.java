@@ -1,4 +1,4 @@
-package com.acko.tool.entity.action;
+package com.acko.tool.entity;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class ActionProperties {
-    private AssignTaskProperties assignTaskProperties;
+public class Event {
+    private String eventId;
+    private String referenceTaskId;
 }

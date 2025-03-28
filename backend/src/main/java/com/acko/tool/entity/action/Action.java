@@ -18,4 +18,5 @@ public class Action {
     private String eventId;
     private String action;
     private ActionProperties actionProperties;
+    private Boolean isActive;
 }

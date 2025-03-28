@@ -1,5 +1,6 @@
 package com.acko.tool.controller;
 
+import com.acko.tool.entity.Event;
 import com.acko.tool.entity.action.Action;
 import com.acko.tool.entity.action.EventActionMetadata;
 import com.acko.tool.service.action.ActionService;
@@ -26,5 +27,11 @@ public class ActionController {
     public ResponseEntity<Action> saveAction(@RequestBody Action saveActionDTO) {
         // Handle saving action
         return ResponseEntity.ok(actionService.saveAction(saveActionDTO));
+    }
+
+    @PostMapping("/post_event")
+    public ResponseEntity<Event> postEvent(@RequestBody Event event) {
+        // Handle saving action
+        return ResponseEntity.ok(actionService.getActionsForEventAndExecute(event));
     }
 }
