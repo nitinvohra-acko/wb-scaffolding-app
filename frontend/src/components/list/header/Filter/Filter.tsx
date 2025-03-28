@@ -9,12 +9,13 @@ const Filter: FC<{
   handleExpand?: (expand: boolean) => void;
 }> = ({ isExpandFilter, handleExpand }) => {
   const { taskResponse } = useTasks.getState();
-
+  console.log(taskResponse?.filters, 'filters');
   const RenderFilters = useMemo(() => {
     return taskResponse?.filters?.map((filter) => {
-      const Component = FilterComponents[filter?.field_type];
+      const Component = FilterComponents[filter?.fieldType];
+      console.log(FilterComponents, filter?.fieldType);
       if (Component) {
-        return <Component key={filter.field_name} filter={filter} />;
+        return <Component key={filter.fieldName} filter={filter} />;
       }
       return null;
     });

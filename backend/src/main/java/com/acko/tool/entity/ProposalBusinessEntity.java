@@ -19,4 +19,5 @@ public class ProposalBusinessEntity {
 	private List<String> memberIds;
 	private Object proposalTaskUpdates;
 	private List<String> taskPropagatorUpdates;
+	private List<Insured> insured;
 }

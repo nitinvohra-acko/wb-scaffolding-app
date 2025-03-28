@@ -6,11 +6,11 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/task/:path*',
-        destination: `${process.env.NEXT_PUBLIC_BASE_API}/task/:path*`,
+        destination: `http://localhost:5010/task/:path*`,
       },
       {
         source: '/search/:path*',
-        destination: `${process.env.NEXT_PUBLIC_BASE_API}/search/:path*`,
+        destination: `http://localhost:5010/search/:path*`,
       },
       {
         source: '/actuator/health',
@@ -23,6 +23,22 @@ const nextConfig: NextConfig = {
       {
         source: '/kibana/api/status',
         destination: `${process.env.NEXT_PUBLIC_KIBANA_HEALTH}/api/status`,
+      },
+      {
+        source: '/api/user/:path*',
+        destination: `${process.env.NEXT_PUBLIC_BASE_API}/api/user/:path*`,
+      },
+      {
+        source: '/search/fields/:path*',
+        destination: `${process.env.NEXT_PUBLIC_BASE_API}/search/fields/:path*`,
+      },
+      {
+        source: '/kafka/publish/:path*',
+        destination: `${process.env.NEXT_PUBLIC_BASE_API}/kafka/publish/:path*`,
+      },
+      {
+        source: '/questions/answers/:path*',
+        destination: `${process.env.NEXT_PUBLIC_BASE_API}/questions/answers/:path*`,
       },
     ];
   },

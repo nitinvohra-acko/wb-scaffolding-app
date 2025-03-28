@@ -1,39 +1,20 @@
+import { FilterField, FilterFields, SearchableFieldsTypetype } from './common';
+
 export interface TaskResponse {
-  searchable_fields: SearchableFieldsTypetype[];
-  filters: FilterField[];
+  searchableFields: SearchableFieldsTypetype[];
+  filters: FilterFields[];
   sort: any;
-  search_str: string;
+  searchStr: string;
   result: any;
-  total_count: 0;
-  page_no: 1;
-  page_size: 10;
+  totalCount: number;
+  pageNo: number;
+  pageSize: number;
 }
 export interface TaskRequest {
-  searchable_fields: SearchableFieldsTypetype[];
-  filters: FilterField[];
+  searchableFields: SearchableFieldsTypetype[];
+  filters: FilterFields[];
   sort: any;
-  search_str: string;
-  page_no: 1;
-  page_size: 10;
-}
-
-export interface SearchableFields {}
-export interface FilterOption {
-  value: string;
-  count: number;
-  is_selected: boolean;
-}
-
-export interface FilterField {
-  field_display_name: string;
-  field_name: string;
-  field_type: string;
-  options: FilterOption[];
-}
-
-export interface SearchableFieldsTypetype {
-  field_display_name: string;
-  field_name: string;
-  field_type: string;
-  value: string | null;
+  searchStr: string;
+  pageNo: number;
+  pageSize: number;
 }

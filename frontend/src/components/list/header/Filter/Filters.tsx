@@ -45,7 +45,7 @@ const Filters = () => {
     if (taskResponse?.filters) {
       hoist({
         ...(taskResponse as TaskResponse),
-        page_no: 1,
+        pageNo: 1,
       });
 
       setTimeout(async () => {
@@ -63,7 +63,7 @@ const Filters = () => {
     hoist({
       ...(taskResponse as TaskResponse),
       filters: initFilters as FilterField[],
-      page_no: 1,
+      pageNo: 1,
     });
 
     setTimeout(async () => {

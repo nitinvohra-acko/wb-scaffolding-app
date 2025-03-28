@@ -1,5 +1,5 @@
-import Cookies from 'js-cookie'
-export type RequestMethod = "GET" | "POST" | "PATCH" | "DELETE";
+import getCookie from './getCookies';
+export type RequestMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
 
 export interface ApiRequestOptions<T = unknown> {
   body?: T; // Request payload (optional)
@@ -9,14 +9,13 @@ export interface ApiRequestOptions<T = unknown> {
 export async function apiClient<TResponse, TBody = unknown>(
   url: string,
   method: RequestMethod,
-  options: ApiRequestOptions<TBody> = {}
+  options: ApiRequestOptions<TBody> = {},
 ): Promise<TResponse> {
   try {
-    const token = Cookies.get('access_token')
-    const {  body, customHeaders } = options;
-
+    const token = await getCookie('access_token'); //Cookies.get('access_token');
+    const { body, customHeaders } = options;
     const headers: HeadersInit = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...customHeaders,
     };
