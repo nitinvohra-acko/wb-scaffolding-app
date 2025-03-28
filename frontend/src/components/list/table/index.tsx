@@ -52,6 +52,11 @@ export default function DataTable() {
         cell: (info) => info.getValue(),
       },
       {
+        accessorKey: 'type',
+        header: 'Type',
+        cell: (info) => info.getValue(),
+      },
+      {
         accessorKey: 'status',
         header: 'Status',
         cell: (info) => info.getValue(),
@@ -86,7 +91,7 @@ export default function DataTable() {
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
-
+  console.log('taskResponse', taskResponse);
   return (
     <div className="rounded-md border border-gray-200 shadow-sm overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200 text-sm text-left">

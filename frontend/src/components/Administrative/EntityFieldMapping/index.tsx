@@ -1,20 +1,28 @@
 'use client';
 
-import { useState } from 'react';
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Trash2, Plus, Send } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Save, Filter, Search, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { apiClient } from '@/utils/interceptor';
+import { useToast } from '@/hooks/use-toast';
 import {
   Select,
   SelectContent,
@@ -22,295 +30,319 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
-// Define the Zod schema for validation
-const fieldParamSchema = z.object({
-  field_display_name: z.string().min(1, 'Display name is required'),
-  field_name: z.string().min(1, 'Field name is required'),
-  variable_name: z.string().min(1, 'Variable name is required'),
-  field_type: z.enum(['string', 'number', 'boolean', 'date']),
-  is_searchable: z.boolean().default(false),
-  is_filterable: z.boolean().default(false),
-});
+// Define the field configuration type
+type FieldConfig = {
+  fieldDisplayName: string;
+  fieldName: string | null;
+  variableName: string;
+  fieldType: string;
+  isSearchable: boolean;
+  isFilterable: boolean;
+  filterType?: 'term' | 'range';
+};
 
-const entityFieldMappingSchema = z.object({
-  entity: z.string().min(1, 'Entity name is required'),
-  params: z
-    .array(fieldParamSchema)
-    .min(1, 'At least one field parameter is required'),
-});
+export default function FieldConfigManagement() {
+  const [fieldConfigs, setFieldConfigs] = useState<FieldConfig[]>([]);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [originalConfigs, setOriginalConfigs] = useState<FieldConfig[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const { toast } = useToast();
 
-// TypeScript types derived from Zod schema
-type FieldParam = z.infer<typeof fieldParamSchema>;
-type EntityFieldMapping = z.infer<typeof entityFieldMappingSchema>;
+  // Fetch field configurations from API
+  useEffect(() => {
+    const fetchConfigs = async () => {
+      try {
+        // Replace with your actual API endpoint
+        const response = await fetch('/search/fields/proposal');
+        const data = await response.json();
+        setFieldConfigs(data);
+        setOriginalConfigs(data);
+      } catch (error) {
+        console.error('Error fetching configurations:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-export default function EntityFieldMappingForm() {
-  const [jsonOutput, setJsonOutput] = useState<string>('');
+    fetchConfigs();
+  }, []);
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    formState: { errors, isSubmitting },
-  } = useForm<EntityFieldMapping>({
-    resolver: zodResolver(entityFieldMappingSchema),
-    defaultValues: {
-      entity: '',
-      params: [
-        {
-          field_display_name: '',
-          field_name: '',
-          variable_name: '',
-          field_type: 'string',
-          is_searchable: false,
-          is_filterable: false,
-        },
-      ],
-    },
-  });
+  // Function to handle field name changes
+  const handleFieldNameChange = (index: number, value: string) => {
+    const newConfigs = [...fieldConfigs];
+    newConfigs[index] = {
+      ...newConfigs[index],
+      fieldName: value,
+    };
+    setFieldConfigs(newConfigs);
+    setHasChanges(true);
+  };
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'params',
-  });
+  // Function to handle display name changes
+  const handleDisplayNameChange = (index: number, value: string) => {
+    const newConfigs = [...fieldConfigs];
+    newConfigs[index] = {
+      ...newConfigs[index],
+      fieldDisplayName: value,
+    };
+    setFieldConfigs(newConfigs);
+    setHasChanges(true);
+  };
 
-  const onSubmit = async (data: EntityFieldMapping) => {
+  // Function to handle toggling searchable status
+  const toggleSearchable = (index: number) => {
+    const newConfigs = [...fieldConfigs];
+    newConfigs[index] = {
+      ...newConfigs[index],
+      isSearchable: !newConfigs[index].isSearchable,
+      // If field name is null and we're making it searchable, generate a default field name
+      fieldName:
+        newConfigs[index].fieldName === null && !newConfigs[index].isSearchable
+          ? generateFieldName(newConfigs[index].variableName)
+          : newConfigs[index].fieldName,
+    };
+    setFieldConfigs(newConfigs);
+    setHasChanges(true);
+  };
+
+  // Function to handle toggling filterable status
+  const toggleFilterable = (index: number) => {
+    const newConfigs = [...fieldConfigs];
+    newConfigs[index] = {
+      ...newConfigs[index],
+      isFilterable: !newConfigs[index].isFilterable,
+      // If making filterable, ensure it has a filter type
+      filterType: !newConfigs[index].isFilterable
+        ? newConfigs[index].filterType || 'term'
+        : newConfigs[index].filterType,
+      // If field name is null and we're making it filterable, generate a default field name
+      fieldName:
+        newConfigs[index].fieldName === null && !newConfigs[index].isFilterable
+          ? generateFieldName(newConfigs[index].variableName)
+          : newConfigs[index].fieldName,
+    };
+    setFieldConfigs(newConfigs);
+    setHasChanges(true);
+  };
+
+  // Function to update filter type
+  const updateFilterType = (index: number, filterType: 'term' | 'range') => {
+    const newConfigs = [...fieldConfigs];
+    newConfigs[index] = {
+      ...newConfigs[index],
+      filterType,
+    };
+    setFieldConfigs(newConfigs);
+    setHasChanges(true);
+  };
+
+  // Helper function to generate a field name from variable name
+  const generateFieldName = (variableName: string): string => {
+    // Extract the last part of the path and convert to snake_case
+    const parts = variableName.split('.');
+    return parts[parts.length - 1];
+  };
+
+  // Function to save all configurations
+  const saveConfigurations = async () => {
+    setIsSaving(true);
+    const payload = {
+      entity: 'proposal',
+      params: fieldConfigs,
+    };
     try {
-      // Display the JSON data
-      setJsonOutput(JSON.stringify(data, null, 2));
+      const response = await apiClient(
+        '/search/params?entity=proposal',
+        'POST',
+        {
+          body: payload,
+        },
+      );
 
-      // In a real application, you'd send this to your backend
-      // const response = await fetch('/api/entity-field-mapping', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(data),
-      // })
-
-      //   toast({
-      //     title: 'Form submitted',
-      //     description: 'The data has been successfully generated.',
-      //   });
+      if (response) {
+        toast({
+          title: 'Success',
+          description: `Successfully saved ${fieldConfigs.length} field configurations.`,
+        });
+        setOriginalConfigs([...fieldConfigs]);
+        setHasChanges(false);
+      }
     } catch (error) {
-      //   toast({
-      //     title: 'Error',
-      //     description: 'Failed to submit the form. Please try again.',
-      //     variant: 'destructive',
-      //   });
+      console.error('Error saving configurations:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save field configurations. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
+  // Function to check if a field is configurable (has either searchable or filterable enabled)
+  const isConfigured = (config: FieldConfig): boolean => {
+    return config.isSearchable || config.isFilterable;
+  };
+
+  // Function to get appropriate data type label
+  const getDataTypeLabel = (dataType: string) => {
+    const type = dataType.toLowerCase();
+    switch (type) {
+      case 'string':
+        return 'Text';
+      case 'number':
+        return 'Number';
+      case 'boolean':
+        return 'Yes/No';
+      case 'date':
+        return 'Date';
+      default:
+        return dataType;
+    }
+  };
+
+  // Count how many fields are configured
+  const configuredFieldsCount = fieldConfigs.filter(isConfigured).length;
+
   return (
-    <div className="container mx-auto py-6 max-w-5xl">
+    <div className="container mx-auto py-6 max-w-6xl">
       <Card>
-        <CardHeader>
-          <CardTitle>Entity Field Mapping</CardTitle>
-          <CardDescription>
-            Define entity field mappings with custom parameters.
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Field Configuration Management</CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              Configure which fields are searchable and filterable
+            </p>
+          </div>
+          <Badge variant="outline" className="ml-2">
+            {configuredFieldsCount} fields configured
+          </Badge>
         </CardHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="entity">Entity Name</Label>
-              <Input
-                id="entity"
-                placeholder="Enter entity name"
-                {...register('entity')}
-              />
-              {errors.entity && (
-                <p className="text-sm text-red-500">{errors.entity.message}</p>
-              )}
+        <CardContent>
+          {loading ? (
+            <div className="text-center py-8">Loading configurations...</div>
+          ) : fieldConfigs.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No field configurations available.
             </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium">Field Parameters</h3>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    append({
-                      field_display_name: '',
-                      field_name: '',
-                      variable_name: '',
-                      field_type: 'string',
-                      is_searchable: false,
-                      is_filterable: false,
-                    })
-                  }
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Field
-                </Button>
-              </div>
-
-              {errors.params && !Array.isArray(errors.params) && (
-                <p className="text-sm text-red-500">{errors.params.message}</p>
-              )}
-
-              {fields.map((field, index) => (
-                <Card key={field.id} className="p-4 border border-gray-200">
-                  <div className="flex justify-between items-center mb-4">
-                    <h4 className="font-medium">Field #{index + 1}</h4>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => remove(index)}
-                      disabled={fields.length === 1}
-                    >
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor={`params.${index}.field_display_name`}>
-                        Display Name
-                      </Label>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Display Name</TableHead>
+                  <TableHead>Field Name</TableHead>
+                  <TableHead>Data Type</TableHead>
+                  <TableHead className="w-[140px]">
+                    <div className="flex items-center">
+                      <Search className="h-4 w-4 mr-2" />
+                      Searchable
+                    </div>
+                  </TableHead>
+                  <TableHead className="w-[140px]">
+                    <div className="flex items-center">
+                      <Filter className="h-4 w-4 mr-2" />
+                      Filterable
+                    </div>
+                  </TableHead>
+                  <TableHead className="w-[180px]">Filter Type</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {fieldConfigs.map((config, index) => (
+                  <TableRow
+                    key={index}
+                    className={isConfigured(config) ? 'bg-muted/30' : ''}
+                  >
+                    <TableCell>
                       <Input
-                        id={`params.${index}.field_display_name`}
-                        placeholder="User Display Name"
-                        {...register(`params.${index}.field_display_name`)}
+                        value={config.fieldDisplayName}
+                        onChange={(e) =>
+                          handleDisplayNameChange(index, e.target.value)
+                        }
+                        className="max-w-[200px]"
                       />
-                      {errors.params?.[index]?.field_display_name && (
-                        <p className="text-sm text-red-500">
-                          {errors.params[index]?.field_display_name?.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor={`params.${index}.field_name`}>
-                        Field Name
-                      </Label>
+                    </TableCell>
+                    <TableCell>
                       <Input
-                        id={`params.${index}.field_name`}
-                        placeholder="user_name"
-                        {...register(`params.${index}.field_name`)}
+                        value={config.fieldName || ''}
+                        onChange={(e) =>
+                          handleFieldNameChange(index, e.target.value)
+                        }
+                        placeholder="Enter field name"
+                        className="max-w-[200px]"
                       />
-                      {errors.params?.[index]?.field_name && (
-                        <p className="text-sm text-red-500">
-                          {errors.params[index]?.field_name?.message}
-                        </p>
+                    </TableCell>
+                    <TableCell>{getDataTypeLabel(config.fieldType)}</TableCell>
+                    <TableCell>
+                      <Switch
+                        checked={config.isSearchable}
+                        onCheckedChange={() => toggleSearchable(index)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Switch
+                        checked={config.isFilterable}
+                        onCheckedChange={() => toggleFilterable(index)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {config.isFilterable && (
+                        <Select
+                          value={config.filterType || 'term'}
+                          onValueChange={(value) =>
+                            updateFilterType(index, value as 'term' | 'range')
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="term">Term</SelectItem>
+                            <SelectItem value="range">Range</SelectItem>
+                          </SelectContent>
+                        </Select>
                       )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor={`params.${index}.variable_name`}>
-                        Variable Name
-                      </Label>
-                      <Input
-                        id={`params.${index}.variable_name`}
-                        placeholder="userName"
-                        {...register(`params.${index}.variable_name`)}
-                      />
-                      {errors.params?.[index]?.variable_name && (
-                        <p className="text-sm text-red-500">
-                          {errors.params[index]?.variable_name?.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor={`params.${index}.field_type`}>
-                        Field Type
-                      </Label>
-                      <Controller
-                        control={control}
-                        name={`params.${index}.field_type`}
-                        render={({ field }) => (
-                          <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select field type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="string">String</SelectItem>
-                              <SelectItem value="number">Number</SelectItem>
-                              <SelectItem value="boolean">Boolean</SelectItem>
-                              <SelectItem value="date">Date</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                      {errors.params?.[index]?.field_type && (
-                        <p className="text-sm text-red-500">
-                          {errors.params[index]?.field_type?.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Controller
-                        control={control}
-                        name={`params.${index}.is_searchable`}
-                        render={({ field }) => (
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            id={`params.${index}.is_searchable`}
-                          />
-                        )}
-                      />
-                      <Label htmlFor={`params.${index}.is_searchable`}>
-                        Searchable
-                      </Label>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Controller
-                        control={control}
-                        name={`params.${index}.is_filterable`}
-                        render={({ field }) => (
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            id={`params.${index}.is_filterable`}
-                          />
-                        )}
-                      />
-                      <Label htmlFor={`params.${index}.is_filterable`}>
-                        Filterable
-                      </Label>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-
-            {jsonOutput && (
-              <div className="mt-6">
-                <h3 className="text-lg font-medium mb-2">Generated JSON:</h3>
-                <div className="bg-gray-100 p-4 rounded-md">
-                  <pre className="whitespace-pre-wrap text-sm">
-                    {jsonOutput}
-                  </pre>
-                </div>
-              </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+        <CardFooter className="flex justify-between border-t p-6">
+          <div className="text-sm text-muted-foreground">
+            {hasChanges ? (
+              <span className="text-amber-500 font-medium">
+                You have unsaved changes
+              </span>
+            ) : (
+              <span>No changes to save</span>
             )}
-          </CardContent>
-
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="ml-auto">
-              {isSubmitting ? (
-                <span className="flex items-center">
-                  <span className="animate-spin mr-2">&#8212;</span> Processing
-                </span>
-              ) : (
-                <span className="flex items-center">
-                  <Send className="h-4 w-4 mr-2" /> Submit
-                </span>
-              )}
-            </Button>
-          </CardFooter>
-        </form>
+          </div>
+          <Button
+            onClick={saveConfigurations}
+            disabled={!hasChanges || isSaving}
+            className="min-w-[120px]"
+          >
+            {isSaving ? (
+              'Saving...'
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Save Changes
+              </>
+            )}
+          </Button>
+        </CardFooter>
       </Card>
     </div>
   );

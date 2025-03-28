@@ -88,7 +88,11 @@ services:
       - KC_DB_PASSWORD=root_password
       - KC_DB_URL=jdbc:mysql://mysql_container:3306/keycloak?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       - KC_FEATURES=token-exchange,admin-fine-grained-authz
-      - KC_HOSTNAME=keycloak
+      - KC_CORS=true
+      - KC_CORS_ALLOWED_ORIGINS=*
+      - KC_CORS_ALLOWED_HEADERS="Authorization, Content-Type"
+      - KC_CORS_ALLOWED_METHODS="GET, POST, PUT, DELETE, OPTIONS"
+      # - KC_HOSTNAME=keycloak
     ports:
       - "8080:8080" # Expose Keycloak on port 8080
       - "9000:9000"
@@ -109,13 +113,12 @@ services:
       - MYSQL_PASSWORD=keycloak_password # Database user password
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql  # Mount SQL initialization file
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql # Mount SQL initialization file
     networks:
       - common-network
     restart: unless-stopped
     ports:
       - "3306:3306"
-
 
   mongodb:
     image: mongo:latest
@@ -136,7 +139,7 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     ports:
       - 2181:2181
-  
+
   kafka:
     image: confluentinc/cp-kafka:7.4.4
     depends_on:
