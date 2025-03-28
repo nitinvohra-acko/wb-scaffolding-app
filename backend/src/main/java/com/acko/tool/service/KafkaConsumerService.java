@@ -38,7 +38,7 @@ public class KafkaConsumerService {
             KafkaMessage kafkaMessage = objectMapper.treeToValue(jsonNode, KafkaMessage.class);
             Map<String, Object> payload = new HashMap<>();
             payload.put("event_id", kafkaMessage.getEventType());
-            Object response = ruleEngineService.execute("CRMToolEventDecision", payload);
+            Object response = ruleEngineService.execute("UWToolWorkbenchToolEventDecision", payload);
             if (Objects.nonNull(response)) {
                 String taskId = kafkaMessage.getPayload().get("task_id").toString();
                 Task<?> task = tasksService.fetchTaskById(taskId);
