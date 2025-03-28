@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_071bupf" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.21.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.4.0">
-    <decision id="InternalKafkaEventDecision" name="Internal Kafka Event Decision">
-        <decisionTable id="DecisionTable_1y454fp">
+    <decision id="UWToolWorkbenchToolEventDecision" name="UW Tool Kafka Event Decision">
+        <decisionTable id="DecisionTable_1y454fp" hitPolicy="FIRST">
             <input id="Input_1" label="event_id">
                 <inputExpression id="InputExpression_1" typeRef="string">
                     <text>event_id</text>
@@ -11,27 +11,6 @@
             <output id="OutputClause_0v9s6p4" label="action_type" name="action_type" typeRef="string" />
             <output id="OutputClause_0l83bar" label="workflow_name" name="workflow_name" typeRef="string" />
             <output id="OutputClause_0u3htea" label="event_name" name="event_name" typeRef="string" />
-            <rule id="DecisionRule_0vrv0q1">
-                <inputEntry id="UnaryTests_15oeztf">
-                    <text>"telemer_done"</text>
-                </inputEntry>
-                <outputEntry id="LiteralExpression_1dz6ua3">
-                    <text>{
-                        "operation": "shift",
-                        "spec": {
-                        }
-                        }</text>
-                </outputEntry>
-                <outputEntry id="LiteralExpression_05x1es3">
-                    <text>"bpmn_event"</text>
-                </outputEntry>
-                <outputEntry id="LiteralExpression_004mq9t">
-                    <text>"ProposalFlow"</text>
-                </outputEntry>
-                <outputEntry id="LiteralExpression_1mgq6b3">
-                    <text>"TelemerSuccessEvent"</text>
-                </outputEntry>
-            </rule>
             <rule id="DecisionRule_0er5wvz">
                 <inputEntry id="UnaryTests_0fj63be">
                     <text>"telemer_required"</text>
@@ -53,11 +32,53 @@
                     <text>"start"</text>
                 </outputEntry>
             </rule>
+            <rule id="DecisionRule_1gnq2ke">
+                <inputEntry id="UnaryTests_0hgdfxm">
+                    <text>"schedule_telemer"</text>
+                </inputEntry>
+                <outputEntry id="LiteralExpression_14tix68">
+                    <text>{
+                        "operation": "shift",
+                        "spec": {
+                        }
+                        }</text>
+                </outputEntry>
+                <outputEntry id="LiteralExpression_0mgiu02">
+                    <text>"bpmn_event"</text>
+                </outputEntry>
+                <outputEntry id="LiteralExpression_1ljgoxk">
+                    <text>"StartTelemerWorkflow"</text>
+                </outputEntry>
+                <outputEntry id="LiteralExpression_0qnr0zt">
+                    <text>"Message_WaitForEvent"</text>
+                </outputEntry>
+            </rule>
+            <rule id="DecisionRule_1r8k1uk">
+                <inputEntry id="UnaryTests_0uj1fit">
+                    <text>"telemer_decision"</text>
+                </inputEntry>
+                <outputEntry id="LiteralExpression_1xbdfwy">
+                    <text>{
+                        "operation": "shift",
+                        "spec": {
+                        }
+                        }</text>
+                </outputEntry>
+                <outputEntry id="LiteralExpression_1ug80jk">
+                    <text>"bpmn_event"</text>
+                </outputEntry>
+                <outputEntry id="LiteralExpression_0r7h62n">
+                    <text>"StartTelemerWorkflow"</text>
+                </outputEntry>
+                <outputEntry id="LiteralExpression_1m70rbz">
+                    <text>"Message_PostSchedule"</text>
+                </outputEntry>
+            </rule>
         </decisionTable>
     </decision>
     <dmndi:DMNDI>
         <dmndi:DMNDiagram>
-            <dmndi:DMNShape dmnElementRef="InternalKafkaEventDecision">
+            <dmndi:DMNShape dmnElementRef="UWToolWorkbenchToolEventDecision">
                 <dc:Bounds height="80" width="180" x="160" y="100" />
             </dmndi:DMNShape>
         </dmndi:DMNDiagram>
