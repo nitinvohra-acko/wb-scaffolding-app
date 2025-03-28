@@ -33,7 +33,11 @@ const RightSection: React.FC<PropsType> = ({
 
         <TabsContent value="telemer">
           {taskDetail?.status === 'in-progress' ? (
-            <Telemer layout={layout} handleLayout={handleLayout} />
+            <Telemer
+              layout={layout}
+              handleLayout={handleLayout}
+              taskDetail={taskDetail}
+            />
           ) : (
             <div className="font-bold text-green-700 ">
               Telemer form is completed

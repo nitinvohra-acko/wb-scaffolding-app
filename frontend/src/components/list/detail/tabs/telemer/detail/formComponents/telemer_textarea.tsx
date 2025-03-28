@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Textarea from '@/components/ui/textarea';
 import { Control, Controller } from 'react-hook-form';
 
@@ -29,6 +29,17 @@ const TelemerTextarea: React.FC<TelemerTextareaProps> = ({
   readonly,
   handleAnswerChange,
 }) => {
+  useEffect(() => {}, []);
+  const debounce = (callback: Function) => {
+    var debounceId: any = null;
+    return (name: string, value: string) => {
+      clearTimeout(debounceId);
+      debounceId = setTimeout(() => {
+        callback(name, value);
+      }, 500);
+    };
+  };
+  const updateChanges = debounce(handleAnswerChange);
   return (
     <div className="flex flex-col space-y-2 p-1">
       <p className="font-bold font-italic text-gray-600">{label}</p>
@@ -60,7 +71,7 @@ const TelemerTextarea: React.FC<TelemerTextareaProps> = ({
                 value={value}
                 onChange={(e) => {
                   onChange(e.target.value);
-                  handleAnswerChange(name, e.target.value);
+                  updateChanges(name, e.target.value);
                 }}
                 className="p-2 border rounded-md "
                 style={{

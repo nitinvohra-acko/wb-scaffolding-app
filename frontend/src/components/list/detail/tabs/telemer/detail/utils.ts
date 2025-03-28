@@ -142,3 +142,34 @@ export const updateObjectByKey = (
 export const resolver = (data: any) => {
   console.log('data', data);
 };
+
+export const requestMapping = (questions: QuestionsType[]) => {
+  let response: any = [];
+  function iterativeQuestionMapping(questionConfigs: QuestionsType) {
+    if (questionConfigs.question_config.answer) {
+      let answers: { user_id: string; answer: string | string[] }[] = [];
+      Object.keys(questionConfigs.question_config.answer).map((user_id) => {
+        questionConfigs.question_config.answer &&
+          answers.push({
+            user_id: user_id,
+            ...questionConfigs.question_config.answer[user_id],
+          });
+      });
+      response.push({
+        question_id: questionConfigs.question_id,
+        question_text: questionConfigs.question_config.question_text,
+        answers,
+        answer_id: answers,
+      });
+    }
+    questionConfigs.question_config.answer &&
+      questionConfigs.question_config?.sub_questions?.map((sub_question) => {
+        iterativeQuestionMapping(sub_question);
+      });
+  }
+
+  questions.forEach((question) => {
+    iterativeQuestionMapping(question);
+  });
+  return response;
+};
