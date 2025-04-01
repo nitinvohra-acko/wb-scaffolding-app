@@ -1,5 +1,6 @@
 package com.acko.tool.entity.search;
 
+import com.acko.tool.entity.search.filter.Filter;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -13,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TaskSearch {
     private List<TaskSearchableField> searchableFields;
-    private List<TaskSearchFilter> filters;
+    private List<Filter<?>> filters;
     private List<TaskSort> sort;
     private String searchStr;
     private List<Object> result;    // Definitely should not be this. Set correct type here.

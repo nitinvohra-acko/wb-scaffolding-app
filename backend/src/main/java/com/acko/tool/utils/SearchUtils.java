@@ -3,17 +3,24 @@ package com.acko.tool.utils;
 import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
+import co.elastic.clients.json.JsonData;
 import com.acko.tool.entity.search.SearchFilterAggregatedOption;
 import com.acko.tool.entity.search.SearchParam;
 import com.acko.tool.entity.search.SearchParamField;
 import com.acko.tool.entity.search.TaskSearchFilter;
 import com.acko.tool.entity.search.TaskSearchableField;
+import com.acko.tool.entity.search.filter.Filter;
+import com.acko.tool.entity.search.filter.FilterRange;
+import com.acko.tool.entity.search.filter.FilterTerm;
+import com.acko.tool.entity.search.filter.RangeValue;
 import com.acko.tool.enums.TaskType;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.elasticsearch.client.HttpAsyncResponseConsumerFactory;
 import org.elasticsearch.client.RequestOptions;
@@ -54,23 +61,48 @@ public class SearchUtils {
         return mustQueries;
     }
 
-    public List<Query> getQueryForFilterableFields(List<TaskSearchFilter> filters, SearchParam searchParam) {
+    public List<Query> getQueryForFilterTermFields(List<Filter<?>> filters, SearchParam searchParam) {
         List<Query> shouldQueries = new ArrayList<>();
-        filters.forEach(filter -> {
-            String variableNameForField = getVariableNameForField(filter.getFieldName(), searchParam);
-            if(Objects.nonNull(variableNameForField) && Objects.nonNull(filter.getOptions())) {
-                filter.getOptions().stream()
-                    .filter(x-> Objects.nonNull(x.getIsSelected()) && x.getIsSelected())
-                    .forEach(option -> {
-                        TermQuery termQuery = TermQuery.of(t -> t
-                            .field(variableNameForField)
-                            .value(option.getValue())
-                        );
-                        shouldQueries.add(Query.of(q -> q.term(termQuery)));
-                    });
-            }
-        });
+        Optional.ofNullable(filters).orElse(Collections.emptyList())
+            .stream()
+            .filter(filter -> filter.getAttributes() != null)
+            .filter(FilterTerm.class::isInstance)
+            .map(FilterTerm.class::cast)
+            .filter(filter -> (filter.getAttributes().getValue() != null && !filter.getAttributes().getValue().isEmpty()))
+            .forEach(filter -> {
+                String variableNameForField = getVariableNameForField(filter.getFieldId(), searchParam);
+                List<String> filterTerms = filter.getAttributes().getValue();
+                filterTerms.forEach(filterTerm -> {
+                    TermQuery termQuery = TermQuery.of(t -> t
+                        .field(variableNameForField)
+                        .value(filterTerm)
+                    );
+                    shouldQueries.add(Query.of(q -> q.term(termQuery)));
+                });
+            });
         return shouldQueries;
+    }
+
+    public List<Query> getQueryForFilterRangeFields(List<Filter<?>> filters, SearchParam searchParam) {
+        List<Query> mustQueries = new ArrayList<>();
+        Optional.ofNullable(filters).orElse(Collections.emptyList())
+            .stream()
+            .filter(filter -> filter.getAttributes() != null)
+            .filter(FilterRange.class::isInstance)
+            .map(FilterRange.class::cast)
+            .filter(filter -> filter.getAttributes().getValue() != null )
+            .forEach(filter -> {
+                String variableNameForField = getVariableNameForField(filter.getFieldId(), searchParam);
+                RangeValue filterTerms = filter.getAttributes().getValue();
+                mustQueries.add(Query.of(q -> q
+                    .range(r -> r
+                        .field(variableNameForField)
+                        .gte(JsonData.of(filterTerms.getFrom()))
+                        .lte(JsonData.of(filterTerms.getTo()))
+                    )
+                ));
+            });
+        return mustQueries;
     }
 
     public List<Query> getQueryForGlobalSearch(String searchStr, SearchParam searchParam) {
