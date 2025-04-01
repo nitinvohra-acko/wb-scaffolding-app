@@ -8,14 +8,11 @@ export async function POST(req: NextRequest) {
 
     const registerScript = path.join(
       process.cwd(),
-      'src',
       'scripts',
       'generateRBACComponents.ts',
     );
     const child = fork(registerScript);
-
     child.send({ name, permission });
-
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json(

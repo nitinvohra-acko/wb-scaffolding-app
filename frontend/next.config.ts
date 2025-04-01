@@ -36,10 +36,6 @@ const nextConfig: NextConfig = {
         source: '/api/event',
         destination: `${process.env.NEXT_PUBLIC_BASE_API}/api/event`,
       },
-      {
-        source: '/api/rbac/register',
-        destination: `${process.env.NEXT_PUBLIC_APP_BASE_URL}/api/rbac/register`,
-      },
     ];
   },
 };

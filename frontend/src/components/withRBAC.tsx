@@ -4,7 +4,7 @@ import { useUserPermissions } from '@/hooks/useUserPermissions';
 
 const registerRBACComponent = (name: string, permission: string) => {
   //   if (process.env.NODE_ENV === 'development') {
-  fetch('/api/rbac/register', {
+  fetch(process.env.NEXT_PUBLIC_APP_BASE_URL + '/api/rbac/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, permission }),
