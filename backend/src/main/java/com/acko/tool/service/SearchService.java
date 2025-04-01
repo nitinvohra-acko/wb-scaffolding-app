@@ -3,10 +3,12 @@ package com.acko.tool.service;
 import co.elastic.clients.elasticsearch._types.aggregations.Aggregate;
 import com.acko.tool.entity.search.SearchType;
 import com.acko.tool.entity.search.filter.Filter;
+import com.acko.tool.entity.search.filter.FilterAttributesRange;
 import com.acko.tool.entity.search.filter.FilterAttributesTerm;
 import com.acko.tool.entity.search.filter.FilterOptions;
 import com.acko.tool.entity.search.filter.FilterRange;
 import com.acko.tool.entity.search.filter.FilterTerm;
+import com.acko.tool.entity.search.filter.RangeValue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -194,6 +196,9 @@ public class SearchService {
         List<FilterTerm> termFilters = filters.stream().filter(f -> f instanceof FilterTerm)
             .map(FilterTerm.class::cast)
             .collect(Collectors.toList());
+        List<FilterRange> rangeFilters = filters.stream().filter(f -> f instanceof FilterRange)
+            .map(FilterRange.class::cast)
+            .collect(Collectors.toList());
 
         for (FilterTerm termFilter : termFilters) {
             Aggregate aggregate =  elasticResponse.aggregations().get(termFilter.getFieldId()+"_agg");
@@ -220,7 +225,21 @@ public class SearchService {
                 termFilter.setAttributes(new FilterAttributesTerm());
             }
             termFilter.getAttributes().setOptions(filterOptions);
+            if(Objects.isNull(termFilter.getAttributes().getValue())) {
+                termFilter.getAttributes().setValue(new ArrayList<>());
+            }
+
         }
+
+//        for (FilterRange rangeFilter : rangeFilters) {
+//            if(Objects.isNull(rangeFilter.getAttributes())) {
+//                rangeFilter.setAttributes(new FilterAttributesRange());
+//            }
+//            rangeFilter.getAttributes().setOptions(new ArrayList<>());
+//            if(Objects.isNull(rangeFilter.getAttributes().getValue())) {
+//                rangeFilter.getAttributes().setValue(new RangeValue());
+//            }
+//        }
 //        response.setFilters(allFilters);
     }
 //    private SortBuilder<?> getSortBuilder(TaskSort selectedSort, SearchParam searchParams) {
