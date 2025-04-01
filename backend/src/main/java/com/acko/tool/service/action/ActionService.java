@@ -1,14 +1,16 @@
 package com.acko.tool.service.action;
 
 import com.acko.tool.entity.Event;
-import com.acko.tool.entity.action.Action;
-import com.acko.tool.entity.action.ActionLabelDTO;
+import com.acko.tool.entity.action.EventAction;
 import com.acko.tool.entity.action.EventActionMetadata;
 import com.acko.tool.entity.action.EventLabelDTO;
 import com.acko.tool.entity.action.ExecuteActionDTO;
+import com.acko.tool.enums.TaskType;
 import com.acko.tool.exception.ResourceNotFoundException;
 import com.acko.tool.repository.ActionRepository;
+import com.acko.tool.service.SearchService;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import lombok.AllArgsConstructor;
@@ -21,30 +23,31 @@ import org.springframework.stereotype.Service;
 public class ActionService {
     private final List<ActionMapper> actionMappers;
     private final ActionRepository actionRepository;
+    private final SearchService searchService;
 
-    public EventActionMetadata getMetadata(EventActionMetadata eventActionDTO) {
+    public EventActionMetadata getMetadata(EventActionMetadata eventActionDTO)
+        throws NoSuchFieldException {
         // TODO: Get list of events from somewhere.
-        eventActionDTO.setEventList(List.of(
+        eventActionDTO.setEventsList(List.of(
             new EventLabelDTO("TASK_CREATED", "Task created"),
-            new EventLabelDTO("TELEMER_COMPLETED", "Telemer completed") // Example!
+            new EventLabelDTO("TASK_STATUS_UPDATED", "Task Status Updated") // Example!
         ));
 
-        // TODO: This can be as is or in constants.
-        eventActionDTO.setActionList(List.of(
-            new ActionLabelDTO("ASSIGN_TASK", "Assign Task"),
-            new ActionLabelDTO("MAIL", "Send Mail")
-        ));
-        if(Objects.isNull(eventActionDTO.getSelectedAction()) || eventActionDTO.getSelectedAction().isEmpty()) {
-            return eventActionDTO;
+        eventActionDTO.setActionsList(new ArrayList<>());
+        for (ActionMapper actionMapper : actionMappers) {
+            eventActionDTO.getActionsList().add(actionMapper.getMetadata());
         }
-        ActionMapper action = getActionMapper(eventActionDTO.getSelectedAction());
-        if (action == null) {
-            throw new ResourceNotFoundException("Invalid action type: " + eventActionDTO.getSelectedAction());
+        eventActionDTO.setEntityParams(new HashMap<>());
+
+        // Loop over TaskType enums and get getCombinedSearchFields for each
+        for (TaskType taskType : TaskType.values()) {
+            eventActionDTO.getEntityParams().put(taskType.name(),searchService.getCombinedSearchFields(taskType.name()));
         }
-        return action.getMetadata(eventActionDTO);
+
+        return eventActionDTO;
     }
 
-    public Action saveAction(Action saveActionDTO) {
+    public EventAction saveAction(EventAction saveActionDTO) {
         ActionMapper action = getActionMapper(saveActionDTO.getAction());
         if (action == null) {
             throw new ResourceNotFoundException("Invalid action type: " + saveActionDTO.getAction());
@@ -53,17 +56,17 @@ public class ActionService {
     }
 
     public Event getActionsForEventAndExecute(Event event) {
-        List<Action> actions = getActionsForEvent(event);
+        List<EventAction> actions = getActionsForEvent(event);
         if(!actions.isEmpty()){
-            for (Action action : actions) {
+            for (EventAction action : actions) {
                 execute(action, event);
             }
         }
         return event;
     }
 
-    private List<Action> getActionsForEvent(Event event) {
-        List<Action> actions = actionRepository.getActionByEventId(event.getEventId(), true);
+    private List<EventAction> getActionsForEvent(Event event) {
+        List<EventAction> actions = actionRepository.getActionByEventId(event.getEventId(), true);
         if(Objects.isNull(actions) || actions.isEmpty()) {
             return new ArrayList<>();
         } else {
@@ -71,7 +74,7 @@ public class ActionService {
         }
     }
 
-    private ExecuteActionDTO execute(Action action, Event event) {
+    private ExecuteActionDTO execute(EventAction action, Event event) {
         ActionMapper actionMapper = getActionMapper(action.getAction());
         if (action == null) {
             throw new ResourceNotFoundException("Invalid action type: " + action.getAction());

@@ -1,7 +1,9 @@
 package com.acko.tool.entity.action;
 
+import com.acko.tool.entity.search.SearchParamField;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import java.util.HashMap;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,9 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class EventActionMetadata {
-    private List<EventLabelDTO> eventList;
-    private List<ActionLabelDTO> actionList;
-    private String selectedAction;
-    private ActionMetadataDTO metadata;
-
+    private List<EventLabelDTO> eventsList;
+    private List<ActionMetadataDTO> actionsList;
+    private HashMap<String, List<SearchParamField>> entityParams;
 }

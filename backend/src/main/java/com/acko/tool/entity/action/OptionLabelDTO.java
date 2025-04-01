@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class ActionLabelDTO {
-    private String actionId;
-    private String actionName;
+public class OptionLabelDTO {
+    private String id;
+    private String name;
 }

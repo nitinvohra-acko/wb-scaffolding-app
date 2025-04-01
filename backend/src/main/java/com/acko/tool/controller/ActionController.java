@@ -1,7 +1,7 @@
 package com.acko.tool.controller;
 
 import com.acko.tool.entity.Event;
-import com.acko.tool.entity.action.Action;
+import com.acko.tool.entity.action.EventAction;
 import com.acko.tool.entity.action.EventActionMetadata;
 import com.acko.tool.service.action.ActionService;
 import lombok.AllArgsConstructor;
@@ -18,13 +18,14 @@ public class ActionController {
     private final ActionService actionService;
 
     @PostMapping("/metadata")
-    public ResponseEntity<EventActionMetadata> saveMetadata(@RequestBody EventActionMetadata eventActionDTO) {
+    public ResponseEntity<EventActionMetadata> saveMetadata(@RequestBody EventActionMetadata eventActionDTO)
+        throws NoSuchFieldException {
         // Handle saving metadata
         return ResponseEntity.ok(actionService.getMetadata(eventActionDTO));
     }
 
     @PostMapping("/save_action")
-    public ResponseEntity<Action> saveAction(@RequestBody Action saveActionDTO) {
+    public ResponseEntity<EventAction> saveAction(@RequestBody EventAction saveActionDTO) {
         // Handle saving action
         return ResponseEntity.ok(actionService.saveAction(saveActionDTO));
     }

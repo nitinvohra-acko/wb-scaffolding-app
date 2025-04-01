@@ -13,5 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ActionMetadataDTO {
-    private AssignTaskMetadataDTO assignTaskMetadata;
+    private String id;
+    private String name;
+    private ActionPropertyDTO properties;
 }

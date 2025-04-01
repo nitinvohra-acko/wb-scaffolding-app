@@ -1,15 +1,11 @@
 package com.acko.tool.service.action;
 
 import com.acko.tool.entity.Task;
-import com.acko.tool.entity.action.Action;
+import com.acko.tool.entity.action.EventAction;
 import com.acko.tool.entity.action.ActionMetadataDTO;
-import com.acko.tool.entity.action.AssignTaskMetadataDTO;
-import com.acko.tool.entity.action.AssignTaskProperties;
-import com.acko.tool.entity.action.AssignToDTO;
-import com.acko.tool.entity.action.AssignmentStrategyDTO;
-import com.acko.tool.entity.action.EventActionMetadata;
+import com.acko.tool.entity.action.ActionPropertyDTO;
 import com.acko.tool.entity.action.ExecuteActionDTO;
-import com.acko.tool.entity.action.UserLabelDTO;
+import com.acko.tool.entity.action.OptionLabelDTO;
 import com.acko.tool.exception.BadRequestException;
 import com.acko.tool.exception.ResourceNotFoundException;
 import com.acko.tool.repository.ActionRepository;
@@ -29,44 +25,45 @@ public class AssignTaskService implements ActionMapper {
     private final ActionValidator actionValidator;
 
     @Override
-    public EventActionMetadata getMetadata(EventActionMetadata eventActionDTO) {
+    public ActionMetadataDTO getMetadata() {
         // Get metadata
         ActionMetadataDTO metadata = ActionMetadataDTO.builder()
-            .assignTaskMetadata(AssignTaskMetadataDTO.builder()
-                // TODO: This can be as is or in constants
-                .assignToList(List.of(
-                    new AssignToDTO("ANY", "Any"),
-                    new AssignToDTO("USER_WITH_PROPERTY", "User with property"),
-                    new AssignToDTO("INDIVIDUAL_USER", "Individual User")
-                ))
-                // TODO: This will come from the users or rosters
-                .userList(List.of(
-                    new UserLabelDTO("1", "User 1"),
-                    new UserLabelDTO("2", "User 2")
-                ))
-                // TODO: This can be as is or in constants.
-                .assignmentStrategyList(List.of(
-                    new AssignmentStrategyDTO("ROUND_ROBIN", "Round Robin"),
-                    new AssignmentStrategyDTO("LEAST_BUSY", "Least Busy")
-                ))
-                // TODO: This can be as is or in constants.
-                .userPropertyList(List.of("reproposal specialist", "topup specialist"))
+            .id(getActionType())
+            .name(getActionName())
+            .properties(ActionPropertyDTO.builder()
+                .type("multi-select")
                 .build())
             .build();
-        eventActionDTO.setMetadata(metadata);
-        return eventActionDTO;
+
+        //TODO: Get distinct properties from DB
+        metadata.getProperties().setOptions(
+            List.of(
+                OptionLabelDTO.builder()
+                    .id("INDIVIDUAL_USER")
+                    .name("Individual User")
+                    .build(),
+                OptionLabelDTO.builder()
+                    .id("USER_WITH_PROPERTY")
+                    .name("User with Property")
+                    .build()
+            )
+        );
+        return metadata;
     }
 
     @Override
-    public Action saveAction(Action saveActionDTO) {
+    public EventAction saveAction(EventAction saveActionDTO) {
         // Save action
         return actionRepository.save(saveActionDTO);
     }
 
     @Override
     public String getActionType() {
-        return "ASSIGN_TASK";
+        return "ASSIGN_TASK_ROUND_ROBIN_WITH_PROPERTY";
     }
+
+    @Override
+    public String getActionName() { return "Assign Task Round Robin with Property"; }
 
     @Override
     public ExecuteActionDTO executeAction(ExecuteActionDTO executeActionObject) throws Exception {

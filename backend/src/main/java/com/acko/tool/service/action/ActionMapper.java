@@ -1,12 +1,13 @@
 package com.acko.tool.service.action;
 
-import com.acko.tool.entity.action.Action;
-import com.acko.tool.entity.action.EventActionMetadata;
+import com.acko.tool.entity.action.EventAction;
+import com.acko.tool.entity.action.ActionMetadataDTO;
 import com.acko.tool.entity.action.ExecuteActionDTO;
 
 public interface ActionMapper {
-    EventActionMetadata getMetadata(EventActionMetadata eventActionDTO);
-    Action saveAction(Action saveActionDTO);
+    ActionMetadataDTO getMetadata();
+    EventAction saveAction(EventAction saveActionDTO);
     String getActionType();
+    String getActionName();
     ExecuteActionDTO executeAction(ExecuteActionDTO executeActionObject) throws Exception;
 }

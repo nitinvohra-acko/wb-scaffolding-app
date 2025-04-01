@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ExecuteActionDTO {
-    private Action action;
+    private EventAction action;
     private String referenceTaskId;
     private HashMap<String, Object> data;
 }
