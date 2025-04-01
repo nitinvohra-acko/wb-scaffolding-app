@@ -1,5 +1,14 @@
 package com.acko.tool.service;
 
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregate;
+import com.acko.tool.entity.search.SearchType;
+import com.acko.tool.entity.search.filter.Filter;
+import com.acko.tool.entity.search.filter.FilterAttributesRange;
+import com.acko.tool.entity.search.filter.FilterAttributesTerm;
+import com.acko.tool.entity.search.filter.FilterOptions;
+import com.acko.tool.entity.search.filter.FilterRange;
+import com.acko.tool.entity.search.filter.FilterTerm;
+import com.acko.tool.entity.search.filter.RangeValue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -72,16 +81,17 @@ public class SearchService {
             response.setSearchableFields(searchableFields);
         }
 
-        List<TaskSearchFilter> searchFilters = searchRequestInput.getFilters();
+        List<Filter<?>> searchFilters = searchRequestInput.getFilters();
         if(Objects.isNull(searchFilters) || searchFilters.isEmpty()) {
             response.setFilters(getDefaultFiltersForEntity( searchParams));
         } else {
             response.setFilters(searchFilters);
         }
 
-        List<Query> mustQueries = searchUtils.getQueryForSearchableFields(response.getSearchableFields(), searchParams);
+        List<Query> searchableFieldsQueries = searchUtils.getQueryForSearchableFields(response.getSearchableFields(), searchParams);
 
-        List<Query> shouldQueries = searchUtils.getQueryForFilterableFields(response.getFilters(), searchParams);
+        List<Query> filterTermQueries = searchUtils.getQueryForFilterTermFields(response.getFilters(), searchParams);
+        List<Query> filterRangeQueries = searchUtils.getQueryForFilterRangeFields(response.getFilters(), searchParams);
 
         List<Query> universalQueries = searchUtils.getQueryForGlobalSearch(response.getSearchStr(), searchParams);
 
@@ -90,13 +100,18 @@ public class SearchService {
         Map<String, Aggregation> aggregationBuilders = searchUtils.getAggregationsForFilters(searchParams);
 
         List<Query> finalMustQueries = new ArrayList<>();
-        if(!mustQueries.isEmpty()) {
-            Query boolQuery = Query.of(q -> q.bool(b -> b.must(mustQueries)));
+        if(!searchableFieldsQueries.isEmpty()) {
+            Query boolQuery = Query.of(q -> q.bool(b -> b.must(searchableFieldsQueries)));
             finalMustQueries.add(boolQuery);
         }
 
-        if(!shouldQueries.isEmpty()) {
-            Query boolQuery = Query.of(q -> q.bool(b -> b.should(shouldQueries)));
+        if(!filterTermQueries.isEmpty()) {
+            Query boolQuery = Query.of(q -> q.bool(b -> b.should(filterTermQueries)));
+            finalMustQueries.add(boolQuery);
+        }
+
+        if(!filterRangeQueries.isEmpty()) {
+            Query boolQuery = Query.of(q -> q.bool(b -> b.must(filterRangeQueries)));
             finalMustQueries.add(boolQuery);
         }
 
@@ -128,20 +143,32 @@ public class SearchService {
         return response;
     }
 
-    private List<TaskSearchFilter> getDefaultFiltersForEntity( SearchParam searchParams) {
+    private List<Filter<?>> getDefaultFiltersForEntity( SearchParam searchParams) {
         List<SearchParamField> searchParamsFields = searchParams.getParams().stream().filter(
             SearchParamField::getIsFilterable).toList();
 
         if(searchParamsFields.isEmpty()) return new ArrayList<>();
 
-        return searchParamsFields.stream().map(searchParamField -> {
-            TaskSearchFilter filter = new TaskSearchFilter();
-            filter.setFieldType(searchParamField.getFieldType());
-            filter.setFieldName(searchParamField.getFieldName());
-            filter.setFieldDisplayName(searchParamField.getFieldDisplayName());
-            filter.setOptions(new ArrayList<>());
-            return filter;
-        }).collect(Collectors.toList());
+        List<Filter<?>> response = new ArrayList<>();
+        for(SearchParamField searchParamField: searchParamsFields) {
+            if(SearchType.valueOf(searchParamField.getFieldType()).equals(SearchType.term)) {
+                FilterTerm filter = new FilterTerm();
+                filter.setFieldId(searchParamField.getFieldName());
+                filter.setFieldName(searchParamField.getFieldDisplayName());
+                filter.setType(SearchType.valueOf(searchParamField.getFieldType()));
+                filter.setAttributes(null);
+                response.add(filter);
+            } else {
+                FilterRange filter = new FilterRange();
+                filter.setFieldId(searchParamField.getFieldName());
+                filter.setFieldName(searchParamField.getFieldDisplayName());
+                filter.setType(SearchType.valueOf(searchParamField.getFieldType()));
+                filter.setAttributes(null);
+                response.add(filter);
+            }
+
+        }
+        return response;
     }
 
     private List<TaskSearchableField> getDefaultSearchableFieldsForEntity( SearchParam searchParams) {
@@ -161,46 +188,59 @@ public class SearchService {
     }
 
     private void transformSearchResponse(TaskSearch response, SearchResponse<Map> elasticResponse, Map<String, Aggregation> aggregationBuilders, SearchParam searchParams) {
-        List<TaskSearchFilter> allFilters = getDefaultFiltersForEntity( searchParams);
-        List<TaskSearchFilter> inputFilters = response.getFilters();
+        List<Filter<?>> allFilters = getDefaultFiltersForEntity( searchParams);
+        if(allFilters.isEmpty()) return;
 
-        HashMap<String, List<String>> selectedFilters = new HashMap<>();
-        for(TaskSearchFilter filter: inputFilters) {
-            if(filter.getOptions() != null) {
-                List<String> selectedOptions = filter.getOptions().stream()
-                    .filter(SearchFilterAggregatedOption::getIsSelected)
-                    .map(SearchFilterAggregatedOption::getValue)
-                    .collect(Collectors.toList());
-                selectedFilters.put(filter.getFieldName(), selectedOptions);
-            }
-        }
 
-        Map<String, List<SearchFilterAggregatedOption>> aggregationResponse = new HashMap<>();
-        aggregationBuilders.keySet().forEach(aggName -> {
-            if(elasticResponse.aggregations() != null && elasticResponse.aggregations().get(aggName) != null) {
-                elasticResponse.aggregations().get(aggName).sterms().buckets().array().forEach(bucket -> {
-                    SearchFilterAggregatedOption aggNumber = new SearchFilterAggregatedOption();
-                    aggNumber.setValue(bucket.key().stringValue());
-                    aggNumber.setCount(bucket.docCount());
-                    aggNumber.setIsSelected(false);
-                    if(Objects.isNull(aggregationResponse.get(aggName.split("_agg")[0]))) {
-                        aggregationResponse.put(aggName.split("_agg")[0], new ArrayList<>());
-                    }
-                    aggregationResponse.get(aggName.split("_agg")[0]).add(aggNumber);
-                });
-            }
-        });
-        for(TaskSearchFilter filter: allFilters) {
-            if(aggregationResponse.containsKey(filter.getFieldName())) {
-                filter.setOptions(aggregationResponse.get(filter.getFieldName()));
-                if(selectedFilters.containsKey(filter.getFieldName())) {
-                    filter.getOptions().forEach(option -> {
-                        option.setIsSelected(BooleanUtils.toBoolean(selectedFilters.get(filter.getFieldName()).contains(option.getValue())));
+        List<Filter<?>> filters = !response.getFilters().isEmpty()? response.getFilters() :  allFilters;
+        List<FilterTerm> termFilters = filters.stream().filter(f -> f instanceof FilterTerm)
+            .map(FilterTerm.class::cast)
+            .collect(Collectors.toList());
+        List<FilterRange> rangeFilters = filters.stream().filter(f -> f instanceof FilterRange)
+            .map(FilterRange.class::cast)
+            .collect(Collectors.toList());
+
+        for (FilterTerm termFilter : termFilters) {
+            Aggregate aggregate =  elasticResponse.aggregations().get(termFilter.getFieldId()+"_agg");
+            List<FilterOptions> filterOptions = new ArrayList<>();
+            if (aggregate != null) {
+                if(aggregate.isSterms()) {
+                    aggregate.sterms().buckets().array().forEach(bucket -> {
+                        filterOptions.add(FilterOptions.builder()
+                            .name(bucket.key().stringValue())
+                            .count(bucket.docCount())
+                            .build());
+                    });
+                } else if (aggregate.isLterms()) {
+                    aggregate.lterms().buckets().array().forEach(bucket -> {
+                        filterOptions.add(FilterOptions.builder()
+                            .name(bucket.keyAsString())
+                            .count(bucket.docCount())
+                            .build());
                     });
                 }
+
             }
+            if(Objects.isNull(termFilter.getAttributes())) {
+                termFilter.setAttributes(new FilterAttributesTerm());
+            }
+            termFilter.getAttributes().setOptions(filterOptions);
+            if(Objects.isNull(termFilter.getAttributes().getValue())) {
+                termFilter.getAttributes().setValue(new ArrayList<>());
+            }
+
         }
-        response.setFilters(allFilters);
+
+//        for (FilterRange rangeFilter : rangeFilters) {
+//            if(Objects.isNull(rangeFilter.getAttributes())) {
+//                rangeFilter.setAttributes(new FilterAttributesRange());
+//            }
+//            rangeFilter.getAttributes().setOptions(new ArrayList<>());
+//            if(Objects.isNull(rangeFilter.getAttributes().getValue())) {
+//                rangeFilter.getAttributes().setValue(new RangeValue());
+//            }
+//        }
+//        response.setFilters(allFilters);
     }
 //    private SortBuilder<?> getSortBuilder(TaskSort selectedSort, SearchParam searchParams) {
 //        RAPSearchSort selectedRapSearchSort = RAPSearchSort.fromString(selectedSort.getFieldId());
