@@ -22,6 +22,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { withRBAC } from '@/components/withRBAC';
 
 // Define types
 type Entity = 'Task' | 'User';
@@ -52,7 +53,7 @@ type FormData = {
   action: string;
 };
 
-export default function AutomationRulesForm() {
+function AutomationRulesForm() {
   // Sample data for dropdowns
   const events: string[] = [
     'Task Created',
@@ -331,3 +332,9 @@ export default function AutomationRulesForm() {
     </form>
   );
 }
+
+export default withRBAC(AutomationRulesForm, 'automation_rules:create', () => (
+  <div className="p-4 text-center">
+    You don't have permission to create automation rules.
+  </div>
+));

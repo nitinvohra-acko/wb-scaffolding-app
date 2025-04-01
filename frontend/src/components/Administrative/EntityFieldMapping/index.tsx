@@ -36,6 +36,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { withRBAC } from '@/components/withRBAC';
 
 // Define the field configuration type
 type FieldConfig = {
@@ -48,7 +49,7 @@ type FieldConfig = {
   filterType?: 'term' | 'range';
 };
 
-export default function FieldConfigManagement() {
+function FieldConfigManagement() {
   const [fieldConfigs, setFieldConfigs] = useState<FieldConfig[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
   const [originalConfigs, setOriginalConfigs] = useState<FieldConfig[]>([]);
@@ -347,3 +348,8 @@ export default function FieldConfigManagement() {
     </div>
   );
 }
+export default withRBAC(FieldConfigManagement, 'field-config:view', () => (
+  <div className="p-4 text-center">
+    You don't have permission to view the field configuration management page.
+  </div>
+));

@@ -6,9 +6,11 @@ import {
   LayoutDashboard,
   Users,
   Workflow,
+  Shield,
 } from 'lucide-react';
 import Link from 'next/link';
 import React, { ReactNode, useState } from 'react';
+import { withRBAC } from '../withRBAC';
 
 const categories: Record<
   string,
@@ -62,6 +64,14 @@ const categories: Record<
       'from-red-500/10 to-red-500/5 hover:from-red-500/20 hover:to-red-500/10',
     textColor: 'text-red-700',
   },
+  'role-permissions': {
+    name: 'Role Permissions',
+    description: 'Manage permissions for different roles',
+    icon: <Shield className="h-6 w-6" />,
+    color:
+      'from-teal-500/10 to-teal-500/5 hover:from-teal-500/20 hover:to-teal-500/10',
+    textColor: 'text-teal-700',
+  },
 };
 
 const featureList: string[] = [
@@ -70,9 +80,10 @@ const featureList: string[] = [
   'entity-config',
   'dashboard',
   'automation-rules',
+  'role-permissions',
 ];
 
-const LandingPage = () => {
+const AdministrativePage = () => {
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
 
   return (
@@ -98,7 +109,7 @@ const LandingPage = () => {
             const isHovered = hoveredCategory === key;
 
             return (
-              <a
+              <Link
                 key={key}
                 href={category.url ? category.url : `/administrative/${key}`}
                 target={category.url ? '_blank' : undefined}
@@ -154,7 +165,7 @@ const LandingPage = () => {
                   ${isHovered ? 'opacity-10' : ''}
                 `}
                 />
-              </a>
+              </Link>
             );
           })}
         </div>
@@ -163,4 +174,4 @@ const LandingPage = () => {
   );
 };
 
-export default LandingPage;
+export default withRBAC(AdministrativePage, 'administrative:view');

@@ -3,8 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --port 3003",
-    "build": "next build",
+    "generate-rbac": "ts-node ./src/script/generateRBACComponents.ts",
+    "watch-rbac": "ts-node ./src/script/generateRBACComponents.ts --watch",
+    "dev": "npm run watch-rbac & next dev --port 3003",
+    "build": "npm run generate-rbac && next build",
     "start": "next start --port 3003",
     "lint": "next lint"
   },
@@ -51,6 +53,7 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
+    "@types/glob": "^8.1.0",
     "@types/js-cookie": "^3.0.6",
     "@types/node": "^20",
     "@types/react": "^18",
@@ -62,6 +65,7 @@
     "postcss": "^8.5.3",
     "postcss-loader": "^8.1.1",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5"
+    "typescript": "^5",
+    "ts-node": "^10.9.2"
   }
 }
