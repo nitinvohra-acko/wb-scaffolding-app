@@ -3,9 +3,10 @@ import HealthProfile from './detail';
 interface PropsType {
   handleLayout: (l: 'vertical' | 'horizontal') => void;
   layout: 'vertical' | 'horizontal';
+  taskDetail: any;
 }
 
-const Home: React.FC<PropsType> = ({ layout, handleLayout }) => {
+const Home: React.FC<PropsType> = ({ layout, handleLayout, taskDetail }) => {
   const [showHealthProfile, setShowHealthProfile] = React.useState(false);
   return (
     <div style={{ height: '100vh', overflowY: 'auto' }} className="w-full">
@@ -34,6 +35,7 @@ const Home: React.FC<PropsType> = ({ layout, handleLayout }) => {
           readonly={false}
           layout={layout}
           handleLayout={handleLayout}
+          taskDetail={taskDetail}
         />
       )}
     </div>

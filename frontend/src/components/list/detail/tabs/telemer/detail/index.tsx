@@ -7,6 +7,7 @@ import {
   getUniqueMembers,
   updateObjectByKey,
   resolver,
+  requestMapping,
 } from './utils';
 import { QuestionsType, QuestionConfig, member } from './type';
 import { Resolver, useForm } from 'react-hook-form';
@@ -32,8 +33,9 @@ interface PropsType {
   handleLayout: (l: 'vertical' | 'horizontal') => void;
   layout: 'vertical' | 'horizontal';
   readonly: boolean;
+  taskDetail: any;
 }
-export default function HealthProfile({ readonly }: PropsType) {
+export default function HealthProfile({ readonly, taskDetail }: PropsType) {
   const [activeSection, setActiveSection] = useState<string | null>(
     'introduction',
   );
@@ -113,7 +115,8 @@ export default function HealthProfile({ readonly }: PropsType) {
   });
 
   const handleSubmit = async () => {
-    console.log('submit the form', globalQuestion);
+    const response = requestMapping([...globalQuestion]);
+    console.log('response', response);
     try {
       const myHeaders = new Headers();
       myHeaders.append('Content-Type', 'application/json');
@@ -249,7 +252,7 @@ export default function HealthProfile({ readonly }: PropsType) {
       console.log('error at submit');
     }
   };
-
+  console.log('taskDetail.id', taskDetail.id);
   const runWorkflow = async () => {
     const myHeaders = new Headers();
     try {
@@ -261,7 +264,7 @@ export default function HealthProfile({ readonly }: PropsType) {
         timestamp: 1742983346000,
         serviceName: 'CRM',
         payload: {
-          task_id: '67e50c89d7ddbd37281279fd',
+          task_id: taskDetail.id,
           workflow_id: 'acf8cb7e-0ae5-11f0-92ca-aa3842aadbdb',
           decision: 'TELEMER_COMPLETED',
           assignee: 'anurag.khard@acko.tech',
@@ -587,7 +590,7 @@ export default function HealthProfile({ readonly }: PropsType) {
     [globalQuestion],
   );
   useEffect(() => {
-    console.log('global lgo', getValues(), formState.errors);
+    console.log('response>>>', requestMapping([...globalQuestion]));
   }, [globalQuestion]);
 
   const renderQuestion = useCallback(

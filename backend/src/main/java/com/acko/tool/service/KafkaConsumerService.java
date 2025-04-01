@@ -31,7 +31,7 @@ public class KafkaConsumerService {
     TasksService tasksService;
 
 
-    @KafkaListener(topics = "wb-scaffolding", groupId = "my-group")
+    @KafkaListener(topics = "wb-scaffolding", groupId = "my-group-1")
     public void consumeInternal(String message) {
         try {
             JsonNode jsonNode = objectMapper.readTree(message);
@@ -39,11 +39,13 @@ public class KafkaConsumerService {
             Map<String, Object> payload = new HashMap<>();
             payload.put("event_id", kafkaMessage.getEventType());
             Object response = ruleEngineService.execute("CRMToolEventDecision", payload);
-            if (Objects.nonNull(response)) {
-                String taskId = kafkaMessage.getPayload().get("task_id").toString();
-                Task<?> task = tasksService.fetchTaskById(taskId);
-                String workflowId = task.getWorkflowInstanceId();
-                kafkaMessage.getPayload().put("workflow_id", workflowId);
+            if (Objects.nonNull(response) && response instanceof List && !((List<?>) response).isEmpty()) {
+                if (Objects.nonNull(kafkaMessage.getPayload().get("task_id"))) {
+                    String taskId = kafkaMessage.getPayload().get("task_id").toString();
+                    Task<?> task = tasksService.fetchTaskById(taskId);
+                    String workflowId = task.getWorkflowInstanceId();
+                    kafkaMessage.getPayload().put("workflow_id", workflowId);
+                }
                 Map<String, Object> responseMap = objectMapper.convertValue(((List<?>) response).get(0), new TypeReference<Map<String, Object>>() {
                 });
                 if (responseMap.get("action_type").toString().equalsIgnoreCase("bpmn")) {

@@ -36,7 +36,7 @@ export default function CustomerDashboard({
   // Customer profile data
   console.log('status>>>', taskDetail);
   const customerData = {
-    name: 'Akash Bhatia',
+    name: 'Rahul',
     proposalNo: '31791797',
     avatar: 'AB',
     status: taskDetail?.status,
@@ -95,20 +95,14 @@ export default function CustomerDashboard({
   // Member level details data
   const memberDetailsData: MemberItem[] = [
     {
-      name: 'Akash Bhatia',
+      name: 'Rahul',
       details: 'Self | Male | 40 years',
       status: 'Tele-mer pending',
       statusClassName: 'bg-orange-50 text-orange-500 border-orange-200',
     },
     {
-      name: 'Simran Bhatia',
+      name: 'Smita',
       details: 'Spouse | Female | 39 years',
-      status: 'Tele-mer pending',
-      statusClassName: 'bg-orange-50 text-orange-500 border-orange-200',
-    },
-    {
-      name: 'Suman Bhatia',
-      details: 'Child | Female | 9 years',
       status: 'Tele-mer pending',
       statusClassName: 'bg-orange-50 text-orange-500 border-orange-200',
     },
