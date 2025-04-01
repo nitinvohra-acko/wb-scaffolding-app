@@ -2,7 +2,10 @@
 
 import React from 'react';
 import './globals.css';
+import { AnalyticsProvider } from '@/providers/AnalyticsProvider';
 import Navbars from '@/components/Navbars';
+import { Toaster } from '@/components/ui/toaster';
+import AuthInitializer from '@/components/AuthInitializer';
 
 export default function RootLayout({
   children,
@@ -10,9 +13,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html>
+    <html lang="en">
       <body>
-        <Navbars>{children}</Navbars>
+        <AuthInitializer>
+          <AnalyticsProvider>
+            <Navbars>{children}</Navbars>
+          </AnalyticsProvider>
+          <Toaster />
+        </AuthInitializer>
       </body>
     </html>
   );

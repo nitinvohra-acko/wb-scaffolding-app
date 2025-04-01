@@ -17,9 +17,9 @@ export const retail: {
   items: [
     {
       icon: ListTodo,
-      title: 'List',
-      href: '/list',
-      id: 'list',
+      title: 'Tasks',
+      href: '/tasks',
+      id: 'tasks',
     },
     {
       icon: LayoutDashboard,

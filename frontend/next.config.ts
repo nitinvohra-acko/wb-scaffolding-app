@@ -24,6 +24,18 @@ const nextConfig: NextConfig = {
         source: '/kibana/api/status',
         destination: `${process.env.NEXT_PUBLIC_KIBANA_HEALTH}/api/status`,
       },
+      {
+        source: '/api/user/:path*',
+        destination: `${process.env.NEXT_PUBLIC_BASE_API}/api/user/:path*`,
+      },
+      {
+        source: '/search/fields/:path*',
+        destination: `${process.env.NEXT_PUBLIC_BASE_API}/search/fields/:path*`,
+      },
+      {
+        source: '/api/event',
+        destination: `${process.env.NEXT_PUBLIC_BASE_API}/api/event`,
+      },
     ];
   },
 };

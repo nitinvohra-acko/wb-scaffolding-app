@@ -12,5 +12,6 @@ public class ElasticSearchConfigProperties {
     private String url;
     private String taskIndex;
     private String userIndex;
+    private String eventIndex;
     
 }

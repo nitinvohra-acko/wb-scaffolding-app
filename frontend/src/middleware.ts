@@ -1,9 +1,14 @@
-// middleware.ts
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function middleware(req: NextRequest) {
   const accessToken = req.cookies.get('access_token');
   const refreshToken = req.cookies.get('refresh_token');
+
+  // Allow the login page to load without token validation
+  const url = req.nextUrl.clone();
+  if (url.pathname === '/login') {
+    return NextResponse.next();
+  }
 
   // If no access token, redirect to login
   if (!accessToken && !refreshToken) {
@@ -36,12 +41,14 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL('/login', req.url));
     }
   }
-  const url = req.nextUrl.clone();
+
+  // Redirect root path to /tasks
   if (url.pathname === '/') {
-    url.pathname = '/list';
+    url.pathname = '/tasks';
     return NextResponse.redirect(url);
   }
-  // return NextResponse.next();
+
+  return NextResponse.next();
 }
 
 // Helper function to check if token is expired
@@ -59,6 +66,6 @@ async function isTokenExpired(token: string) {
 
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|login|health-check).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|health-check|login).*)',
   ],
 };
