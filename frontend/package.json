@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "generate-rbac": "ts-node ./src/script/generateRBACComponents.ts",
+    "generate-rbac": "ts-node --loader ts-node/esm ./src/script/generateRBACComponents.ts",
     "watch-rbac": "ts-node ./src/script/generateRBACComponents.ts --watch",
     "dev": "npm run watch-rbac & next dev --port 3003",
     "build": "npm run generate-rbac && next build",
