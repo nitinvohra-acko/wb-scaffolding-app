@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "postbuild": "node script/generateRBACComponents.ts",
-    "watch-rbac": "ts-node script/generateRBACComponents.ts --watch",
+    "postbuild": "node script/generateRBACComponents.js",
+    "watch-rbac": "ts-node script/generateRBACComponents.js --watch",
     "dev": "npm run watch-rbac & next dev --port 3003",
     "build": "next build",
     "start": "next start --port 3003",

@@ -6,17 +6,12 @@ import chokidar from 'chokidar';
 const COMPONENTS_DIR = path.join(process.cwd(), 'src/components');
 const OUTPUT_FILE = path.join(process.cwd(), 'public/rbacComponents.json');
 
-interface RBACComponent {
-  name: string;
-  requiredPermission: string;
-}
-
 const generateRBACList = () => {
   const files = glob.sync(`${COMPONENTS_DIR}/**/*.tsx`);
-  const registeredComponents: RBACComponent[] = [];
+  const registeredComponents = [];
 
   // Read existing components if file exists
-  let existingComponents: RBACComponent[] = [];
+  let existingComponents = [];
   if (fs.existsSync(OUTPUT_FILE)) {
     try {
       const existing = JSON.parse(fs.readFileSync(OUTPUT_FILE, 'utf-8'));
@@ -27,7 +22,7 @@ const generateRBACList = () => {
   }
 
   // Track all currently valid components
-  const currentlyValidComponents = new Set<string>();
+  const currentlyValidComponents = new Set();
   console.log(currentlyValidComponents, 'current valid component');
   files.forEach((file) => {
     const content = fs.readFileSync(file, 'utf-8');
