@@ -2,6 +2,7 @@
   "name": "health-ops-tech",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "generate-rbac": "ts-node ./src/script/generateRBACComponents.ts",
     "watch-rbac": "ts-node ./src/script/generateRBACComponents.ts --watch",
