@@ -44,6 +44,10 @@ const nextConfig: NextConfig = {
         source: '/questions/assessment-questions/config',
         destination: `${process.env.NEXT_PUBLIC_BASE_API}/questions/assessment-questions/config`,
       },
+      {
+        source: '/api/event',
+        destination: `${process.env.NEXT_PUBLIC_BASE_API}/api/event`,
+      },
     ];
   },
 };

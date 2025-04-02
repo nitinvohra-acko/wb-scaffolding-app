@@ -1,9 +1,10 @@
+import { UserInfo } from '@/types/auth';
 import { User } from '@/types/users';
 import { create, StoreApi } from 'zustand';
 import { combine, devtools } from 'zustand/middleware';
 
 interface StateType {
-  authUser: User | null;
+  authUser: UserInfo | null;
 }
 
 const initState: StateType = {

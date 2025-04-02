@@ -1,10 +1,12 @@
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_API;
+import { channel } from 'diagnostics_channel';
 
 export interface AnalyticsEvent {
-  eventName: string;
+  eventName?: string;
   properties?: Record<string, any>;
   userId?: string;
   timestamp?: number;
+  channel?: string;
+  eventType: 'track' | 'page' | 'identify';
 }
 
 const safeFetch = async (url: string, data: any) => {
@@ -31,24 +33,25 @@ const safeFetch = async (url: string, data: any) => {
 
 export const analyticsService = {
   track: async (event: AnalyticsEvent) => {
-    await safeFetch(`${BASE_URL}/analytics/track`, {
+    await safeFetch(`/api/event`, {
       ...event,
+      channel: 'web',
       timestamp: event.timestamp || Date.now(),
     });
   },
 
-  page: async (pageName: string, properties?: Record<string, any>) => {
-    await safeFetch(`${BASE_URL}/analytics/page`, {
-      pageName,
-      properties,
+  page: async (event: AnalyticsEvent) => {
+    await safeFetch(`/api/event`, {
+      ...event,
+      channel: 'web',
       timestamp: Date.now(),
     });
   },
 
-  identify: async (userId: string, traits?: Record<string, any>) => {
-    await safeFetch(`${BASE_URL}/analytics/identify`, {
-      userId,
-      traits,
+  identify: async (event: AnalyticsEvent) => {
+    await safeFetch(`/api/event`, {
+      ...event,
+      channel: 'web',
       timestamp: Date.now(),
     });
   },

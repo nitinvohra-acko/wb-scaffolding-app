@@ -31,9 +31,7 @@ interface UserMenuProps {
 }
 
 export default function UserMenu({ onLogout }: UserMenuProps) {
-  const [status, setStatus] = useState<UserStatus>(
-    (localStorage!?.getItem('user-status') as UserStatus) ?? 'available',
-  );
+  const [status, setStatus] = useState<UserStatus>('available');
   const { fetchAuthDetails } = useAuth();
   const { authUser } = useAuthStore();
   const statusColors: Record<UserStatus, string> = {
@@ -48,6 +46,7 @@ export default function UserMenu({ onLogout }: UserMenuProps) {
     setStatus(value);
     analyticsService?.track({
       eventName: 'user_status_change',
+      eventType: 'track',
       properties: {
         previousStatus: status,
         newStatus: value,
@@ -59,16 +58,23 @@ export default function UserMenu({ onLogout }: UserMenuProps) {
   useEffect(() => {
     fetchAuthDetails();
   }, []);
+  useEffect(() => {
+    if (authUser) {
+      localStorage &&
+        setStatus(
+          (localStorage.getItem('user-status') as UserStatus) || 'available',
+        );
+    }
+  }, []);
   if (!authUser) {
     return <></>;
   }
-  console.log(authUser);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full mx-4">
           <Avatar className="h-8 w-8">
-            <AvatarFallback>{authUser?.name?.charAt(0)}</AvatarFallback>
+            <AvatarFallback>{authUser?.firstName?.charAt(0)}</AvatarFallback>
           </Avatar>
           <span
             className={`absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border border-white ${statusColors[status]}`}
@@ -78,7 +84,9 @@ export default function UserMenu({ onLogout }: UserMenuProps) {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{authUser.name}</p>
+            <p className="text-sm font-medium leading-none">
+              {authUser.firstName}
+            </p>
             <p className="text-xs leading-none text-muted-foreground">
               {authUser.email}
             </p>
