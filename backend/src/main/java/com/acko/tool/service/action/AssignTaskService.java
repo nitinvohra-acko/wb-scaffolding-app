@@ -14,6 +14,12 @@ import java.util.List;
 import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.jeasy.rules.api.Facts;
+import org.jeasy.rules.api.Rule;
+import org.jeasy.rules.api.Rules;
+import org.jeasy.rules.core.DefaultRulesEngine;
+import org.jeasy.rules.mvel.MVELCondition;
+import org.jeasy.rules.core.RuleBuilder;
 import org.springframework.stereotype.Service;
 
 @Log4j2
@@ -21,7 +27,6 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class AssignTaskService implements ActionMapper {
     private final ActionRepository actionRepository;
-    private final TasksService taskService;
     private final ActionValidator actionValidator;
 
     @Override
@@ -70,20 +75,30 @@ public class AssignTaskService implements ActionMapper {
         actionValidator.validateExecuteActionObject(executeActionObject);
         actionValidator.validateActionProperties(executeActionObject);
 
-        AssignTaskProperties actionProperties = executeActionObject.getAction().getActionProperties().getAssignTaskProperties();
-        Task task = taskService.fetchTaskById(executeActionObject.getReferenceTaskId());
+        // Evaluate the condition string using EasyRules with MVEL
+        EventAction eventAction = executeActionObject.getAction();
+        String condition = eventAction.getCondition(); // Assuming `getCondition()` returns the condition string
+        if (condition != null && !condition.isEmpty()) {
+            Facts facts = new Facts();
+            facts.put("event", executeActionObject.getEvent()); // Add the event object to facts
 
-        if(Objects.isNull(task)) throw new ResourceNotFoundException("Now such task found -> " + executeActionObject.getReferenceTaskId());
+            Rule rule = new RuleBuilder()
+                .name("Condition Evaluation Rule")
+                .description("Rule to evaluate the condition string using MVEL")
+                .when(new MVELCondition(condition)) // Use MVELCondition to evaluate the condition
+                .then(fact -> log.info("Condition evaluated to true"))
+                .build();
 
-        switch (actionProperties.getAssignTo()) {
-            case "INDIVIDUAL_USER":
-                task.setAssignee(actionProperties.getUserId());
-                taskService.createOrUpdateTasks(List.of(task));
-                break;
-            case "USER_WITH_PROPERTY":
+            DefaultRulesEngine rulesEngine = new DefaultRulesEngine();
+            Rules rules = new Rules();
+            rules.register(rules);
+            rulesEngine.fire(rules, facts);
 
-                break;
-            default: throw new BadRequestException("No such assign to property found -> " + actionProperties.getAssignTo());
+            // If the condition is not satisfied, throw an exception
+            if (!rule.evaluate(facts)) {
+                log.info("Condition not satisfied -> " + condition);
+                return executeActionObject;
+            }
         }
         return executeActionObject;
     }

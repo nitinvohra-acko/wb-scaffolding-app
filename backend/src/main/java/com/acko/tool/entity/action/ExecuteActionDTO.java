@@ -1,5 +1,6 @@
 package com.acko.tool.entity.action;
 
+import com.acko.tool.dto.EventDTO;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import java.util.HashMap;
@@ -16,5 +17,5 @@ import lombok.NoArgsConstructor;
 public class ExecuteActionDTO {
     private EventAction action;
     private String referenceTaskId;
-    private HashMap<String, Object> data;
+    private EventDTO event;
 }

@@ -53,7 +53,8 @@ public class SearchService {
     public SearchParam getParamsForEntity(String entity) {
         SearchParam searchParam = searchParamRepository.findSearchParamByEntity(entity, true);
         if(Objects.isNull(searchParam)) {
-            throw new ResourceNotFoundException("No search param found for given entity");
+            log.error("No search param found for given entity");
+            return SearchParam.builder().entity(entity).params(new ArrayList<>()).build();
         }
         return searchParam;
     }

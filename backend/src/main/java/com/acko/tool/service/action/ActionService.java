@@ -1,6 +1,7 @@
 package com.acko.tool.service.action;
 
-import com.acko.tool.entity.Event;
+import com.acko.tool.dto.EventDTO;
+import com.acko.tool.entity.action.EntityParam;
 import com.acko.tool.entity.action.EventAction;
 import com.acko.tool.entity.action.EventActionMetadata;
 import com.acko.tool.entity.action.EventLabelDTO;
@@ -25,8 +26,9 @@ public class ActionService {
     private final ActionRepository actionRepository;
     private final SearchService searchService;
 
-    public EventActionMetadata getMetadata(EventActionMetadata eventActionDTO)
+    public EventActionMetadata getMetadata()
         throws NoSuchFieldException {
+        EventActionMetadata eventActionDTO = new EventActionMetadata();
         // TODO: Get list of events from somewhere.
         eventActionDTO.setEventsList(List.of(
             new EventLabelDTO("TASK_CREATED", "Task created"),
@@ -37,11 +39,17 @@ public class ActionService {
         for (ActionMapper actionMapper : actionMappers) {
             eventActionDTO.getActionsList().add(actionMapper.getMetadata());
         }
-        eventActionDTO.setEntityParams(new HashMap<>());
+        eventActionDTO.setEntityParams(new ArrayList<>());
 
         // Loop over TaskType enums and get getCombinedSearchFields for each
         for (TaskType taskType : TaskType.values()) {
-            eventActionDTO.getEntityParams().put(taskType.name(),searchService.getCombinedSearchFields(taskType.name()));
+            eventActionDTO.getEntityParams().add(
+                new EntityParam()
+                    .toBuilder()
+                    .name(taskType.name().toLowerCase())
+                    .fieldParams(searchService.getCombinedSearchFields(taskType.name().toLowerCase()))
+                    .build()
+                );
         }
 
         return eventActionDTO;
@@ -55,7 +63,7 @@ public class ActionService {
         return action.saveAction(saveActionDTO);
     }
 
-    public Event getActionsForEventAndExecute(Event event) {
+    public EventDTO getActionsForEventAndExecute(EventDTO event) throws Exception {
         List<EventAction> actions = getActionsForEvent(event);
         if(!actions.isEmpty()){
             for (EventAction action : actions) {
@@ -65,8 +73,8 @@ public class ActionService {
         return event;
     }
 
-    private List<EventAction> getActionsForEvent(Event event) {
-        List<EventAction> actions = actionRepository.getActionByEventId(event.getEventId(), true);
+    private List<EventAction> getActionsForEvent(EventDTO event) {
+        List<EventAction> actions = actionRepository.getActionByEventId(event.getEventName(), true);
         if(Objects.isNull(actions) || actions.isEmpty()) {
             return new ArrayList<>();
         } else {
@@ -74,15 +82,13 @@ public class ActionService {
         }
     }
 
-    private ExecuteActionDTO execute(EventAction action, Event event) {
+    private ExecuteActionDTO execute(EventAction action, EventDTO event) throws Exception {
         ActionMapper actionMapper = getActionMapper(action.getAction());
-        if (action == null) {
+        if (actionMapper == null) {
             throw new ResourceNotFoundException("Invalid action type: " + action.getAction());
         }
-        ExecuteActionDTO executeActionObject = ExecuteActionDTO.builder().action(action).referenceTaskId(event.getReferenceTaskId()).build();
-//        return actionMapper.executeAction(executeActionObject);
-        // TODO: Complete this
-        return executeActionObject;
+        ExecuteActionDTO executeActionObject = ExecuteActionDTO.builder().action(action).event(event).build();
+        return actionMapper.executeAction(executeActionObject);
     }
 
     private ActionMapper getActionMapper(String actionType) {
