@@ -1,11 +1,15 @@
 package com.acko.tool.service;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.admin.client.resource.RolesResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
@@ -13,7 +17,9 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Service;
 
 import com.acko.tool.dto.UserDTO;
+import com.acko.tool.dto.UserRoleDTO;
 
+import jakarta.validation.Valid;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -106,4 +112,59 @@ public class KeycloakService {
 		}
 		return null;
 	}
+
+	public RoleRepresentation getRoleByName(String roleName) {
+		RoleRepresentation roleByName = null;
+		try {
+			RolesResource rolesResource = adminRealmResource.roles();
+			roleByName = rolesResource.get(roleName).toRepresentation();
+
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return roleByName;
+	}
+
+	public RoleRepresentation createOrUpdateRole(@Valid UserRoleDTO userRoleRequest) {
+		RolesResource rolesResource = adminRealmResource.roles();
+
+		RoleRepresentation role = getRoleByName(userRoleRequest.getRoleName());
+
+		if (role == null) {
+			// create
+			role = new RoleRepresentation();
+			role.setName(userRoleRequest.getRoleName());
+
+			// Set role description (optional)
+			role.setDescription("This is a custom role with attributes");
+
+			// Set attributes for the role
+			Map<String, List<String>> attributes = new HashMap<>();
+			attributes.put("permissions", userRoleRequest.getPermissions());
+			role.setAttributes(attributes);
+
+			rolesResource.create(role);
+		} else {
+			// update
+			Map<String, List<String>> attributes = new HashMap<>();
+			attributes.put("permissions", userRoleRequest.getPermissions());
+			role.setAttributes(attributes);
+
+			rolesResource.get(userRoleRequest.getRoleName()).update(role);
+
+		}
+
+		return role;
+	}
+
+	public List<RoleRepresentation> getAllRoles() {
+		RolesResource rolesResource = adminRealmResource.roles();
+		List<RoleRepresentation> roles = new ArrayList<>();
+
+		for (RoleRepresentation role : rolesResource.list()) {
+			roles.add(getRoleByName(role.getName()));
+		}
+		return roles;
+	}
+	
 }
