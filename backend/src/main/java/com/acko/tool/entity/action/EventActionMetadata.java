@@ -14,7 +14,6 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class EventActionMetadata {
     private List<EventLabelDTO> eventsList;
     private List<ActionMetadataDTO> actionsList;

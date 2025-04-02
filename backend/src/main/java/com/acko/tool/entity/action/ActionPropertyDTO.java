@@ -13,7 +13,6 @@ import java.util.List;
 @Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ActionPropertyDTO {
     private String type;
     private List<OptionLabelDTO> options;
