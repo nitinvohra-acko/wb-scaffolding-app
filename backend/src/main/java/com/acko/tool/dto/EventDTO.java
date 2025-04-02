@@ -25,6 +25,8 @@ public class EventDTO {
 	
 	@NotBlank(message = "userId cannot be blank")
 	private String userId;
+
+	private String referenceTaskId;
 	
 	private Map<String, Object> properties;
 }
