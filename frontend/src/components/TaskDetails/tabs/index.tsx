@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Telemer from '@/components/list/detail/tabs/telemer';
+import Telemer from '@/components/TaskDetails/tabs/telemer';
 interface PropsType {
   handleLayout: (l: 'vertical' | 'horizontal') => void;
   layout: 'vertical' | 'horizontal';
