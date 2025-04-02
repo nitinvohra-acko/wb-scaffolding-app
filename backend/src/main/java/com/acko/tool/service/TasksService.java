@@ -32,6 +32,14 @@ public class TasksService {
 		return null;
 	}
 
+	public Task<?> fetchProposalTaskByProposalId(String id){
+		Optional<Task<?>> taskOptional = taskRepository.findByProposalId(id);
+		if (taskOptional.isPresent()) {
+			return taskOptional.get();
+		}
+		return null;
+	}
+
 	public List<Task<?>> createOrUpdateTasks(List<Task<?>> tasks) throws Exception {
 		List<Task<?>> savedTasks = taskRepository.saveAll(tasks);
 		savedTasks.forEach(t -> {
