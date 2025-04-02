@@ -4,12 +4,12 @@ import { combine, devtools } from 'zustand/middleware';
 
 interface StateType {
   questionConfig: QuestionsType[];
-  memberResponse: any;
+  memberResponse: QuestionsType[];
 }
 
 const initState: StateType = {
   questionConfig: [],
-  memberResponse: null,
+  memberResponse: [],
 };
 
 const hoist =

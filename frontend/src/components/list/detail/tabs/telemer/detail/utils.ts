@@ -1,4 +1,5 @@
 import { QuestionsType, member } from './type';
+import * as z from 'zod';
 export type Option = {
   option_id: string;
   answer_id: string;
@@ -48,7 +49,12 @@ export const formInitState: any = (
     } else {
       acc[curr?.question_id] = curr.value
         ? curr.value
-        : ['telemer_multi_select', 'members_comments'].includes(curr.type)
+        : [
+            'telemer_multi_select',
+            'members_comments',
+            'telemer_name_dob',
+            'telemer_height_weight',
+          ].includes(curr.type)
         ? []
         : '';
       // console.log('sub question>>', curr);
@@ -139,10 +145,6 @@ export const updateObjectByKey = (
   return arr;
 };
 
-export const resolver = (data: any) => {
-  console.log('data', data);
-};
-
 export const requestMapping = (questions: QuestionsType[]) => {
   let response: any = [];
   function iterativeQuestionMapping(questionConfigs: QuestionsType) {
@@ -173,3 +175,55 @@ export const requestMapping = (questions: QuestionsType[]) => {
   });
   return response;
 };
+
+export function questionSchema(
+  config: QuestionsType,
+  zodExpression: Record<string, z.ZodTypeAny>,
+) {
+  if (config.question_config.required === 1) {
+    let zExpression: z.ZodTypeAny; // Explicitly define the type as a Zod schema
+    switch (config.question_config.type) {
+      case 'telemer_radio_group': {
+        zExpression = z.string().min(1, 'Please select your option');
+        break;
+      }
+      case 'telemer_multi_select': {
+        zExpression = z.array(z.string()).min(1, 'This field is required.');
+        break;
+      }
+      case 'telemer_textarea': {
+        zExpression = z.string().min(1, 'This field is required.');
+        break;
+      }
+      case 'telemer_height_weight': {
+        zExpression = z
+          .array(z.string())
+          .min(2, 'Height and weight are required.');
+        break;
+      }
+      case 'telemer_name_dob': {
+        zExpression = z.array(z.string()).min(2, 'Name and DOB are required.');
+        break;
+      }
+      default: {
+        zExpression = z.string().min(1, 'This field is required.');
+      }
+    }
+    zodExpression[config.question_id] = zExpression; // Add the schema to the object
+  }
+
+  // Recursively handle sub-questions
+  if (config.question_config.sub_questions) {
+    config.question_config.sub_questions.forEach((sub) => {
+      questionSchema(sub, zodExpression);
+    });
+  }
+}
+
+export function getUniquSection(questions: QuestionsType[]): string[] {
+  const sectionSet = new Set();
+  questions.forEach((question) => {
+    sectionSet.add(question.section);
+  });
+  return Array.from(sectionSet) as string[];
+}

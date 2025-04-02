@@ -3,6 +3,7 @@ import { Label } from '@/components/ui/label';
 import { QuestionConfig } from '../type';
 import { Control, Controller } from 'react-hook-form';
 import { useMemo } from 'react';
+import ErrorComponent from './errorComponent';
 
 interface propsType {
   questionText: string[] | null;
@@ -60,29 +61,35 @@ const TelemerRadio: React.FC<propsType> = ({
             handleAnswerChange(name, value);
           };
           return (
-            <RadioGroup
-              aria-labelledby="demo-radio-buttons-group-label"
-              // className="space-y-2"
-              defaultValue={value}
-              // value={getValue}
-              onValueChange={handleOnChange}
-              className="flex space-x-4"
-            >
-              {options?.map((option, index) => (
-                <div
-                  className="flex inline-flex  items-center space-x-2"
-                  key={index}
-                >
-                  <RadioGroupItem
-                    value={option.answer_id}
-                    id={question_id + '_' + index}
-                  />
-                  <Label htmlFor={question_id + '_' + index}>
-                    {option.label}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
+            <div>
+              <RadioGroup
+                aria-labelledby="demo-radio-buttons-group-label"
+                // className="space-y-2"
+                defaultValue={value}
+                // value={getValue}
+                onValueChange={handleOnChange}
+                className="flex space-x-4"
+              >
+                {options?.map((option, index) => (
+                  <div
+                    className="flex inline-flex  items-center space-x-2"
+                    key={index}
+                  >
+                    <RadioGroupItem
+                      value={option.answer_id}
+                      id={question_id + '_' + index}
+                    />
+                    <Label htmlFor={question_id + '_' + index}>
+                      {option.label}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+              <ErrorComponent
+                errorMessage={error?.message}
+                isVisible={Boolean(error)}
+              />
+            </div>
           );
         }}
       ></Controller>

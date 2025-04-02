@@ -40,6 +40,10 @@ const nextConfig: NextConfig = {
         source: '/questions/answers/:path*',
         destination: `${process.env.NEXT_PUBLIC_BASE_API}/questions/answers/:path*`,
       },
+      {
+        source: '/questions/assessment-questions/config',
+        destination: `${process.env.NEXT_PUBLIC_BASE_API}/questions/assessment-questions/config`,
+      },
     ];
   },
 };

@@ -6,8 +6,9 @@ import {
   formInitState,
   getUniqueMembers,
   updateObjectByKey,
-  resolver,
   requestMapping,
+  questionSchema,
+  getUniquSection,
 } from './utils';
 import { QuestionsType, QuestionConfig, member } from './type';
 import { Resolver, useForm } from 'react-hook-form';
@@ -21,13 +22,8 @@ import QuestionText from './formComponents/questionText';
 import PageLoader from '@/components/ui/loader';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-
-const sectionList = [
-  'introduction',
-  'Demographic details',
-  'Habits',
-  'Pre existing conditions',
-];
+import { useParams } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 interface PropsType {
   handleLayout: (l: 'vertical' | 'horizontal') => void;
@@ -35,205 +31,60 @@ interface PropsType {
   readonly: boolean;
   taskDetail: any;
 }
-export default function HealthProfile({ readonly, taskDetail }: PropsType) {
+export default function HealthProfile({ readonly }: PropsType) {
+  const params = useParams();
+  const { toast } = useToast();
+
   const [activeSection, setActiveSection] = useState<string | null>(
     'introduction',
   );
   const [_loading, _setLoading] = useState(false);
-  const [memberForm, setMemberForm] = useState({});
-  const [globalQuestion, setGlobalQuestion] =
-    useState<QuestionsType[]>(question_Data4);
+  const [memberForm, setMemberForm] = useState<
+    Record<string, any> | undefined
+  >();
+  // const [globalQuestion, setGlobalQuestion] =
+  //   useState<QuestionsType[]>(question_Data4);
 
   const { fetchTelemerConfig, loading } = useTelemer();
   const hoistResponse = useTelemerStore().hoistResponse;
-  const store = useTelemerStore((store) => store);
+  const questions = useTelemerStore().memberResponse;
+  const questionConfig = useTelemerStore().questionConfig;
 
   const zSchema = useMemo(() => {
-    let sampleZod = {};
-    function questionSchema(config: QuestionsType) {
-      if (
-        !config.question_config?.sub_questions &&
-        config.question_config.required === 1
-      ) {
-        let zExpression = null;
-        switch (config.question_config.type) {
-          case 'telemer_radio_group': {
-            zExpression = z
-              .array(z.string())
-              .min(1, 'Please select your option');
-            break;
-          }
-          case 'telemer_multi_select': {
-            zExpression = z.array(z.string()).min(1, 'This field is required.');
-            break;
-          }
-        }
-        sampleZod = { ...sampleZod, [config.question_id]: zExpression };
-      }
-      config.question_config.sub_questions?.map((sub) => {
-        questionSchema(sub);
-      });
-    }
-    question_Data4.map((config) => {
-      questionSchema(config);
+    const zodExpressions: Record<string, z.ZodTypeAny> = {};
+    questionConfig.forEach((config) => {
+      questionSchema(config, zodExpressions);
     });
-    // let _zObj = {
-    //   introduction: z.string().min(1, 'Introduction is required'),
-    //   name_confirmation: z.string().min(1, 'Name confirmation is required'),
-    //   health_and_habits: z.string().min(1, 'Health and habits is required'),
-    //   tobacco: z.string().optional(),
-    //   tobacco_quantity: z.string().optional(),
-    //   alcohol: z.string().optional(),
-    //   alcohol_quantity: z.string().optional(),
-    //   medical_condition: z.array(z.string()).optional(),
-    //   other_medical_conditions: z.string().optional(),
-    //   medical_condition_follow_up: z.string().optional(),
-    //   recovered_now: z.string().optional(),
-    //   medicine_reasons: z.string().optional(),
-    //   not_recovered_follow_up: z.string().optional(),
-    //   experiencing_symptoms: z.array(z.string()).optional(),
-    //   other_symptoms: z.string().optional(),
-    //   experiencing_symptoms_follow_up: z.string().optional(),
-    //   experiencing_symptoms_joint_pain: z.string().optional(),
-    //   pregnant: z.string().optional(),
-    //   baby_due: z.string().optional(),
-    //   pregnant_follow_up: z.string().optional(),
-    //   past_pregnant: z.string().optional(),
-    // };
-    return z.record(z.string(), sampleZod);
-  }, [question_Data4]);
+    return z.record(z.string(), z.object(zodExpressions));
+  }, [questionConfig]);
 
   const { control, getValues, reset, trigger, formState, watch } = useForm({
     mode: 'onChange',
     reValidateMode: 'onChange',
     defaultValues: memberForm,
-    // context: {
-    //   familyConstraints: isAsp ? familyConstraintsAsp : familyConstraints,
-    //   members: previousMembers,
-    // } as object,
     resolver: zodResolver(zSchema),
   });
 
   const handleSubmit = async () => {
-    const response = requestMapping([...globalQuestion]);
-    console.log('response', response);
+    trigger();
+    if (!formState.isValid) {
+      toast({
+        title: 'Error',
+        description: `Please complete the required fields.`,
+      });
+      console.log('isvalid>>', formState.isValid);
+      return;
+    }
+    const MemberResponse = requestMapping([...questions]);
     try {
       const myHeaders = new Headers();
       myHeaders.append('Content-Type', 'application/json');
       _setLoading(true);
       const raw = JSON.stringify({
         journey: 'rap',
-        reference_id: 'a9e283d2-aebf-4fdf-8e4c-6f62d02660e0',
+        reference_id: params.slug ? params.slug[0] : '',
         source: 'health',
-        questions: [
-          {
-            question_id: 'name_confirmation',
-            question: ['Can you please confirm your name?'],
-            answer: [
-              {
-                user_id: 'L1UoRmLcipomYHNaqnQntw',
-                answer: 'correct',
-                answer_id: 'correct',
-              },
-              {
-                user_id: 'm82gqj1hemhkoprrimc',
-                answer: 'correct',
-                answer_id: 'correct',
-              },
-            ],
-            updated_by: 'uw',
-          },
-          {
-            question_id: 'dob_confirmation',
-            question: ['Can you please confirm your Date of Birth?'],
-            answer: [
-              {
-                user_id: 'L1UoRmLcipomYHNaqnQntw',
-                answer: 'correct',
-                answer_id: 'correct',
-              },
-              {
-                user_id: 'm82gqj1hemhkoprrimc',
-                answer: 'correct',
-                answer_id: 'correct',
-              },
-            ],
-            updated_by: 'uw',
-          },
-          {
-            question_id: 'height_weight_confirmation',
-            question: [
-              "I'm going to read the Height and Weight details you have filled for all the members. Please let me know if all of those are correct",
-            ],
-            answer: [
-              {
-                user_id: 'L1UoRmLcipomYHNaqnQntw',
-                answer: 'correct',
-                answer_id: 'correct',
-              },
-              {
-                user_id: 'm82gqj1hemhkoprrimc',
-                answer: 'correct',
-                answer_id: 'correct',
-              },
-            ],
-            updated_by: 'uw',
-          },
-          {
-            question_id: 'experiencing_symptoms',
-            question: [
-              'Is anyone in this plan currently experiencing any of the following symptoms?',
-            ],
-            answer: [
-              {
-                user_id: 'L1UoRmLcipomYHNaqnQntw',
-                answer: [
-                  'Fatigue',
-                  'Unexplained weight loss',
-                  'Dizziness',
-                  'Change in bowel habit',
-                  'Difficulty in breathing',
-                  'Acidity / Bleeding / Pain in passing stool',
-                  ' Any complaint related to eye-like blurring of vision / cataract / ear / mouth / nose / throat',
-                  'No symptoms',
-                ],
-                answer_id: [
-                  'none',
-                  'bowel',
-                  'breathing',
-                  'stool',
-                  'ent_complaint',
-                  'fatigue',
-                  'weight_loss',
-                  'dizziness',
-                ],
-              },
-              {
-                user_id: 'm82gqj1hemhkoprrimc',
-                answer: ['No symptoms'],
-                answer_id: ['none'],
-              },
-            ],
-            updated_by: 'uw',
-          },
-          {
-            question_id: 'experiencing_symptoms_follow_up',
-            question: [
-              '- Are you currently taking any medicines? ',
-              '- Have you consulted any doctor? ',
-              '- Probe on details (Duration/ongoing medications/hospitalisation/present symptoms/last consultation/reports/complication and recurrence)',
-              '- If not, are you planning to visit any doctor?',
-            ],
-            answer: [
-              {
-                user_id: 'L1UoRmLcipomYHNaqnQntw',
-                answer: 'jjjjdsd',
-                answer_id: 'jjjjdsd',
-              },
-            ],
-            updated_by: 'uw',
-          },
-        ],
+        questions: MemberResponse,
       });
 
       const response = await fetch('/questions/answers', {
@@ -246,86 +97,72 @@ export default function HealthProfile({ readonly, taskDetail }: PropsType) {
         throw new Error('Something went wrong');
       }
       const resp = await response.json();
-      runWorkflow();
+      // runWorkflow();
     } catch (err) {
       _setLoading(false);
       console.log('error at submit');
     }
   };
-  console.log('taskDetail.id', taskDetail.id);
-  const runWorkflow = async () => {
-    const myHeaders = new Headers();
-    try {
-      myHeaders.append('Content-Type', 'application/json');
-
-      const raw = JSON.stringify({
-        eventId: '00420',
-        eventType: 'telemer_decision',
-        timestamp: 1742983346000,
-        serviceName: 'CRM',
-        payload: {
-          task_id: taskDetail.id,
-          workflow_id: 'acf8cb7e-0ae5-11f0-92ca-aa3842aadbdb',
-          decision: 'TELEMER_COMPLETED',
-          assignee: 'anurag.khard@acko.tech',
-          type: 'proposal',
-          proposalId: 'a9e283d2-aebf-4fdf-8e4c-6f62d026601c',
-          proposalStatus: 'payment_done',
-          memberIds: ['m82swi7a19nfy65rzan', 'm82gqj4demhkoprrimc'],
-        },
-      });
-
-      const response = await fetch(
-        '/kafka/publish?key=telemer_decision&topic=external',
-        {
-          method: 'POST',
-          headers: myHeaders,
-          body: raw,
-          redirect: 'follow',
-        },
-      );
-      const resp = await response.json();
-    } catch (err) {
-      _setLoading(false);
-      console.log('error at WF run');
-    }
-  };
 
   const navigateToSection = (direction: 'next' | 'previous') => {
-    const currentIndex = sectionList.findIndex(
+    const currentIndex = allSections.findIndex(
       (section) => section === activeSection,
     );
     let newIndex;
 
     if (direction === 'next') {
       newIndex =
-        currentIndex < sectionList.length - 1 ? currentIndex + 1 : currentIndex;
+        currentIndex < allSections.length - 1 ? currentIndex + 1 : currentIndex;
     } else {
       newIndex = currentIndex > 0 ? currentIndex - 1 : currentIndex;
     }
-    setActiveSection(sectionList[newIndex]);
+    setActiveSection(allSections[newIndex]);
   };
+  const allSections: string[] = useMemo(() => {
+    return getUniquSection(questions);
+  }, [questions]);
 
   useEffect(() => {
-    // fetchTelemerConfig();
-    const uniqueMembers = getUniqueMembers(question_Data4);
-    let memberQuestion = {};
-    uniqueMembers.map((member) => {
-      memberQuestion = {
-        ...memberQuestion,
-        [member.user_id]: formInitState(
-          question_Data4
-            .map((item) => {
-              return item.question_config;
-            })
-            .filter((que) => {
-              return que?.question_id !== 'telemer_info';
-            }),
-        ),
-      };
-    });
-    setMemberForm(memberQuestion);
+    fetchTelemerConfig();
   }, []);
+
+  useEffect(() => {
+    createMemberForm();
+  }, [questionConfig]);
+
+  const createMemberForm = useCallback(() => {
+    if (Array.isArray(questionConfig) && questionConfig.length > 0) {
+      const uniqueMembers = getUniqueMembers(questionConfig);
+      const _questions = [...question_Data4];
+      let memberQuestion = {};
+
+      uniqueMembers.forEach((member) => {
+        // read members current name and DOB from proposal and update the answers
+        let _name_dob = [member.name, '15-04-1993'];
+        let _height_weight = ['0', '0'];
+
+        memberQuestion = {
+          ...memberQuestion,
+          [member.user_id]: formInitState(
+            _questions
+              .map((item) => {
+                let question_config = item.question_config;
+                if (item.question_id === 'name_dob') {
+                  return { ...question_config, value: _name_dob };
+                } else if (item.question_id === 'height_weight') {
+                  return { ...question_config, value: _height_weight };
+                }
+                return item.question_config;
+              })
+              .filter((que) => {
+                return que?.question_id !== 'telemer_info';
+              }),
+          ),
+        };
+      });
+      setMemberForm(memberQuestion);
+    }
+  }, [questionConfig]);
 
   const toggleSection = (section: string) => {
     if (activeSection === section) {
@@ -580,18 +417,16 @@ export default function HealthProfile({ readonly, taskDetail }: PropsType) {
   // };
   const handleAnswerChange = useCallback(
     (question_id: string, user_id: string, value: string | string[]) => {
-      const _questions: QuestionsType[] = [...globalQuestion];
+      const _questions: QuestionsType[] = [...questions];
       // console.log('_question', _questions, question_id, value, user_id);
       updateObjectByKey(_questions, 'question_id', question_id, value, user_id);
-      setGlobalQuestion(_questions);
+      // setGlobalQuestion(_questions);
+      // console.log('questions', _questions);
       hoistResponse(_questions);
       // trigger(user_id.question_id);
     },
-    [globalQuestion],
+    [questions, questionConfig],
   );
-  useEffect(() => {
-    console.log('response>>>', requestMapping([...globalQuestion]));
-  }, [globalQuestion]);
 
   const renderQuestion = useCallback(
     (config: QuestionConfig, member: member) => {
@@ -604,10 +439,14 @@ export default function HealthProfile({ readonly, taskDetail }: PropsType) {
               label: member.name,
               required: config.required,
               key: `${member.user_id}.${config.question_id}`,
-              defaultValue: '',
+              defaultValue:
+                memberForm && Object.keys(memberForm).includes(member.user_id)
+                  ? memberForm[member.user_id][config.question_id]
+                  : '',
               answer_id: '',
               answer: config.answer,
               options: config?.option,
+              readonly,
               handleAnswerChange: (
                 user_response: string,
                 value: string | string[],
@@ -622,7 +461,14 @@ export default function HealthProfile({ readonly, taskDetail }: PropsType) {
         </>
       );
     },
-    [control, handleAnswerChange, readonly],
+    [
+      control,
+      handleAnswerChange,
+      readonly,
+      memberForm,
+      questionConfig,
+      questions,
+    ],
   );
 
   const renderElement = useCallback(
@@ -630,6 +476,9 @@ export default function HealthProfile({ readonly, taskDetail }: PropsType) {
       config: QuestionConfig,
       eligible_members: { user_id: string; name: string }[],
     ) => {
+      if (config.type === 'telemer_info') {
+        return renderInfo(config);
+      }
       return (
         <div className="py-4 border-b">
           <QuestionText
@@ -638,7 +487,7 @@ export default function HealthProfile({ readonly, taskDetail }: PropsType) {
           />
           <div className="pl-2">
             {/* showing options for each member */}
-            {eligible_members &&
+            {eligible_members ? (
               eligible_members.map((member, index) => {
                 return (
                   <div key={index}>
@@ -646,12 +495,15 @@ export default function HealthProfile({ readonly, taskDetail }: PropsType) {
                     {renderSubQuestion(config, member)}
                   </div>
                 );
-              })}
+              })
+            ) : (
+              <></>
+            )}
           </div>
         </div>
       );
     },
-    [control, handleAnswerChange, globalQuestion],
+    [control, handleAnswerChange, questions, memberForm],
   );
   const renderSubQuestion = useCallback(
     (config: QuestionConfig, member: member) => {
@@ -739,7 +591,7 @@ export default function HealthProfile({ readonly, taskDetail }: PropsType) {
         }
       }
     },
-    [control],
+    [control, questions],
   );
 
   const renderInfo = useCallback((config: QuestionsType['question_config']) => {
@@ -756,14 +608,8 @@ export default function HealthProfile({ readonly, taskDetail }: PropsType) {
           {(loading || _loading) && <PageLoader />}
         </div>
       </div>
-      {/* {IntroductionSection(
-        config.find((item) => item.section === 'introduction'),
-      )} */}
-
-      {/* static section will use this UI only */}
-
       <div>
-        {sectionList?.map((section, index) => {
+        {allSections?.map((section, index) => {
           return (
             <SectionAccordian
               title={section}
@@ -772,19 +618,12 @@ export default function HealthProfile({ readonly, taskDetail }: PropsType) {
               activeSection={activeSection}
               navigateToSection={navigateToSection}
               handleSubmit={handleSubmit}
-              sectionList={sectionList}
+              sectionList={allSections}
             >
               <>
-                {globalQuestion
+                {questions
                   ?.filter((item) => item.section === section)
                   .map((question, ndx) => {
-                    if (question.question_config.type === 'telemer_info') {
-                      return (
-                        <div key={index + '-' + ndx}>
-                          {renderInfo(question.question_config)}
-                        </div>
-                      );
-                    }
                     return (
                       <div key={index + '-' + ndx}>
                         {renderElement(

@@ -3,6 +3,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { QuestionConfig } from '../type';
 import { Control, Controller } from 'react-hook-form';
+import ErrorComponent from './errorComponent';
 
 interface propsType {
   questionText: string[] | null;
@@ -116,6 +117,10 @@ const TelemerSelect: React.FC<propsType> = ({
                     })}
                   </div>
                 </div>
+                <ErrorComponent
+                  errorMessage={error?.message}
+                  isVisible={Boolean(error)}
+                />
               </div>
             );
           }}

@@ -32,26 +32,23 @@ export const question_Data4 = [
     ],
   },
   {
-    section: 'Demographic details',
     question_config: {
-      option: [
-        {
-          capture_text: 0,
-          label: 'Correct',
-          answer_id: 'correct',
-        },
-        {
-          capture_text: 0,
-          label: 'Incorrect',
-          answer_id: 'incorrect',
-        },
-      ],
-      question_text: ['Can you please confirm your name?'],
-      question_id: 'name_confirmation',
-      type: 'telemer_radio_group',
+      sub_questions: null,
+      option: null,
+      order: 0,
+      question_text: ['Confirm your name and DOB?'],
+      sub_question_mapping: null,
+      question_id: 'name_dob',
+      type: 'telemer_name_dob',
       required: 1,
+      eligibility: {
+        male: true,
+        female: true,
+      },
     },
-    question_id: 'name_confirmation',
+    question_id: 'name_dob',
+    rule_id: 'assessment_question_config',
+    section: 'Demographic details',
     eligible_members: [
       {
         user_id: '1',
@@ -63,6 +60,36 @@ export const question_Data4 = [
       },
     ],
   },
+  {
+    question_config: {
+      sub_questions: null,
+      option: null,
+      order: 0,
+      question_text: ['Confirm your height and weight?'],
+      sub_question_mapping: null,
+      question_id: 'height_weight',
+      type: 'telemer_height_weight',
+      required: 1,
+      eligibility: {
+        male: true,
+        female: true,
+      },
+    },
+    question_id: 'height_weight',
+    rule_id: 'assessment_question_config',
+    section: 'Demographic details',
+    eligible_members: [
+      {
+        user_id: '1',
+        name: 'Rahul',
+      },
+      {
+        user_id: '2',
+        name: 'Smita',
+      },
+    ],
+  },
+
   {
     section: 'Demographic details',
     question_config: {

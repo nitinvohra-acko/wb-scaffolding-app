@@ -16,7 +16,7 @@ const Home: React.FC<PropsType> = ({ layout, handleLayout, taskDetail }) => {
             Complete <span className="text-purple-400 ">telemer</span> for{' '}
             <br />
             <span className="text-gray-800 font-bold ">
-              [John Doe 4]'s
+              Rahul and Smita's
             </span>{' '}
           </h1>
           <button

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import Textarea from '@/components/ui/textarea';
 import { Control, Controller } from 'react-hook-form';
+import ErrorComponent from './errorComponent';
 
 interface TelemerTextareaProps {
   heading: string;
@@ -79,13 +80,10 @@ const TelemerTextarea: React.FC<TelemerTextareaProps> = ({
                   borderColor: '#BCC1CAFF',
                 }}
               />
-              {error && (
-                <div
-                  style={{ color: 'red', fontSize: 14, fontStyle: 'italic' }}
-                >
-                  {error?.message}
-                </div>
-              )}
+              <ErrorComponent
+                errorMessage={error?.message}
+                isVisible={Boolean(error)}
+              />
             </div>
           );
         }}
