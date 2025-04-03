@@ -36,6 +36,10 @@ const nextConfig: NextConfig = {
         source: '/api/event',
         destination: `${process.env.NEXT_PUBLIC_BASE_API}/api/event`,
       },
+      {
+        source: '/notes/:path*',
+        destination: `${process.env.NEXT_PUBLIC_BASE_API}/notes/:path*`,
+      },
     ];
   },
 };
