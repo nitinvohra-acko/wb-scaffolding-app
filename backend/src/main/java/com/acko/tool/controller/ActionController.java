@@ -25,7 +25,7 @@ public class ActionController {
         return ResponseEntity.ok(actionService.getMetadata());
     }
 
-    @PostMapping("/save_action")
+    @PostMapping("/save")
     public ResponseEntity<EventAction> saveAction(@RequestBody EventAction saveActionDTO) {
         // Handle saving action
         return ResponseEntity.ok(actionService.saveAction(saveActionDTO));

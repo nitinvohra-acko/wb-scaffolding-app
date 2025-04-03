@@ -19,5 +19,5 @@ public class EventAction {
     private String action;
     private String condition;
     private List<String> options;
-    private Boolean isActive;
+    private boolean isActive = true;
 }
