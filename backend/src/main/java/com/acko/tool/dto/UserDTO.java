@@ -28,7 +28,7 @@ public class UserDTO {
 	private String firstName;
 	private String lastName;
 	private String group;
-	private List<String> roles;
+	private String role;
 	private boolean active;
 	private Map<String, Object> customAttributes;
 }

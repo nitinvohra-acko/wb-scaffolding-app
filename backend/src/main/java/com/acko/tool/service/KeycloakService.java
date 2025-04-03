@@ -1,6 +1,7 @@
 package com.acko.tool.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +39,7 @@ public class KeycloakService {
         keycloakUser.setLastName(userRequest.getLastName());
         keycloakUser.setEmail(userRequest.getEmail());
         keycloakUser.setGroups(Collections.singletonList(userRequest.getGroup()));
-        keycloakUser.setRealmRoles(userRequest.getRoles()); // TODO - check this, assign Realm level role
+        keycloakUser.setRealmRoles(Arrays.asList(userRequest.getRole())); // TODO - check this, assign Realm level role
         keycloakUser.setEnabled(userRequest.isActive());
         
         // Create the user credential (password)
@@ -69,7 +70,7 @@ public class KeycloakService {
 		keycloakUser.setLastName(userRequest.getLastName());
 		keycloakUser.setEmail(userRequest.getEmail());
 		keycloakUser.setGroups(Collections.singletonList(userRequest.getGroup()));
-		keycloakUser.setRealmRoles(userRequest.getRoles());
+		keycloakUser.setRealmRoles(Arrays.asList(userRequest.getRole()));
 		keycloakUser.setEnabled(userRequest.isActive());
 
 		if (userRequest.getPassword() != null) {
