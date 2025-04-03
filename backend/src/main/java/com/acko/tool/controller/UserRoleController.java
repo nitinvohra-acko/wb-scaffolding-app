@@ -36,7 +36,7 @@ public class UserRoleController {
 	}
 	
 	@PostMapping
-	public RoleRepresentation createOrUpdateRole(@RequestBody @Valid UserRoleDTO createOrUpdateRole) {
-		return userRoleService.createOrUpdateRole(createOrUpdateRole);
+	public List<RoleRepresentation> createOrUpdateRole(@RequestBody @Valid List<UserRoleDTO> rolesRequest) {
+		return userRoleService.createOrUpdateRoles(rolesRequest);
 	}
 }

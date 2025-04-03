@@ -1,6 +1,7 @@
 package com.acko.tool.entity;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.annotation.CreatedDate;
@@ -27,6 +28,7 @@ public class User {
 	private String firstName;
 	private String lastName;
 	private String group;
+	private List<String> roles;
 	private boolean active;
 	private Map<String, Object> customAttributes;
 	

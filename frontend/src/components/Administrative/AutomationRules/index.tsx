@@ -1,17 +1,11 @@
 'use client';
 
-import type React from 'react';
-
-import { useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -19,322 +13,709 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { withRBAC } from '@/components/withRBAC';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  AlertCircle,
+  ArrowDown,
+  Loader2,
+  PlusCircle,
+  Trash2,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import {
+  Controller,
+  useFieldArray,
+  useForm,
+  type SubmitHandler,
+} from 'react-hook-form';
 
-// Define types
-type Entity = 'Task' | 'User';
-type AttributeType = 'string' | 'number' | 'date' | 'boolean';
-type Operator = string;
-type Attribute = string;
+import {
+  createAutomationRule,
+  fetchAutomationMetadata,
+} from '@/services/automationApi';
+import type {
+  AutomationEventPayload,
+  AutomationEventResponse,
+  Condition,
+  FieldParam,
+  LogicalOperator,
+  Operator,
+} from '@/types/automationRule';
+import { convertToMVEL, getVariableName } from '@/utils/mvel';
+import { automationConditionOperators } from './utils';
+import { toast } from '@/hooks/use-toast';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
-type EntityAttributes = {
-  [key in Entity]: Attribute[];
-};
-
-type AttributeOperators = {
-  [key in AttributeType]: Operator[];
-};
-
-type AttributeTypes = {
-  [key: string]: AttributeType;
-};
-
-type FormData = {
+// Update the form input type to match our schema
+interface AutomationRuleFormInput {
+  name: string;
+  isActive: boolean;
   event: string;
-  condition: {
-    entity: Entity | '';
-    attribute: Attribute;
-    operator: Operator;
-    value: string;
-  };
+  conditions: Condition[];
+  logicalOperator: LogicalOperator;
   action: string;
+  actionConfig: Record<string, any>;
+}
+const defaultForm = {
+  name: 'Automation Rule', // Default name, won't be shown in UI
+  isActive: true,
+  event: '',
+  conditions: [{ id: '1', entity: '', attribute: '', operator: '', value: '' }],
+  logicalOperator: 'AND',
+  action: '',
+  actionConfig: {},
 };
+export default function AutomationRulesForm() {
+  // Update state type to match DataSchema
+  const [metadata, setMetadata] = useState<AutomationEventResponse | null>(
+    null,
+  );
 
-function AutomationRulesForm() {
-  // Sample data for dropdowns
-  const events: string[] = [
-    'Task Created',
-    'Task Completed',
-    'Task Assigned',
-    'User Created',
-    'User Updated',
-  ];
-  const entities: Entity[] = ['Task', 'User'];
+  // Loading state
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [mvelExpression, setMvelExpression] = useState<string>('');
 
-  const entityAttributes: EntityAttributes = {
-    Task: [
-      'title',
-      'description',
-      'status',
-      'priority',
-      'assignee',
-      'due_date',
-    ],
-    User: ['name', 'email', 'role', 'department', 'created_at'],
+  // React Hook Form setup
+  const {
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+    reset,
+  } = useForm<AutomationRuleFormInput>({
+    defaultValues: defaultForm as AutomationRuleFormInput,
+  });
+
+  // Field array for conditions
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'conditions',
+  });
+
+  // Watch form values for MVEL generation
+  const watchedValues = watch();
+
+  // Fetch metadata on component mount
+  useEffect(() => {
+    const loadMetadata = async () => {
+      try {
+        setLoading(true);
+        const data =
+          (await fetchAutomationMetadata()) as AutomationEventResponse;
+        setMetadata(data);
+      } catch (error) {
+        console.error('Error loading metadata:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMetadata();
+  }, []);
+
+  // Generate MVEL expression when form values change
+  useEffect(() => {
+    if (!metadata) return;
+
+    // Convert metadata to the format expected by convertToMVEL
+    const entitiesMap: Record<
+      string,
+      { attributes: Record<string, FieldParam> }
+    > = {};
+    metadata?.entityParams?.forEach((entity) => {
+      entitiesMap[entity.name] = {
+        attributes: {},
+      };
+      entity?.fieldParams?.forEach((attr) => {
+        entitiesMap[entity.name].attributes[attr.fieldName || ''] = attr;
+      });
+    });
+
+    // Update conditions with variableName before converting to MVEL
+    const conditionsWithVariableName = watchedValues.conditions.map(
+      (condition) => {
+        if (condition.entity && condition.attribute) {
+          return {
+            ...condition,
+            variableName: getVariableName(
+              condition.attribute,
+              condition.entity,
+              entitiesMap,
+            ),
+          };
+        }
+        return condition;
+      },
+    );
+
+    const mvel = convertToMVEL(
+      conditionsWithVariableName as Condition[],
+      watchedValues.logicalOperator as LogicalOperator,
+      entitiesMap,
+    );
+    setMvelExpression(mvel);
+  }, [watchedValues, metadata]);
+  // Get attributes for a specific entity
+  const getAttributesForEntity = (entityName: string): FieldParam[] => {
+    if (!metadata) return [];
+    const entity = metadata?.entityParams?.find((e) => e.name === entityName);
+    return entity ? entity.fieldParams : [];
   };
 
-  const attributeOperators: AttributeOperators = {
-    string: [
-      'equals',
-      'not equals',
-      'contains',
-      'not contains',
-      'starts with',
-      'ends with',
-    ],
-    number: [
-      'equals',
-      'not equals',
-      'greater than',
-      'less than',
-      'greater than or equal',
-      'less than or equal',
-    ],
-    date: ['equals', 'not equals', 'before', 'after', 'between'],
-    boolean: ['is', 'is not'],
-  };
-
-  const attributeTypes: AttributeTypes = {
-    title: 'string',
-    description: 'string',
-    status: 'string',
-    priority: 'string',
-    assignee: 'string',
-    due_date: 'date',
-    name: 'string',
-    email: 'string',
-    role: 'string',
-    department: 'string',
-    created_at: 'date',
-  };
-
-  const actions: string[] = [
-    'Assign to user',
-    'Change status',
-    'Change priority',
-    'Send notification',
-    'Add tag',
-    'Remove tag',
-  ];
-
-  // State for form values
-  const [selectedEvent, setSelectedEvent] = useState<string>('');
-  const [selectedEntity, setSelectedEntity] = useState<Entity | ''>('');
-  const [selectedAttribute, setSelectedAttribute] = useState<string>('');
-  const [selectedOperator, setSelectedOperator] = useState<string>('');
-  const [conditionValue, setConditionValue] = useState<string>('');
-  const [selectedAction, setSelectedAction] = useState<string>('');
-
-  // Get operators based on attribute type
-  const getOperatorsForAttribute = (attribute: string): string[] => {
-    if (!attribute) return [];
-    const type = attributeTypes[attribute];
-    return attributeOperators[type] || [];
-  };
-
-  // Handle entity change
-  const handleEntityChange = (value: Entity) => {
-    setSelectedEntity(value);
-    setSelectedAttribute('');
-    setSelectedOperator('');
-  };
-
-  // Handle attribute change
-  const handleAttributeChange = (value: string) => {
-    setSelectedAttribute(value);
-    setSelectedOperator('');
+  // Get automationConditionOperators for a specific attribute type
+  const getOperatorsForAttributeType = (attributeType: string): Operator[] => {
+    if (!metadata) return [];
+    return automationConditionOperators.filter((op) =>
+      op.applicableTypes.includes(attributeType as any),
+    );
   };
 
   // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit: SubmitHandler<AutomationRuleFormInput> = async (data) => {
+    try {
+      setSubmitting(true);
+      const payload: AutomationEventPayload = {
+        eventId: data?.event,
+        action: data?.action,
+        condition: mvelExpression,
+        options: data?.actionConfig?.options,
+      };
 
-    const formData: FormData = {
-      event: selectedEvent,
-      condition: {
-        entity: selectedEntity,
-        attribute: selectedAttribute,
-        operator: selectedOperator,
-        value: conditionValue,
-      },
-      action: selectedAction,
-    };
-
-    console.log('Form submitted:', formData);
-    // Here you would typically send the data to your backend
+      // Call API to create rule
+      const response = await createAutomationRule(payload);
+      if (response) {
+        toast({
+          title: 'Success',
+          description: `Successfully saved automation event.`,
+        });
+        reset(defaultForm as AutomationRuleFormInput);
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save automation event. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Card className="w-full max-w-3xl mx-auto">
-        <CardHeader>
-          <CardTitle>Create Automation Rule</CardTitle>
-          <CardDescription>
-            Set up automated actions based on specific events and conditions.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="max-w-4xl  p-4 min-w-[50rem]"
+    >
+      {loading ? (
+        <div className="space-y-12">
+          <Skeleton className="h-40 w-full rounded-xl" />
+          <div className="flex justify-center">
+            <Skeleton className="h-10 w-10 rounded-full" />
+          </div>
+          <Skeleton className="h-60 w-full rounded-xl" />
+          <div className="flex justify-center">
+            <Skeleton className="h-10 w-10 rounded-full" />
+          </div>
+          <Skeleton className="h-40 w-full rounded-xl" />
+        </div>
+      ) : (
+        <div>
           {/* Event Section */}
-          <div className="space-y-2">
-            <Label htmlFor="event" className="text-base font-semibold">
-              1. Event
-            </Label>
-            <p className="text-sm text-muted-foreground">
-              Select the event that will trigger this automation rule.
-            </p>
-            <Select
-              value={selectedEvent}
-              onValueChange={setSelectedEvent}
-              required
-            >
-              <SelectTrigger id="event" className="w-full">
-                <SelectValue placeholder="Select an event" />
-              </SelectTrigger>
-              <SelectContent>
-                {events.map((event) => (
-                  <SelectItem key={event} value={event}>
-                    {event}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <Card className="border-2 rounded-xl">
+            <CardContent className="pt-6 pb-6">
+              <div className="space-y-4">
+                <h2 className="text-xl font-bold text-center">Event</h2>
+                <p className="text-sm text-muted-foreground text-center">
+                  Select the event that will trigger this automation rule
+                </p>
 
-          <Separator />
-
-          {/* Condition Section */}
-          <div className="space-y-4">
-            <Label className="text-base font-semibold">2. Condition</Label>
-            <p className="text-sm text-muted-foreground">
-              Define the condition that must be met for the action to trigger.
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Entity Selection */}
-              <div className="space-y-2">
-                <Label htmlFor="entity">Entity</Label>
-                <Select
-                  value={selectedEntity}
-                  onValueChange={(value: Entity) => handleEntityChange(value)}
-                  required
-                >
-                  <SelectTrigger id="entity">
-                    <SelectValue placeholder="Select entity" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {entities.map((entity) => (
-                      <SelectItem key={entity} value={entity}>
-                        {entity}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Attribute Selection */}
-              <div className="space-y-2">
-                <Label htmlFor="attribute">Attribute</Label>
-                <Select
-                  value={selectedAttribute}
-                  onValueChange={handleAttributeChange}
-                  disabled={!selectedEntity}
-                  required
-                >
-                  <SelectTrigger id="attribute">
-                    <SelectValue placeholder="Select attribute" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {selectedEntity &&
-                      entityAttributes[selectedEntity].map((attr) => (
-                        <SelectItem key={attr} value={attr}>
-                          {attr.replace('_', ' ')}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Operator Selection */}
-              <div className="space-y-2">
-                <Label htmlFor="operator">Operator</Label>
-                <Select
-                  value={selectedOperator}
-                  onValueChange={setSelectedOperator}
-                  disabled={!selectedAttribute}
-                  required
-                >
-                  <SelectTrigger id="operator">
-                    <SelectValue placeholder="Select operator" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {getOperatorsForAttribute(selectedAttribute).map((op) => (
-                      <SelectItem key={op} value={op}>
-                        {op}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Value Input */}
-              <div className="space-y-2">
-                <Label htmlFor="value">Value</Label>
-                <Input
-                  id="value"
-                  value={conditionValue}
-                  onChange={(e) => setConditionValue(e.target.value)}
-                  disabled={!selectedOperator}
-                  placeholder="Enter value"
-                  required
+                <Controller
+                  name="event"
+                  control={control}
+                  rules={{ required: 'Event is required' }}
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select an event" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {metadata?.eventsList?.map((event, i) => (
+                          <SelectItem
+                            key={event.eventId + i}
+                            value={event.eventId}
+                          >
+                            {event.eventName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 />
+                {errors.event && (
+                  <p className="text-sm text-destructive text-center">
+                    {errors.event.message}
+                  </p>
+                )}
               </div>
-            </div>
+            </CardContent>
+          </Card>
+
+          {/* Arrow */}
+          <div className="flex justify-center py-2">
+            <ArrowDown className="h-8 w-8 text-muted-foreground" />
           </div>
 
-          <Separator />
+          {/* Conditions Section */}
+          <Card className="border-2 rounded-xl">
+            <CardContent className="pt-6 pb-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl font-bold">Condition</h2>
+                    {mvelExpression && (
+                      <>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent
+                            className="w-[400px]"
+                            side="right"
+                            align="center"
+                          >
+                            <code>{mvelExpression}</code>
+                          </TooltipContent>
+                        </Tooltip>
+                      </>
+                    )}
+                  </div>
+                  <Controller
+                    name="logicalOperator"
+                    control={control}
+                    render={({ field }) => (
+                      <Tabs
+                        value={field.value}
+                        onValueChange={
+                          field.onChange as (value: string) => void
+                        }
+                        className="w-auto"
+                      >
+                        <TabsList className="grid w-[160px] grid-cols-2">
+                          <TabsTrigger value="AND">AND</TabsTrigger>
+                          <TabsTrigger value="OR">OR</TabsTrigger>
+                        </TabsList>
+                      </Tabs>
+                    )}
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Define the conditions that must be met for the action to
+                  trigger
+                </p>
+
+                {fields.map((field, index) => (
+                  <div
+                    key={field.id + index}
+                    className="space-y-4 p-4 border rounded-lg bg-muted/20"
+                  >
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-medium">
+                        Condition {index + 1}
+                      </h3>
+                      {fields.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => remove(index)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Remove
+                        </Button>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4">
+                      {/* Entity Selection */}
+                      <div className="space-y-2">
+                        <Label htmlFor={`entity-${field.id}`}>Entity</Label>
+                        <Controller
+                          name={`conditions.${index}.entity`}
+                          control={control}
+                          rules={{ required: 'Entity is required' }}
+                          render={({ field: entityField }) => (
+                            <Select
+                              value={entityField.value}
+                              onValueChange={(value) => {
+                                entityField.onChange(value);
+                                // Reset dependent fields
+                                setValue(`conditions.${index}.attribute`, '');
+                                setValue(`conditions.${index}.operator`, '');
+                                setValue(`conditions.${index}.value`, '');
+                              }}
+                            >
+                              <SelectTrigger id={`entity-${field.id}`}>
+                                <SelectValue placeholder="Select entity" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {metadata?.entityParams?.map((entity, i) => (
+                                  <SelectItem
+                                    key={entity?.name + i}
+                                    value={entity.name}
+                                  >
+                                    {entity?.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
+                        {errors.conditions?.[index]?.entity && (
+                          <p className="text-sm text-destructive">
+                            {errors.conditions[index]?.entity?.message}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Attribute Selection */}
+                      <div className="space-y-2">
+                        <Label htmlFor={`attribute-${field.id}`}>
+                          Attribute
+                        </Label>
+                        <Controller
+                          name={`conditions.${index}.attribute`}
+                          control={control}
+                          rules={{ required: 'Attribute is required' }}
+                          render={({ field: attrField }) => (
+                            <Select
+                              value={attrField.value}
+                              onValueChange={(value) => {
+                                attrField.onChange(value);
+                                // Reset dependent fields
+                                setValue(`conditions.${index}.operator`, '');
+                                setValue(`conditions.${index}.value`, '');
+                              }}
+                              disabled={
+                                !watchedValues.conditions[index]?.entity
+                              }
+                            >
+                              <SelectTrigger id={`attribute-${field.id}`}>
+                                <SelectValue placeholder="Select attribute" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {getAttributesForEntity(
+                                  watchedValues.conditions[index]?.entity,
+                                ).map((attr) => (
+                                  <SelectItem
+                                    key={attr.variableName}
+                                    value={attr.fieldName || attr.variableName}
+                                  >
+                                    {attr.fieldDisplayName}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
+                        {errors.conditions?.[index]?.attribute && (
+                          <p className="text-sm text-destructive">
+                            {errors.conditions[index]?.attribute?.message}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Operator Selection */}
+                      <div className="space-y-2">
+                        <Label htmlFor={`operator-${field.id}`}>Operator</Label>
+                        <Controller
+                          name={`conditions.${index}.operator`}
+                          control={control}
+                          rules={{ required: 'Operator is required' }}
+                          render={({ field: opField }) => {
+                            // Find the attribute to get its type
+                            const entityName =
+                              watchedValues.conditions[index]?.entity;
+                            const attrName =
+                              watchedValues.conditions[index]?.attribute;
+                            const entity = metadata?.entityParams?.find(
+                              (e) => e.name === entityName,
+                            );
+                            const attribute = entity?.fieldParams?.find(
+                              (a) =>
+                                a.fieldName === attrName ||
+                                a.variableName === attrName,
+                            );
+
+                            return (
+                              <Select
+                                value={opField.value}
+                                onValueChange={opField.onChange}
+                                disabled={
+                                  !watchedValues.conditions[index]?.attribute
+                                }
+                              >
+                                <SelectTrigger id={`operator-${field.id}`}>
+                                  <SelectValue placeholder="Select operator" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {attribute &&
+                                    getOperatorsForAttributeType(
+                                      attribute.fieldType,
+                                    ).map((op, i) => (
+                                      <SelectItem
+                                        key={op.id + i}
+                                        value={op.name}
+                                      >
+                                        {op.displayName}
+                                      </SelectItem>
+                                    ))}
+                                </SelectContent>
+                              </Select>
+                            );
+                          }}
+                        />
+                        {errors.conditions?.[index]?.operator && (
+                          <p className="text-sm text-destructive">
+                            {errors.conditions[index]?.operator?.message}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Value Input */}
+                      <div className="space-y-2">
+                        <Label htmlFor={`value-${field.id}`}>Value</Label>
+                        <Controller
+                          name={`conditions.${index}.value`}
+                          control={control}
+                          rules={{ required: 'Value is required' }}
+                          render={({ field: valueField }) => (
+                            <Input
+                              id={`value-${field.id}`}
+                              value={valueField.value as string}
+                              onChange={valueField.onChange}
+                              disabled={
+                                !watchedValues.conditions[index]?.operator
+                              }
+                              placeholder="Enter value"
+                            />
+                          )}
+                        />
+                        {errors.conditions?.[index]?.value && (
+                          <p className="text-sm text-destructive">
+                            {errors.conditions[index]?.value?.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    append({
+                      id: Date.now().toString(),
+                      entity: '',
+                      attribute: '',
+                      operator: '',
+                      value: '',
+                    })
+                  }
+                  className="w-full"
+                >
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  Add Another Condition
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Arrow */}
+          <div className="flex justify-center py-2">
+            <ArrowDown className="h-8 w-8 text-muted-foreground" />
+          </div>
 
           {/* Action Section */}
-          <div className="space-y-2">
-            <Label htmlFor="action" className="text-base font-semibold">
-              3. Action
-            </Label>
-            <p className="text-sm text-muted-foreground">
-              Select the action to perform when the condition is met.
-            </p>
-            <Select
-              value={selectedAction}
-              onValueChange={setSelectedAction}
-              required
+          <Card className="border-2 rounded-xl">
+            <CardContent className="pt-6 pb-6">
+              <div className="space-y-4">
+                <h2 className="text-xl font-bold text-center">Action</h2>
+                <p className="text-sm text-muted-foreground text-center">
+                  Select the action to perform when the conditions are met
+                </p>
+
+                <Controller
+                  name="action"
+                  control={control}
+                  rules={{ required: 'Action is required' }}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        // Reset action config when action changes
+                        setValue('actionConfig', {});
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select an action" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {metadata?.actionsList?.map((action, i) => (
+                          <SelectItem key={action.id + i} value={action.id}>
+                            {action.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.action && (
+                  <p className="text-sm text-destructive text-center">
+                    {errors.action.message}
+                  </p>
+                )}
+
+                {/* Action Configuration */}
+                {watchedValues.action &&
+                  metadata?.actionsList?.find(
+                    (a) => a.id === watchedValues.action,
+                  )?.properties && (
+                    <div className="mt-4 p-4 border rounded-lg">
+                      <h3 className="text-sm font-medium mb-3">
+                        Action Configuration
+                      </h3>
+
+                      {/* Render dynamic config fields based on the selected action */}
+                      {(() => {
+                        const selectedAction = metadata?.actionsList?.find(
+                          (a) => a.id === watchedValues.action,
+                        );
+                        if (!selectedAction?.properties) return null;
+
+                        if (
+                          selectedAction?.properties.options &&
+                          selectedAction?.properties.type === 'multi-select'
+                        ) {
+                          return (
+                            <div className="space-y-4 mb-3">
+                              <div className="grid grid-cols-1 gap-2">
+                                {selectedAction?.properties?.options.map(
+                                  (option, i) => (
+                                    <div
+                                      key={option.id + i}
+                                      className="flex items-center space-x-2"
+                                    >
+                                      <Controller
+                                        name={`actionConfig.options`}
+                                        control={control}
+                                        render={({ field }) => {
+                                          const values = Array.isArray(
+                                            field.value,
+                                          )
+                                            ? field.value
+                                            : [];
+                                          return (
+                                            <Checkbox
+                                              id={`option-${option.id}`}
+                                              checked={values.includes(
+                                                option.id,
+                                              )}
+                                              onCheckedChange={(checked) => {
+                                                if (checked) {
+                                                  field.onChange([
+                                                    ...values,
+                                                    option.id,
+                                                  ]);
+                                                } else {
+                                                  field.onChange(
+                                                    values.filter(
+                                                      (v) => v !== option.id,
+                                                    ),
+                                                  );
+                                                }
+                                              }}
+                                            />
+                                          );
+                                        }}
+                                      />
+                                      <Label htmlFor={`option-${option.id}`}>
+                                        {option.name}
+                                      </Label>
+                                    </div>
+                                  ),
+                                )}
+                              </div>
+                            </div>
+                          );
+                        } else if (
+                          selectedAction?.properties.options &&
+                          selectedAction?.properties?.type === 'single'
+                        ) {
+                          return (
+                            <div className="space-y-2 mb-3">
+                              <Controller
+                                name={`actionConfig.options`}
+                                control={control}
+                                render={({ field: configField }) => (
+                                  <Select
+                                    value={configField.value || ''}
+                                    onValueChange={configField.onChange}
+                                  >
+                                    <SelectTrigger
+                                      id={`config-${selectedAction.id}`}
+                                    >
+                                      <SelectValue placeholder="Select option" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {selectedAction?.properties?.options?.map(
+                                        (option) => (
+                                          <SelectItem
+                                            key={option.id}
+                                            value={option.id}
+                                          >
+                                            {option.name}
+                                          </SelectItem>
+                                        ),
+                                      )}
+                                    </SelectContent>
+                                  </Select>
+                                )}
+                              />
+                            </div>
+                          );
+                        }
+                      })()}
+                    </div>
+                  )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Submit Button */}
+          <div className="flex justify-center mt-8">
+            <Button
+              type="submit"
+              size="lg"
+              disabled={submitting}
+              className="px-8"
             >
-              <SelectTrigger id="action" className="w-full">
-                <SelectValue placeholder="Select an action" />
-              </SelectTrigger>
-              <SelectContent>
-                {actions.map((action) => (
-                  <SelectItem key={action} value={action}>
-                    {action}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Create Rule
+            </Button>
           </div>
-        </CardContent>
-        <CardFooter className="flex justify-end space-x-2">
-          <Button variant="outline" type="button">
-            Cancel
-          </Button>
-          <Button type="submit">Create Rule</Button>
-        </CardFooter>
-      </Card>
+        </div>
+      )}
     </form>
   );
 }
-
-export default withRBAC(AutomationRulesForm, 'automation_rules:create', () => (
-  <div className="p-4 text-center">
-    You don't have permission to create automation rules.
-  </div>
-));

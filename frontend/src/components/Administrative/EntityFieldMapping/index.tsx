@@ -1,16 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Save, Filter, Search, AlertCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   Card,
   CardContent,
+  CardFooter,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import {
   Table,
@@ -20,23 +26,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { apiClient } from '@/utils/interceptor';
 import { useToast } from '@/hooks/use-toast';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { withRBAC } from '@/components/withRBAC';
+import { apiClient } from '@/utils/interceptor';
+import { Filter, Save, Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 // Define the field configuration type
 type FieldConfig = {
@@ -49,7 +42,7 @@ type FieldConfig = {
   filterType?: 'term' | 'range';
 };
 
-function FieldConfigManagement() {
+export default function FieldConfigManagement() {
   const [fieldConfigs, setFieldConfigs] = useState<FieldConfig[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
   const [originalConfigs, setOriginalConfigs] = useState<FieldConfig[]>([]);
@@ -348,8 +341,3 @@ function FieldConfigManagement() {
     </div>
   );
 }
-export default withRBAC(FieldConfigManagement, 'field-config:view', () => (
-  <div className="p-4 text-center">
-    You don't have permission to view the field configuration management page.
-  </div>
-));
