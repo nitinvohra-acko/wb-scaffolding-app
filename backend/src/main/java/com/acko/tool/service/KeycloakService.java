@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 import com.acko.tool.dto.UserDTO;
 import com.acko.tool.dto.UserRoleDTO;
 
-import jakarta.validation.Valid;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +38,7 @@ public class KeycloakService {
         keycloakUser.setLastName(userRequest.getLastName());
         keycloakUser.setEmail(userRequest.getEmail());
         keycloakUser.setGroups(Collections.singletonList(userRequest.getGroup()));
+        keycloakUser.setRealmRoles(userRequest.getRoles()); // TODO - check this, assign Realm level role
         keycloakUser.setEnabled(userRequest.isActive());
         
         // Create the user credential (password)
@@ -69,6 +69,7 @@ public class KeycloakService {
 		keycloakUser.setLastName(userRequest.getLastName());
 		keycloakUser.setEmail(userRequest.getEmail());
 		keycloakUser.setGroups(Collections.singletonList(userRequest.getGroup()));
+		keycloakUser.setRealmRoles(userRequest.getRoles());
 		keycloakUser.setEnabled(userRequest.isActive());
 
 		if (userRequest.getPassword() != null) {
@@ -125,36 +126,44 @@ public class KeycloakService {
 		return roleByName;
 	}
 
-	public RoleRepresentation createOrUpdateRole(@Valid UserRoleDTO userRoleRequest) {
+	public List<RoleRepresentation> createOrUpdateRoles(List<UserRoleDTO> rolesRequest) {
 		RolesResource rolesResource = adminRealmResource.roles();
-
-		RoleRepresentation role = getRoleByName(userRoleRequest.getRoleName());
-
-		if (role == null) {
-			// create
-			role = new RoleRepresentation();
-			role.setName(userRoleRequest.getRoleName());
-
-			// Set role description (optional)
-			role.setDescription("This is a custom role with attributes");
-
-			// Set attributes for the role
-			Map<String, List<String>> attributes = new HashMap<>();
-			attributes.put("permissions", userRoleRequest.getPermissions());
-			role.setAttributes(attributes);
-
-			rolesResource.create(role);
-		} else {
-			// update
-			Map<String, List<String>> attributes = new HashMap<>();
-			attributes.put("permissions", userRoleRequest.getPermissions());
-			role.setAttributes(attributes);
-
-			rolesResource.get(userRoleRequest.getRoleName()).update(role);
-
+		
+		List<RoleRepresentation> roleRepresentationList = new ArrayList<>();
+		
+		
+		for (UserRoleDTO roleRequest : rolesRequest) {
+			RoleRepresentation role = getRoleByName(roleRequest.getRoleName());
+			
+			if (role == null) {
+				// create
+				role = new RoleRepresentation();
+				role.setName(roleRequest.getRoleName());
+				
+				// Set role description (optional)
+				role.setDescription("This is a custom role with attributes");
+				
+				// Set attributes for the role
+				Map<String, List<String>> attributes = new HashMap<>();
+				attributes.put("permissions", roleRequest.getPermissions());
+				role.setAttributes(attributes);
+				
+				rolesResource.create(role);
+				
+				// again fetching to get updated copy from keycloak
+				role = getRoleByName(roleRequest.getRoleName());
+			} else {
+				// update
+				Map<String, List<String>> attributes = new HashMap<>();
+				attributes.put("permissions", roleRequest.getPermissions());
+				role.setAttributes(attributes);
+				
+				rolesResource.get(roleRequest.getRoleName()).update(role);
+			}
+			roleRepresentationList.add(role);
 		}
 
-		return role;
+		return roleRepresentationList;
 	}
 
 	public List<RoleRepresentation> getAllRoles() {
