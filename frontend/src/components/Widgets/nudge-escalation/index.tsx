@@ -30,11 +30,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { escalationLevels, groups } from './constants';
+import { getLevelColor } from './utils';
 
 interface NudgeEscalationProps {
   id: string; // ID of the item/task to escalate
-  onEscalate?: (data: NudgeData) => Promise<void>;
-  onResolve?: (id: string) => Promise<void>;
   initialStatus?: 'open' | 'resolved';
 }
 
@@ -45,25 +45,8 @@ interface NudgeData {
   reason: string;
 }
 
-const escalationLevels = [
-  { value: 'low', label: 'Low Priority' },
-  { value: 'medium', label: 'Medium Priority' },
-  { value: 'high', label: 'High Priority' },
-  { value: 'critical', label: 'Critical' },
-];
-
-const groups = [
-  { value: 'ops', label: 'Operations' },
-  { value: 'doctor', label: 'Medical Staff' },
-  { value: 'comms', label: 'Communications' },
-  { value: 'tech', label: 'Technical Support' },
-  { value: 'admin', label: 'Administration' },
-];
-
 export function NudgeEscalation({
   id,
-  onEscalate,
-  onResolve,
   initialStatus = 'open',
 }: NudgeEscalationProps) {
   const [level, setLevel] = useState('');
@@ -73,7 +56,6 @@ export function NudgeEscalation({
     initialStatus,
   );
   const [error, setError] = useState<string | null>(null);
-
   const handleEscalate = async () => {
     if (!level || !group || !reason.trim()) {
       setError('Please fill in all fields');
@@ -84,23 +66,21 @@ export function NudgeEscalation({
     setError(null);
 
     try {
-      if (onEscalate) {
-        await onEscalate({ id, level, group, reason });
-      } else {
-        // Default implementation if no handler is provided
-        // Replace with your actual API endpoint
-        const response = await fetch('/api/nudge', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ id, level, group, reason }),
-        });
+      const response = await fetch('/task', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id,
+          type: 'proposal',
+          tags: [{ level, group, reason, label: 'Escalation' }],
+        }),
+      });
 
-        if (!response.ok) throw new Error('Failed to create nudge');
-      }
+      if (!response.ok) throw new Error('Failed to create nudge');
 
-      setStatus('open');
+      // setStatus('open');
       // Reset form after successful submission
       setReason('');
     } catch (err) {
@@ -115,38 +95,24 @@ export function NudgeEscalation({
     setError(null);
 
     try {
-      if (onResolve) {
-        await onResolve(id);
-      } else {
-        // Default implementation if no handler is provided
-        // Replace with your actual API endpoint
-        const response = await fetch(`/api/nudge/${id}/resolve`, {
-          method: 'PUT',
-        });
+      // if (onResolve) {
+      //   await onResolve(id);
+      // } else {
+      //   // Default implementation if no handler is provided
+      //   // Replace with your actual API endpoint
 
-        if (!response.ok) throw new Error('Failed to resolve nudge');
-      }
+      // }
+      const response = await fetch(`/api/nudge/${id}/resolve`, {
+        method: 'PUT',
+      });
+
+      if (!response.ok) throw new Error('Failed to resolve nudge');
 
       setStatus('resolved');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to resolve nudge');
       setStatus('open');
       console.error(err);
-    }
-  };
-
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case 'low':
-        return 'bg-blue-500/10 text-blue-500';
-      case 'medium':
-        return 'bg-yellow-500/10 text-yellow-500';
-      case 'high':
-        return 'bg-orange-500/10 text-orange-500';
-      case 'critical':
-        return 'bg-red-500/10 text-red-500';
-      default:
-        return 'bg-gray-500/10 text-gray-500';
     }
   };
 
