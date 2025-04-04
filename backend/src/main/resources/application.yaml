@@ -34,7 +34,7 @@ spring:
       group-id: my-group
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: com.acko.tool.serializer.KafkaMessageSerializer
 
   datasource:
     url: jdbc:mysql://localhost:3306/camunda
