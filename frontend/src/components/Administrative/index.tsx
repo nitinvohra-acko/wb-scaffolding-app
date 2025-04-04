@@ -174,4 +174,4 @@ const AdministrativePage = () => {
   );
 };
 
-export default withRBAC(AdministrativePage, 'administrative:view');
+export default AdministrativePage;

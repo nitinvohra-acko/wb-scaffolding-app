@@ -38,6 +38,7 @@ export interface UserInfo {
   customAttributes: any | null;
   createdDate: string;
   updatedDate: string;
+  role: string;
 }
 
 export interface AuthData {

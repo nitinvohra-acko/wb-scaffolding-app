@@ -36,4 +36,8 @@ const TaskDetails: React.FC = ({}) => {
   );
 };
 
-export default TaskDetails;
+export default withRBAC(TaskDetails, 'task-details:view', () => (
+  <div className="p-4 text-center">
+    You don't have permission to view the task details.
+  </div>
+));

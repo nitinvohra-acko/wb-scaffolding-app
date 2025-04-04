@@ -1,24 +1,16 @@
 {
   "components": [
     {
-      "name": "AutomationRulesForm",
-      "requiredPermission": "automation_rules:create"
-    },
-    {
-      "name": "FieldConfigManagement",
-      "requiredPermission": "field-config:view"
-    },
-    {
-      "name": "AdministrativePage",
-      "requiredPermission": "administrative:view"
-    },
-    {
       "name": "UserComponent",
-      "requiredPermission": "user.view"
+      "requiredPermission": "user:view"
     },
     {
       "name": "DashboardComponent",
       "requiredPermission": "dashboard:view"
+    },
+    {
+      "name": "TaskDetails",
+      "requiredPermission": "task-details:view"
     }
   ]
 }

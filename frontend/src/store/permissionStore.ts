@@ -6,6 +6,6 @@ interface PermissionStore {
 }
 
 export const usePermissionStore = create<PermissionStore>((set) => ({
-  permissions: ['administrative:view', 'dashboard:view'],
+  permissions: [],
   setPermissions: (permissions) => set({ permissions }),
 }));
