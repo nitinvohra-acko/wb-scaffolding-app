@@ -38,6 +38,9 @@ public class ESTask {
     @Field(type = FieldType.Keyword)
     private String referenceTaskId;
 
+    @Field(type = FieldType.Keyword)
+    private String referenceTaskWorkflowId;
+
     @Field(type = FieldType.Integer)
     private Integer calculatedPriority;
 

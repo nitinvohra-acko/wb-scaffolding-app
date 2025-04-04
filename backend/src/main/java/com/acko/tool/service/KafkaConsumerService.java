@@ -32,20 +32,44 @@ public class KafkaConsumerService {
 
 
     @KafkaListener(topics = "wb-scaffolding", groupId = "my-group-1")
+    public void consumeExternal(String message) {
+        try {
+            JsonNode jsonNode = objectMapper.readTree(message);
+            KafkaMessage kafkaMessage = objectMapper.treeToValue(jsonNode, KafkaMessage.class);
+            log.info("Inside external kafka consumer " + kafkaMessage.getEventId());
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("event_id", kafkaMessage.getEventType());
+            Object response = ruleEngineService.execute("CRMToolEventDecision", payload);
+            if (Objects.nonNull(response) && response instanceof List && !((List<?>) response).isEmpty()) {
+                Map<String, Object> responseMap = objectMapper.convertValue(((List<?>) response).get(0), new TypeReference<Map<String, Object>>() {
+                });
+                if (responseMap.get("action_type").toString().equalsIgnoreCase("bpmn")) {
+                    ruleEngineService.startBpmnProcess(responseMap.get("workflow_name").toString(), kafkaMessage.getPayload());
+                } else if (responseMap.get("action_type").toString().equalsIgnoreCase("bpmn_event")) {
+                    if (Objects.nonNull(kafkaMessage.getPayload().get("task_id"))) {
+                        String taskId = kafkaMessage.getPayload().get("task_id").toString();
+                        Task<?> task = tasksService.fetchTaskById(taskId);
+                        String workflowId = task.getWorkflowInstanceId();
+                        kafkaMessage.getPayload().put("workflow_id", workflowId);
+                    }
+                    workflowService.sendEventToWorkflow(responseMap.get("workflow_name").toString(), responseMap.get("event_name").toString(), kafkaMessage.getPayload());
+                } else log.info("No action taken");
+            }else log.info("No action taken");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @KafkaListener(topics = "wb-scaffolding", groupId = "my-group")
     public void consumeInternal(String message) {
         try {
             JsonNode jsonNode = objectMapper.readTree(message);
             KafkaMessage kafkaMessage = objectMapper.treeToValue(jsonNode, KafkaMessage.class);
             Map<String, Object> payload = new HashMap<>();
+            log.info("Inside internal kafka consumer " + kafkaMessage.getEventId());
             payload.put("event_id", kafkaMessage.getEventType());
-            Object response = ruleEngineService.execute("CRMToolEventDecision", payload);
+            Object response = ruleEngineService.execute("UWToolWorkbenchToolEventDecision", payload);
             if (Objects.nonNull(response) && response instanceof List && !((List<?>) response).isEmpty()) {
-                if (Objects.nonNull(kafkaMessage.getPayload().get("task_id"))) {
-                    String taskId = kafkaMessage.getPayload().get("task_id").toString();
-                    Task<?> task = tasksService.fetchTaskById(taskId);
-                    String workflowId = task.getWorkflowInstanceId();
-                    kafkaMessage.getPayload().put("workflow_id", workflowId);
-                }
                 Map<String, Object> responseMap = objectMapper.convertValue(((List<?>) response).get(0), new TypeReference<Map<String, Object>>() {
                 });
                 if (responseMap.get("action_type").toString().equalsIgnoreCase("bpmn")) {

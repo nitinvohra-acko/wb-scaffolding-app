@@ -30,10 +30,8 @@ public class InitiateTelemer implements JavaDelegate {
         Task<?> proposalTask = tasksService.fetchTaskById(taskId);
         proposalTask.setStatus("telemer_initiated");
         tasksService.createOrUpdateTasks((List.of(proposalTask)));
-        delegateExecution.setVariable("reference_task",proposalTask.getId());
-        delegateExecution.removeVariable("task_id");
-        //reference_task_workflow_id
-        //
+        delegateExecution.setVariable("reference_task_id",proposalTask.getId());
+        delegateExecution.setVariable("reference_task_workflow_id", delegateExecution.getProcessInstanceId());
         KafkaMessage kafkaMessage = KafkaMessage.builder().eventId(UUID.randomUUID().toString()).eventType("telemer_required").timestamp(System.currentTimeMillis()).serviceName("doc_tool").payload(delegateExecution.getVariables()).build();
         String jsonString = objectMapper.writeValueAsString(kafkaMessage);
         System.out.println(jsonString);

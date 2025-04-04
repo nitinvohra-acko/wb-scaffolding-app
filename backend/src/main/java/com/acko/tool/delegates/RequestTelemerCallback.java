@@ -23,7 +23,8 @@ public class RequestTelemerCallback implements JavaDelegate {
         log.info("User requested Telemer for this case");
         Task<?> telemerTask = Task.builder().workflowInstanceId(delegateExecution.getProcessInstanceId()).type("telemer").build();
         telemerTask.setStatus("telemer_callback_requested");
-        telemerTask.setReferenceTaskId(delegateExecution.getVariable("reference_task").toString());
+        telemerTask.setReferenceTaskId(delegateExecution.getVariable("reference_task_id").toString());
+        telemerTask.setReferenceTaskWorkflowId( delegateExecution.getVariable("reference_task_workflow_id").toString());
         List<Task<?>> tasks = tasksService.createOrUpdateTasks(List.of(telemerTask));
         log.info("Created Task for Telemer " + tasks.get(0).getId());
         delegateExecution.setVariable("task_id", tasks.get(0).getId());

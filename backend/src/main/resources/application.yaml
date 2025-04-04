@@ -31,7 +31,6 @@ spring:
     consumer:
       security:
         protocol: SSL
-      group-id: my-group-1
     producer:
       security:
         protocol: SSL
