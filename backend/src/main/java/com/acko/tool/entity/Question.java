@@ -16,51 +16,28 @@ import java.util.Map;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @AllArgsConstructor
 @Builder(toBuilder = true)
-@NoArgsConstructor
 @Data
 public class Question {
 
         @JsonProperty("question_config")
-        private QuestionConfig questionConfig;
-
-        @JsonProperty("question_id")
-        private String questionId;
+        public QuestionConfig questionConfig;
 
         @JsonProperty("rule_id")
-        private String ruleId;
+        public String ruleId;
 
         @JsonProperty("section")
-        private String section;
+        public String section;
 
     }
 
     @Data
     class Option {
         @JsonProperty("capture_text")
-        private int captureText;
+        public int captureText;
 
         @JsonProperty("label")
-        private String label;
+        public String label;
 
         @JsonProperty("answer_id")
-        private String answerId;
+        public String answerId;
     }
-
-    @Data
-    class SubQuestion {
-        @JsonProperty("answer_id")
-        private String answerId;
-
-        @JsonProperty("question_text")
-        private List<String> questionText;
-
-        @JsonProperty("question_id")
-        private String questionId;
-
-        @JsonProperty("type")
-        private String type;
-
-        @JsonProperty("required")
-        private int required;
-    }
-
