@@ -13,6 +13,7 @@ WORKDIR /usr/src/app
 COPY . ./
 
 # Install dependencies
+RUN npm install -g tsx
 RUN npm install
 # Explicitly use .env.dev and remove .env.local if it exists
 ARG ENV_FILE

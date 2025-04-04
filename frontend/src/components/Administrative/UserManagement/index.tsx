@@ -1,8 +1,13 @@
+import { withRBAC } from '@/components/withRBAC';
 import Users from './Users';
 import React from 'react';
 
-const index = () => {
+const UserComponent = () => {
   return <Users />;
 };
 
-export default index;
+export default withRBAC(UserComponent, 'user:view', () => (
+  <div className="p-4 text-center">
+    You don't have permission to view the dashboard.
+  </div>
+));

@@ -7,8 +7,9 @@ import LeftSection from './Overview';
 import RightSection from './tabs';
 import useTaskDetail from '@/hooks/useTaskDetails';
 import useTasksDetail from '@/store/taskDetails';
+import { withRBAC } from '../withRBAC';
 
-const PageLayout: React.FC = ({}) => {
+const TaskDetails: React.FC = ({}) => {
   const params = useParams();
   const hoist = useTasksDetail().hoist;
   const fetchTaskDetail = useTaskDetail().fetchTaskDetail;
@@ -30,4 +31,8 @@ const PageLayout: React.FC = ({}) => {
   );
 };
 
-export default PageLayout;
+export default withRBAC(TaskDetails, 'task-details:view', () => (
+  <div className="p-4 text-center">
+    You don't have permission to view the task details.
+  </div>
+));

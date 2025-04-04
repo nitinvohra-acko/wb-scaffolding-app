@@ -41,7 +41,24 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL('/login', req.url));
     }
   }
+  try {
+    const res = await fetch(
+      process.env.NEXT_PUBLIC_BASE_API + '/api/user/token/info',
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken?.value}`,
+        },
+      },
+    );
 
+    const data = await res.json();
+    if (res.status !== 200 || !data) {
+      return NextResponse.redirect(new URL('/login', req.url));
+    }
+  } catch (error) {
+    console.error('Auth check failed:', error);
+    return NextResponse.redirect(new URL('/login', req.url));
+  }
   // Redirect root path to /tasks
   if (url.pathname === '/') {
     url.pathname = '/tasks';
