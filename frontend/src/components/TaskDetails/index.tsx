@@ -5,8 +5,9 @@ import React, { useEffect, useState } from 'react';
 import { DataRow } from './constants';
 import LeftSection from './Overview';
 import RightSection from './tabs';
+import { withRBAC } from '../withRBAC';
 
-const PageLayout: React.FC = ({}) => {
+const TaskDetails: React.FC = ({}) => {
   const params = useParams();
   const [userData, setUserData] = useState<DataRow | undefined>();
   const [taskDetail, setTaskDetail] = useState(null);
@@ -35,4 +36,8 @@ const PageLayout: React.FC = ({}) => {
   );
 };
 
-export default PageLayout;
+export default withRBAC(TaskDetails, 'task-details:view', () => (
+  <div className="p-4 text-center">
+    You don't have permission to view the task details.
+  </div>
+));

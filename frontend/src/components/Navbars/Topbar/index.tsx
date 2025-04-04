@@ -29,7 +29,10 @@ export default function AppBar({
         <div className="flex items-center">
           {/* <SidebarTrigger className="mr-1" /> */}
           <Menu className="mr-5 cursor-pointer" onClick={handleToggle} />
-          <h1 className="text-lg font-semibold">
+          <h1
+            className="text-lg font-semibold cursor-pointer"
+            onClick={() => router.push('/')}
+          >
             {process.env.NEXT_PUBLIC_APP_NAME}
           </h1>
         </div>
