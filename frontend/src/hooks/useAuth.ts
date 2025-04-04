@@ -6,17 +6,23 @@ import { AuthData, UserInfo } from '@/types/auth';
 import { User, UsersRequest, UsersResponse } from '@/types/users';
 import { apiClient } from '@/utils/interceptor';
 import { useCallback, useState } from 'react';
+import { useUserPermissions } from './useUserPermissions';
 
 const useAuth = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { hoist } = useAuthStore();
+  const { fetchRoleToPermissions } = useUserPermissions();
   const fetchAuthDetails = useCallback(async () => {
     try {
       setLoading(true);
       const response: AuthData = await apiClient(`/api/user/token/info`, 'GET');
       if (response) {
-        hoist(response?.userInfo as UserInfo);
+        if (response?.userInfo?.roles?.[0]) {
+          fetchRoleToPermissions(response.userInfo.roles?.[0]);
+        }
+
+        hoist((response as AuthData)?.userInfo as UserInfo);
       }
     } catch (err: any) {
       setError(err.message || 'Something went wrong');

@@ -106,6 +106,7 @@ public class UserService {
 		dbUser.setLastName(userRequest.getLastName());
 		dbUser.setLastName(userRequest.getLastName());
 		dbUser.setGroup(userRequest.getGroup());
+		dbUser.setRole(userRequest.getRole());
 		dbUser.setActive(userRequest.isActive());
 		dbUser.setCustomAttributes(userRequest.getCustomAttributes());
 	}

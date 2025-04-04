@@ -1,5 +1,6 @@
 package com.acko.tool.dto;
 
+import java.util.List;
 import java.util.Map;
 
 import jakarta.validation.constraints.Email;
@@ -27,6 +28,7 @@ public class UserDTO {
 	private String firstName;
 	private String lastName;
 	private String group;
+	private String role;
 	private boolean active;
 	private Map<String, Object> customAttributes;
 }
