@@ -12,8 +12,10 @@ import {
 } from '@/components/ui/tooltip';
 import { Mail, Phone } from 'lucide-react';
 import React from 'react';
+import useTaskDetail from '@/store/taskDetails';
 
-const LeftSection: React.FC<{ taskData: any }> = ({ taskData }) => {
+const LeftSection: React.FC<{}> = ({}) => {
+  const taskData = useTaskDetail().taskDetail;
   if (!taskData) {
     return <p className="text-sm text-gray-500">Nothing to display</p>;
   }
@@ -57,10 +59,10 @@ const LeftSection: React.FC<{ taskData: any }> = ({ taskData }) => {
               <strong>Status:</strong> {taskData?.status}
             </li>
             <li>
-              <strong>Updated at:</strong> {taskData?.updated_date}
+              <strong>Updated at:</strong> {taskData?.updatedDate}
             </li>
             <li>
-              <strong>Created at:</strong> {taskData?.created_at}
+              <strong>Created at:</strong> {taskData?.createdDate}
             </li>
             <li>
               <strong>Priority:</strong> {taskData?.priority}
