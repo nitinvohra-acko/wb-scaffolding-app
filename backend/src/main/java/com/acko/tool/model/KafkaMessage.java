@@ -15,6 +15,8 @@ public class KafkaMessage {
     private String eventId;
     private String eventType;
     private long timestamp;
-    private String serviceName;
+    private String reference_id;
+    private String workflow_id;
+    private String source;
     private Map<String, Object> payload;
 }

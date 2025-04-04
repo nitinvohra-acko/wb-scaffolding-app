@@ -1,11 +1,16 @@
 {
     "eventId": "12345",
     "eventType": "TeleMER_Required",
-    "timestamp": "2025-03-26T12:34:56Z",
-    "service" : "CRM",
+    "timestamp": "1743760928000",
+    "reference_id" : "Task1.1",
+    "workflow_id" : "",
+    "source" : "CRM-tool",
     "payload": {
       "userId": "67890",
       "userName": "john_doe",
-      "email": "john.doe@example.com"
+      "email": "john.doe@example.com",
+      "proposal" : {
+
+      }
     }
   }

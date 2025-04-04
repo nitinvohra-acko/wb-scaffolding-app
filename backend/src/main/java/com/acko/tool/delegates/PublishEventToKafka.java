@@ -20,8 +20,8 @@ import java.util.UUID;
 @AllArgsConstructor
 public class PublishEventToKafka implements JavaDelegate {
 
-//    @Value("acko.com")
-//    String toolName;
+    @Value("acko.tool-name.name")
+    String toolName;
 
     private final TasksService tasksService;
     private final KafkaProducerService producerService;
@@ -34,10 +34,10 @@ public class PublishEventToKafka implements JavaDelegate {
         String referenceTaskId = task.getReferenceTaskId();
         Task<?> referenceTask = tasksService.fetchTaskById(referenceTaskId);
         delegateExecution.setVariable("workflow_id", referenceTask.getWorkflowInstanceId());
-        KafkaMessage kafkaMessage = KafkaMessage.builder().eventId(UUID.randomUUID().toString()).eventType("telemer_done").timestamp(System.currentTimeMillis()).serviceName("doc_tool").payload(delegateExecution.getVariables()).build();
+        KafkaMessage kafkaMessage = KafkaMessage.builder().eventId(UUID.randomUUID().toString()).eventType("telemer_done").timestamp(System.currentTimeMillis()).source(toolName).payload(delegateExecution.getVariables()).build();
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonString = objectMapper.writeValueAsString(kafkaMessage);
         System.out.println(jsonString);
-       producerService.sendMessage(jsonString , kafkaMessage.getEventType());
+       producerService.sendMessage(kafkaMessage , kafkaMessage.getEventType());
     }
 }

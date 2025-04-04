@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class InitiateTelemer implements JavaDelegate {
     private final TasksService tasksService;
     private final ObjectMapper objectMapper;
     private final KafkaProducerService producerService;
+    private final String toolName;
 
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
@@ -31,9 +33,9 @@ public class InitiateTelemer implements JavaDelegate {
         proposalTask.setStatus("telemer_initiated");
         tasksService.createOrUpdateTasks((List.of(proposalTask)));
         delegateExecution.setVariable("reference_task",proposalTask.getId());
-        KafkaMessage kafkaMessage = KafkaMessage.builder().eventId(UUID.randomUUID().toString()).eventType("telemer_required").timestamp(System.currentTimeMillis()).serviceName("doc_tool").payload(delegateExecution.getVariables()).build();
+        KafkaMessage kafkaMessage = KafkaMessage.builder().eventId(UUID.randomUUID().toString()).eventType("telemer_required").timestamp(System.currentTimeMillis()).source(toolName).payload(delegateExecution.getVariables()).build();
         String jsonString = objectMapper.writeValueAsString(kafkaMessage);
         System.out.println(jsonString);
-        producerService.sendMessage(jsonString , kafkaMessage.getEventType());
+        producerService.sendMessage(kafkaMessage , kafkaMessage.getEventType());
     }
 }
