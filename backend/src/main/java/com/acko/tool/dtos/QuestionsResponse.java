@@ -1,22 +1,19 @@
 package com.acko.tool.dtos;
 
-import com.acko.tool.entity.QuestionConfig;
+import com.acko.tool.entity.QuestionConfigResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
-import java.util.Map;
 
 @Builder
 @Data
-public class QuestionConfigResponse {
+
+public class QuestionsResponse {
 
     @JsonProperty("question_config")
-    private QuestionConfig questionConfig;
-
-    @JsonProperty("question_id")
-    private String questionId;
+    private QuestionConfigResponse questionConfig;
 
     @JsonProperty("rule_id")
     private String ruleId;

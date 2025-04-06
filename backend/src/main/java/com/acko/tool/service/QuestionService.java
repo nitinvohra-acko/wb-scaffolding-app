@@ -24,59 +24,76 @@ public class QuestionService {
 
     private final ObjectMapper objectMapper;
 
-    public List<QuestionConfigResponse> getQuestions(QuestionConfigRequest questionConfigRequest) {
+    public List<QuestionsResponse> getQuestions(QuestionConfigRequest questionConfigRequest) {
         List<Question> questions = questionRepository.findByRuleId(questionConfigRequest.getRuleId());
         String ProposalId = questionConfigRequest.getProposalId();
         Task<?> task = tasksService.fetchProposalTaskByProposalId(ProposalId);
         if (task == null) {
             throw new HandleExecuteException("Task not found for proposalId: " + ProposalId);
         }
-        Map<String, List<String>> genderUserIdMap = new HashMap<>();
-        Map<String , String> userIdNameMap = new HashMap<>();
 
+        Map<String, List<EligibleMember>> genderUserMap = new HashMap<>();
         ProposalTask proposalTask = objectMapper.convertValue(task, ProposalTask.class);
         ProposalBusinessEntity pr = objectMapper.convertValue(task.getBusinessEntityImpl(), ProposalBusinessEntity.class);
         for (Insured insured : proposalTask.getBusinessEntityImpl().getInsured()) {
                 String gender = insured.getParameters().getGender().getValue().toLowerCase();
-                String userId = insured.getParameters().getUserId().getValue();
-                userIdNameMap.put(userId , insured.getParameters().getName().getValue());
-                genderUserIdMap.computeIfAbsent(gender, k -> new ArrayList<>()).add(userId);
+                EligibleMember eligibleMember = EligibleMember.builder()
+                    .userId(insured.getParameters().getUserId().getValue())
+                    .name(insured.getParameters().getName().getValue())
+                    .build();
+            genderUserMap.computeIfAbsent(gender, k -> new ArrayList<>()).add(eligibleMember);
         }
-        List<QuestionConfigResponse> result = new ArrayList<>();
+
+        List<QuestionsResponse> result = new ArrayList<>();
         for(Question question : questions){
-            result.add(QuestionConfigResponseFromQuestion(question,genderUserIdMap,userIdNameMap));
+            result.add(QuestionConfigResponseFromQuestion(question,genderUserMap));
         }
     return result;
     }
 
-    public QuestionConfigResponse QuestionConfigResponseFromQuestion(Question question, Map<String, List<String>> genderUserIdMap, Map<String, String> userIdNameMap){
-        return QuestionConfigResponse.builder().questionConfig(question.getQuestionConfig())
-                .questionId(question.getQuestionId())
+    public QuestionsResponse QuestionConfigResponseFromQuestion(Question question, Map<String, List<EligibleMember>> genderUserMap) {
+        QuestionConfig questionConfig = question.getQuestionConfig();
+        QuestionsResponse questionsResponseBuilder = QuestionsResponse.builder()
                 .ruleId(question.getRuleId())
                 .section(question.getSection())
-                .eligibleMembers(EligibilityToEligibleMembers(question.getQuestionConfig().getEligibility(),genderUserIdMap, userIdNameMap)).build();
+                .eligibleMembers(EligibilityToEligibleMembers(question.getQuestionConfig().getEligibility(), genderUserMap)).build();
+        List<QuestionsResponse> subQuestionResponses = new ArrayList<>();
+        if (questionConfig.getSubQuestions() != null) {
+            for (Question subQuestion : questionConfig.getSubQuestions()) {
+                if(subQuestion.getQuestionConfig() != null)
+                subQuestionResponses.add(QuestionConfigResponseFromQuestion(subQuestion, genderUserMap));
+            }
+        }
+            QuestionConfigResponse questionConfigResponse = getQuestionConfigResponse(questionConfig);
+            questionConfigResponse.setSubQuestions(subQuestionResponses);
+            questionsResponseBuilder.setQuestionConfig(questionConfigResponse);
+
+        return questionsResponseBuilder;
     }
 
-    public List<EligibleMember>EligibilityToEligibleMembers(Eligibility eligibility , Map<String, List<String>> genderUserIdMap,Map<String , String> userIdNameMap){
-        List<String> eligibleMembers = new ArrayList<>();
-        if(eligibility.isMale()){
-            eligibleMembers.addAll(genderUserIdMap.get("male"));
-        }
-        if(eligibility.isFemale()){
-            eligibleMembers.addAll(genderUserIdMap.get("female"));
-        }
-        return eligibleUser(eligibleMembers,userIdNameMap);
+    public QuestionConfigResponse getQuestionConfigResponse(QuestionConfig questionConfig){
+        QuestionConfigResponse questionConfigResponse = new QuestionConfigResponse();
+        questionConfigResponse.setOptions(questionConfig.getOptions());
+        questionConfigResponse.setOrder(questionConfig.getOrder());
+        questionConfigResponse.setQuestionText(questionConfig.getQuestionText());
+        questionConfigResponse.setSubQuestionMapping(questionConfig.getSubQuestionMapping());
+        questionConfigResponse.setQuestionId(questionConfig.getQuestionId());
+        questionConfigResponse.setType(questionConfig.getType());
+        questionConfigResponse.setRequired(questionConfig.getRequired());
+        questionConfigResponse.setEligibility(questionConfig.getEligibility());
+
+        return questionConfigResponse;
     }
 
-    public List<EligibleMember> eligibleUser(List<String> eligibleMembers, Map<String , String> userIdNameMap){
-        List<EligibleMember> eligibleUser = new ArrayList<>();
-        for(String userId : eligibleMembers){
-            eligibleUser.add(EligibleMember.builder()
-                    .userId(userId)
-                    .name(userIdNameMap.get(userId))
-                    .build());
+    public List<EligibleMember> EligibilityToEligibleMembers(Eligibility eligibility , Map<String, List<EligibleMember>> genderUserMap){
+        List<EligibleMember> eligibleMembers = new ArrayList<>();
+        if(eligibility.isMale() && genderUserMap.containsKey("male")){
+            eligibleMembers.addAll(genderUserMap.get("male"));
         }
-        return eligibleUser;
+        if(eligibility.isFemale() && genderUserMap.containsKey("female")){
+            eligibleMembers.addAll(genderUserMap.get("female"));
+        }
+        return eligibleMembers;
     }
 
 
@@ -87,23 +104,6 @@ public class QuestionService {
             return answerRepository.findByReferenceIdAndSourceAndJourney(referenceId, source, journey);
     }
 
-
-//    public void dumpAnswers(AnswerRequest answerRequest) {
-//        for (QuestionAnswerDTO question : answerRequest.getQuestions()) {
-//            for (Map<String, Object> answerDetail : question.getAnswer()) {
-//                Answer document = new Answer();
-//                document.setJourney(answerRequest.getJourney());
-//                document.setReferenceId(answerRequest.getReferenceId());
-//                document.setSource(answerRequest.getSource());
-//                document.setQuestionId(question.getQuestionId());
-//                document.setUpdatedBy(question.getUpdatedBy());
-//                document.setUserId((String) answerDetail.get("user_id"));
-//                document.setAnswer(answerDetail.get("answer"));
-//                document.setAnswerId(answerDetail.get("answer_id"));
-//                answerRepository.save(document);
-//            }
-//        }
-//    }
     public void dumpAnswers(AnswerRequest answerRequest) {
         answerRepository.save(answerRequest);
     }
