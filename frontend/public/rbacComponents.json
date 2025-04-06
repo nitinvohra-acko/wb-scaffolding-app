@@ -1,0 +1,16 @@
+{
+  "components": [
+    {
+      "name": "UserComponent",
+      "requiredPermission": "user:view"
+    },
+    {
+      "name": "DashboardComponent",
+      "requiredPermission": "dashboard:view"
+    },
+    {
+      "name": "TaskDetails",
+      "requiredPermission": "task-details:view"
+    }
+  ]
+}

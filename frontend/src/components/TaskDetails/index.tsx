@@ -1,30 +1,28 @@
 'use client';
-import { apiClient } from '@/utils/interceptor';
+
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import LeftSection from './Overview/horizontal';
 import RightSection from './tabs';
+import useTaskDetail from '@/hooks/useTaskDetails';
+import useTasksDetail from '@/store/taskDetails';
+import { withRBAC } from '../withRBAC';
 
-const PageLayout: React.FC = ({}) => {
+const TaskDetails: React.FC = ({}) => {
   const params = useParams();
   const [taskDetail, setTaskDetail] = useState(null);
   const [layout, setLayout] = useState<'vertical' | 'horizontal'>('horizontal');
+  const hoist = useTasksDetail().hoist;
+  const fetchTaskDetail = useTaskDetail().fetchTaskDetail;
 
   useEffect(() => {
     if (Array.isArray(params.slug) && params.slug.length > 0) {
       fetchTaskDetail(params.slug[0]);
     }
+    return () => {
+      hoist(null);
+    };
   }, []);
-
-  const fetchTaskDetail = async (id: string) => {
-    try {
-      const response = await apiClient('/task/' + id, 'GET');
-
-      setTaskDetail(response as any);
-    } catch (err) {
-      console.log('error', err);
-    }
-  };
 
   return (
     <div className={`${layout === 'horizontal' ? 'flex' : ''} h-full`}>
@@ -38,4 +36,8 @@ const PageLayout: React.FC = ({}) => {
   );
 };
 
-export default PageLayout;
+export default withRBAC(TaskDetails, 'task-details:view', () => (
+  <div className="p-4 text-center">
+    You don't have permission to view the task details.
+  </div>
+));

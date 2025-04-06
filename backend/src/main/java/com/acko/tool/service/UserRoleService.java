@@ -22,8 +22,8 @@ public class UserRoleService {
 		return keycloakService.getRoleByName(roleName);
 	}
 
-	public RoleRepresentation createOrUpdateRole(@Valid UserRoleDTO userRoleRequest) {
-		return keycloakService.createOrUpdateRole(userRoleRequest);
+	public List<RoleRepresentation> createOrUpdateRoles(@Valid List<UserRoleDTO> rolesRequest) {
+		return keycloakService.createOrUpdateRoles(rolesRequest);
 	}
 
 	public List<RoleRepresentation> getAllRoles() {

@@ -11,13 +11,14 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Mail, Phone } from 'lucide-react';
+import useTaskDetail from '@/store/taskDetails';
 import React, { useState } from 'react';
 import CustomerDashboard from './horizontal';
 
 const LeftSection: React.FC<{
-  taskData: any;
   layout: 'vertical' | 'horizontal';
-}> = ({ taskData, layout }) => {
+}> = ({ layout }) => {
+  const taskData = useTaskDetail().taskDetail;
   const [detail, setDetail] = useState([
     { label: 'Email', value: '' },
     { label: 'Phone', value: '' },
@@ -80,10 +81,10 @@ const LeftSection: React.FC<{
               <strong>Status:</strong> {taskData?.status}
             </li>
             <li>
-              <strong>Updated at:</strong> {taskData?.updated_date}
+              <strong>Updated at:</strong> {taskData?.updatedDate}
             </li>
             <li>
-              <strong>Created at:</strong> {taskData?.created_at}
+              <strong>Created at:</strong> {taskData?.createdDate}
             </li>
             <li>
               <strong>Priority:</strong> {taskData?.priority}

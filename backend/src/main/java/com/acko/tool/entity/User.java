@@ -27,6 +27,7 @@ public class User {
 	private String firstName;
 	private String lastName;
 	private String group;
+	private String role;
 	private boolean active;
 	private Map<String, Object> customAttributes;
 	
