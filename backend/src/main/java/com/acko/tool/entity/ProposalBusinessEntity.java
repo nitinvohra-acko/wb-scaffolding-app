@@ -17,4 +17,5 @@ public class ProposalBusinessEntity {
 	private String proposalId;
 	private String proposalStatus;
 	private List<String> memberIds;
+	private List<Insured> insured;
 }
