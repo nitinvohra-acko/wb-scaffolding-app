@@ -6,7 +6,7 @@ import com.acko.tool.service.KafkaProducerService;
 import com.acko.tool.service.TasksService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
-import lombok.Value;
+import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.log4j.Log4j2;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
@@ -19,8 +19,8 @@ import java.util.UUID;
 @AllArgsConstructor
 public class PublishEventToKafka implements JavaDelegate {
 
-    @Value("acko.tool-name.name")
-    String toolName;
+    @Value("${acko.tool-name.name}")
+     String toolName;
 
     private final TasksService tasksService;
     private final KafkaProducerService producerService;
@@ -31,7 +31,7 @@ public class PublishEventToKafka implements JavaDelegate {
         String taskId = delegateExecution.getVariable("task_id").toString();
         Task<?> task = tasksService.fetchTaskById(taskId);
         delegateExecution.setVariable("workflow_id", task.getReferenceTaskWorkflowId());
-        KafkaMessage kafkaMessage = KafkaMessage.builder().eventId(UUID.randomUUID().toString()).eventType("telemer_done").timestamp(System.currentTimeMillis()).source("doc_tool").payload(delegateExecution.getVariables()).build();
+        KafkaMessage kafkaMessage = KafkaMessage.builder().eventId(UUID.randomUUID().toString()).eventType("telemer_done").timestamp(System.currentTimeMillis()).source(toolName).payload(delegateExecution.getVariables()).build();
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonString = objectMapper.writeValueAsString(kafkaMessage);
         System.out.println(jsonString);
