@@ -29,4 +29,5 @@ export interface TaskDetail {
   businessEntityImpl: any;
   createdDate: string;
   updatedDate: string;
+  tags: { label: string; group: string; level: string; reason: string }[];
 }

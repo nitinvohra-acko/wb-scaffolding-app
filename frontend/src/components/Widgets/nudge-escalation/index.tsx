@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -30,11 +30,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { escalationLevels, groups } from './constants';
+import { getLevelColor } from './utils';
+import TasksDetail from '@/store/taskDetails';
+import useTaskDetail from '@/hooks/useTaskDetails';
 
 interface NudgeEscalationProps {
   id: string; // ID of the item/task to escalate
-  onEscalate?: (data: NudgeData) => Promise<void>;
-  onResolve?: (id: string) => Promise<void>;
   initialStatus?: 'open' | 'resolved';
 }
 
@@ -45,113 +47,96 @@ interface NudgeData {
   reason: string;
 }
 
-const escalationLevels = [
-  { value: 'low', label: 'Low Priority' },
-  { value: 'medium', label: 'Medium Priority' },
-  { value: 'high', label: 'High Priority' },
-  { value: 'critical', label: 'Critical' },
-];
-
-const groups = [
-  { value: 'ops', label: 'Operations' },
-  { value: 'doctor', label: 'Medical Staff' },
-  { value: 'comms', label: 'Communications' },
-  { value: 'tech', label: 'Technical Support' },
-  { value: 'admin', label: 'Administration' },
-];
-
 export function NudgeEscalation({
   id,
-  onEscalate,
-  onResolve,
   initialStatus = 'open',
 }: NudgeEscalationProps) {
+  const { taskDetail } = TasksDetail.getState();
+  const { fetchTaskDetail } = useTaskDetail();
+
   const [level, setLevel] = useState('');
   const [group, setGroup] = useState('');
   const [reason, setReason] = useState('');
   const [status, setStatus] = useState<'open' | 'resolved' | 'submitting'>(
     initialStatus,
   );
+  useEffect(() => {
+    if (taskDetail?.tags) {
+      setLevel(taskDetail.tags[0].level);
+      setGroup(taskDetail.tags[0].group);
+      setReason(taskDetail.tags[0].reason);
+    }
+  }, [taskDetail]);
   const [error, setError] = useState<string | null>(null);
-
-  const handleEscalate = async () => {
+  const handleEscalate = () => {
     if (!level || !group || !reason.trim()) {
       setError('Please fill in all fields');
       return;
     }
-
     setStatus('submitting');
     setError(null);
+    callUpdateTask({
+      id,
+      type: taskDetail?.type,
+      tags: [{ level, group, reason, label: 'Escalation' }],
+    });
+  };
 
+  const callUpdateTask = async (updatePayload: any) => {
     try {
-      if (onEscalate) {
-        await onEscalate({ id, level, group, reason });
-      } else {
-        // Default implementation if no handler is provided
-        // Replace with your actual API endpoint
-        const response = await fetch('/api/nudge', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ id, level, group, reason }),
-        });
+      const response = await fetch('/task', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatePayload),
+      });
 
-        if (!response.ok) throw new Error('Failed to create nudge');
-      }
+      if (!response.ok) throw new Error('Failed to create nudge');
 
-      setStatus('open');
+      // setStatus('open');
       // Reset form after successful submission
       setReason('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create nudge');
       setStatus('open');
       console.error(err);
+    } finally {
+      fetchTaskDetail(id);
     }
   };
-
-  const handleResolve = async () => {
-    setStatus('submitting');
-    setError(null);
-
-    try {
-      if (onResolve) {
-        await onResolve(id);
-      } else {
-        // Default implementation if no handler is provided
-        // Replace with your actual API endpoint
-        const response = await fetch(`/api/nudge/${id}/resolve`, {
-          method: 'PUT',
-        });
-
-        if (!response.ok) throw new Error('Failed to resolve nudge');
-      }
-
-      setStatus('resolved');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to resolve nudge');
-      setStatus('open');
-      console.error(err);
-    }
+  const handleResolve = () => {
+    callUpdateTask([]);
   };
 
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case 'low':
-        return 'bg-blue-500/10 text-blue-500';
-      case 'medium':
-        return 'bg-yellow-500/10 text-yellow-500';
-      case 'high':
-        return 'bg-orange-500/10 text-orange-500';
-      case 'critical':
-        return 'bg-red-500/10 text-red-500';
-      default:
-        return 'bg-gray-500/10 text-gray-500';
-    }
-  };
+  // const handleResolve = async () => {
+  //   setStatus('submitting');
+  //   setError(null);
+
+  //   try {
+  //     // if (onResolve) {
+  //     //   await onResolve(id);
+  //     // } else {
+  //     //   // Default implementation if no handler is provided
+  //     //   // Replace with your actual API endpoint
+
+  //     // }
+  //     const response = await fetch(`/api/nudge/${id}/resolve`, {
+  //       method: 'PUT',
+  //     });
+
+  //     if (!response.ok) throw new Error('Failed to resolve nudge');
+
+  //     setStatus('resolved');
+  //   } catch (err) {
+  //     setError(err instanceof Error ? err.message : 'Failed to resolve nudge');
+  //     setStatus('open');
+  //     console.error(err);
+  //   }
+  // };
 
   return (
-    <Card className="w-full">
+    <Card className="w-full border-none ">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
           <CardTitle className="text-md font-medium">

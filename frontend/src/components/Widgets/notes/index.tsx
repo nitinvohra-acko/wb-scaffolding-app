@@ -15,14 +15,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Send, RefreshCw } from 'lucide-react';
 
 interface Note {
-  id: string;
-  content: string;
-  createdAt: string;
-  author: {
-    id: string;
-    name: string;
-    avatar?: string;
-  };
+  date: string;
+  note: string | null;
+  note_by: string;
 }
 
 interface NotesWidgetProps {
@@ -30,7 +25,12 @@ interface NotesWidgetProps {
   title?: string;
   placeholder?: string;
 }
-
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase())
+    .join('');
+}
 export function NotesWidget({
   id,
   title = 'Notes',
@@ -47,10 +47,10 @@ export function NotesWidget({
     setError(null);
     try {
       // Replace with your actual API endpoint
-      const response = await fetch(`/api/notes?id=${id}`);
+      const response = await fetch(`/notes/${id}`);
       if (!response.ok) throw new Error('Failed to fetch notes');
       const data = await response.json();
-      setNotes(data);
+      if (data.notes) setNotes(data.notes);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load notes');
       console.error(err);
@@ -66,14 +66,16 @@ export function NotesWidget({
     setError(null);
     try {
       // Replace with your actual API endpoint
-      const response = await fetch('/api/notes', {
+      const response = await fetch('/notes', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          id,
-          content: newNote,
+          entity_id: id,
+          note: newNote,
+          note_by: 'login_user',
+          tag: 'task',
         }),
       });
 
@@ -105,7 +107,7 @@ export function NotesWidget({
   };
 
   return (
-    <Card className="w-full">
+    <Card className="w-full ">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-md font-medium">{title}</CardTitle>
         <Button
@@ -133,23 +135,25 @@ export function NotesWidget({
                 </div>
               ))
           ) : notes.length > 0 ? (
-            notes.map((note) => (
-              <div key={note.id} className="flex gap-3">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={note.author.avatar} />
-                  <AvatarFallback>{note.author.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <div className="flex justify-between items-center mb-1">
-                    <p className="text-sm font-medium">{note.author.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatDate(note.createdAt)}
-                    </p>
+            notes.map(({ note, date, note_by }, index) => {
+              return (
+                <div key={index} className="flex gap-3">
+                  <Avatar className="h-8 w-8">
+                    {/* <AvatarImage src={note.author.avatar} /> */}
+                    <AvatarFallback>{getInitials(note_by)}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <div className="flex justify-between items-center mb-1">
+                      <p className="text-sm font-medium">{note}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatDate(date)}
+                      </p>
+                    </div>
+                    {/* <p className="text-sm">{content}</p> */}
                   </div>
-                  <p className="text-sm">{note.content}</p>
                 </div>
-              </div>
-            ))
+              );
+            })
           ) : (
             <p className="text-sm text-muted-foreground text-center py-4">
               No notes yet
@@ -168,12 +172,13 @@ export function NotesWidget({
           placeholder={placeholder}
           value={newNote}
           onChange={(e) => setNewNote(e.target.value)}
-          className="min-h-[80px] resize-none"
+          className="min-h-[50px] resize-none"
         />
         <Button
           size="icon"
           onClick={submitNote}
           disabled={isSubmitting || !newNote.trim()}
+          className="rounded-full p-2"
         >
           <Send className="h-4 w-4" />
           <span className="sr-only">Send</span>

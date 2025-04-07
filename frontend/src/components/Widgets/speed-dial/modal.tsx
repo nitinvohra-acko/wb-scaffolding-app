@@ -51,21 +51,7 @@ export default function WidgetModal() {
           />
         );
       case 'nudge':
-        return (
-          <NudgeEscalation
-            id={currentId}
-            onEscalate={async (data) => {
-              console.log('Escalating:', data);
-              // In a real app, you would make an API call here
-              return new Promise((resolve) => setTimeout(resolve, 1000));
-            }}
-            onResolve={async (id) => {
-              console.log('Resolving nudge:', id);
-              // In a real app, you would make an API call here
-              return new Promise((resolve) => setTimeout(resolve, 1000));
-            }}
-          />
-        );
+        return <NudgeEscalation id={currentId} />;
       case 'assignment':
         return (
           <TaskAssignment
