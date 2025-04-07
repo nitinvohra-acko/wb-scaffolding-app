@@ -36,10 +36,9 @@ type FieldConfig = {
   fieldDisplayName: string;
   fieldName: string | null;
   variableName: string;
-  fieldType: string;
+  fieldType: 'term' | 'range';
   isSearchable: boolean;
   isFilterable: boolean;
-  filterType?: 'term' | 'range';
 };
 
 export default function FieldConfigManagement() {
@@ -114,25 +113,26 @@ export default function FieldConfigManagement() {
       ...newConfigs[index],
       isFilterable: !newConfigs[index].isFilterable,
       // If making filterable, ensure it has a filter type
-      filterType: !newConfigs[index].isFilterable
-        ? newConfigs[index].filterType || 'term'
-        : newConfigs[index].filterType,
+      fieldType: !newConfigs[index].isFilterable
+        ? newConfigs[index].fieldType || 'term'
+        : newConfigs[index].fieldType,
       // If field name is null and we're making it filterable, generate a default field name
       fieldName:
         newConfigs[index].fieldName === null && !newConfigs[index].isFilterable
           ? generateFieldName(newConfigs[index].variableName)
           : newConfigs[index].fieldName,
     };
+    console.log(newConfigs, 'newConfigs');
     setFieldConfigs(newConfigs);
     setHasChanges(true);
   };
 
   // Function to update filter type
-  const updateFilterType = (index: number, filterType: 'term' | 'range') => {
+  const updateFilterType = (index: number, fieldType: 'term' | 'range') => {
     const newConfigs = [...fieldConfigs];
     newConfigs[index] = {
       ...newConfigs[index],
-      filterType,
+      fieldType,
     };
     setFieldConfigs(newConfigs);
     setHasChanges(true);
@@ -186,23 +186,6 @@ export default function FieldConfigManagement() {
     return config.isSearchable || config.isFilterable;
   };
 
-  // Function to get appropriate data type label
-  const getDataTypeLabel = (dataType: string) => {
-    const type = dataType.toLowerCase();
-    switch (type) {
-      case 'string':
-        return 'Text';
-      case 'number':
-        return 'Number';
-      case 'boolean':
-        return 'Yes/No';
-      case 'date':
-        return 'Date';
-      default:
-        return dataType;
-    }
-  };
-
   // Count how many fields are configured
   const configuredFieldsCount = fieldConfigs.filter(isConfigured).length;
 
@@ -234,7 +217,6 @@ export default function FieldConfigManagement() {
                 <TableRow>
                   <TableHead>Display Name</TableHead>
                   <TableHead>Field Name</TableHead>
-                  <TableHead>Data Type</TableHead>
                   <TableHead className="w-[140px]">
                     <div className="flex items-center">
                       <Search className="h-4 w-4 mr-2" />
@@ -275,7 +257,6 @@ export default function FieldConfigManagement() {
                         className="max-w-[200px]"
                       />
                     </TableCell>
-                    <TableCell>{getDataTypeLabel(config.fieldType)}</TableCell>
                     <TableCell>
                       <Switch
                         checked={config.isSearchable}
@@ -291,7 +272,7 @@ export default function FieldConfigManagement() {
                     <TableCell>
                       {config.isFilterable && (
                         <Select
-                          value={config.filterType || 'term'}
+                          value={config.fieldType || 'term'}
                           onValueChange={(value) =>
                             updateFilterType(index, value as 'term' | 'range')
                           }
