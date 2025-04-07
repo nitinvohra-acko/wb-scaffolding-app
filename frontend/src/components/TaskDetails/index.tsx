@@ -7,6 +7,7 @@ import RightSection from './tabs';
 import useTaskDetail from '@/hooks/useTaskDetails';
 import useTasksDetail from '@/store/taskDetails';
 import { withRBAC } from '../withRBAC';
+import WidgetSpeedModal from '../Widgets/speed-dial/layout';
 
 const TaskDetails: React.FC = ({}) => {
   const params = useParams();
@@ -31,6 +32,7 @@ const TaskDetails: React.FC = ({}) => {
         handleLayout={setLayout}
         taskDetail={taskDetail}
       />
+      <WidgetSpeedModal itemId={params?.slug ? params?.slug[0] : ''} />
     </div>
   );
 };

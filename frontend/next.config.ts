@@ -6,11 +6,11 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/task/:path*',
-        destination: `http://localhost:5010/task/:path*`,
+        destination: `${process.env.NEXT_PUBLIC_BASE_API}/task/:path*`,
       },
       {
         source: '/search/:path*',
-        destination: `http://localhost:5010/search/:path*`,
+        destination: `${process.env.NEXT_PUBLIC_BASE_API}/search/:path*`,
       },
       {
         source: '/actuator/health',

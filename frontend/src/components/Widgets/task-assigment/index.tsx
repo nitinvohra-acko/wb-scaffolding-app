@@ -33,13 +33,18 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Check, ChevronsUpDown, UserPlus, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { apiClient } from '@/utils/interceptor';
+import useTasksDetailStore from '@/store/taskDetails';
+import { UsersResponse } from '@/types/users';
 
 interface UserType {
   id: string;
-  name: string;
+  username: string;
   email: string;
   avatar?: string;
   role?: string;
+  group: string;
+  firstName: string;
 }
 
 interface Group {
@@ -58,6 +63,7 @@ export function TaskAssignment({
   initialAssignee = null,
   onAssign,
 }: TaskAssignmentProps) {
+  const { taskDetail } = useTasksDetailStore.getState();
   const [selectedGroup, setSelectedGroup] = useState<string>('');
   const [users, setUsers] = useState<UserType[]>([]);
   const [assignee, setAssignee] = useState<UserType | null>(initialAssignee);
@@ -65,6 +71,7 @@ export function TaskAssignment({
   const [isAssigning, setIsAssigning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
 
   // Example groups - replace with your actual groups
   const groups: Group[] = [
@@ -83,11 +90,26 @@ export function TaskAssignment({
 
     try {
       // Replace with your actual API endpoint
-      const response = await fetch(`/api/users?group=${groupId}`);
-      if (!response.ok) throw new Error('Failed to fetch users');
-
-      const data = await response.json();
-      setUsers(data);
+      const data: any = await apiClient(`/api/user/search`, 'POST', {
+        body: {
+          searchableFields: [],
+          filters: [
+            {
+              type: 'term',
+              fieldId: 'GROUP',
+              fieldName: 'Group',
+              attributes: {
+                value: [groupId],
+              },
+            },
+          ],
+          sort: [],
+          searchStr: '',
+          pageNo: 1,
+          pageSize: 10,
+        },
+      });
+      data.result && setUsers(data.result as UserType[]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load users');
       console.error(err);
@@ -96,30 +118,26 @@ export function TaskAssignment({
     }
   };
 
-  const handleAssign = async (userId: string) => {
+  const handleAssign = async () => {
     setIsAssigning(true);
     setError(null);
 
     try {
-      if (onAssign) {
-        await onAssign(taskId, userId);
-      } else {
-        // Default implementation if no handler is provided
-        // Replace with your actual API endpoint
-        const response = await fetch(`/api/tasks/${taskId}/assign`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
+      const response = await apiClient(`/task`, 'PATCH', {
+        body: {
+          id: taskDetail?.id,
+          type: taskDetail?.type,
+          assignee: {
+            name: selectedUser?.firstName,
+            id: selectedUser?.id,
           },
-          body: JSON.stringify({ userId }),
-        });
+        },
+      });
 
-        if (!response.ok) throw new Error('Failed to assign task');
-      }
+      // if (!response.ok) throw new Error('Failed to assign task');
 
       // Find the assigned user from our list
-      const assignedUser = users.find((user) => user.id === userId) || null;
-      setAssignee(assignedUser);
+      setAssignee(selectedUser);
       setOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to assign task');
@@ -131,6 +149,7 @@ export function TaskAssignment({
 
   useEffect(() => {
     if (selectedGroup) {
+      setAssignee(null);
       fetchUsers(selectedGroup);
     }
   }, [selectedGroup]);
@@ -141,17 +160,17 @@ export function TaskAssignment({
         <CardTitle className="text-md font-medium">Task Assignment</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-8">
           <div className="space-y-2">
             <label className="text-sm font-medium">Current Assignee</label>
             {assignee ? (
-              <div className="flex items-center gap-2 p-2 border rounded-md">
+              <div className="flex items-center gap-2 p-2 border rounded-md bg-purple-50">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={assignee.avatar} />
-                  <AvatarFallback>{assignee.name.charAt(0)}</AvatarFallback>
+                  <AvatarFallback>{assignee.username[0]}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="text-sm font-medium">{assignee.name}</p>
+                  <p className="text-sm font-medium">{assignee.firstName}</p>
                   <p className="text-xs text-muted-foreground">
                     {assignee.email}
                   </p>
@@ -169,7 +188,6 @@ export function TaskAssignment({
               </div>
             )}
           </div>
-
           <div className="space-y-2">
             <label className="text-sm font-medium">Assign to</label>
             <div className="flex gap-2">
@@ -199,7 +217,7 @@ export function TaskAssignment({
                       'Loading...'
                     ) : (
                       <>
-                        <span>Select user</span>
+                        <span>{selectedUser?.email ?? 'Select user'}</span>
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </>
                     )}
@@ -215,16 +233,21 @@ export function TaskAssignment({
                           <CommandItem
                             key={user.id}
                             value={user.id}
-                            onSelect={() => handleAssign(user.id)}
+                            onSelect={() => setSelectedUser(user)}
                           >
                             <div className="flex items-center gap-2 flex-1">
                               <Avatar className="h-6 w-6">
                                 <AvatarImage src={user.avatar} />
                                 <AvatarFallback>
-                                  {user.name.charAt(0)}
+                                  {user.username[0]}
                                 </AvatarFallback>
                               </Avatar>
-                              <span>{user.name}</span>
+                              <div>
+                                <div>{user.firstName ?? user.username}</div>
+                                <div className=" text-xs">
+                                  {user.email ?? user.username}
+                                </div>
+                              </div>
                             </div>
                             <Check
                               className={cn(
@@ -243,7 +266,6 @@ export function TaskAssignment({
               </Popover>
             </div>
           </div>
-
           {error && (
             <div className="p-2 bg-destructive/10 text-destructive text-sm rounded">
               {error}
@@ -252,10 +274,7 @@ export function TaskAssignment({
         </div>
       </CardContent>
       <CardFooter className="flex justify-end">
-        <Button
-          disabled={!selectedGroup || isAssigning}
-          onClick={() => setOpen(true)}
-        >
+        <Button disabled={!selectedGroup || isAssigning} onClick={handleAssign}>
           <UserPlus className="mr-2 h-4 w-4" />
           {assignee ? 'Reassign' : 'Assign'} Task
         </Button>
