@@ -28,14 +28,14 @@ spring:
   kafka:
     bootstrap-servers: b-2.sureosackodevmsk.spoc7n.c3.kafka.ap-south-1.amazonaws.com:9094,b-1.sureosackodevmsk.spoc7n.c3.kafka.ap-south-1.amazonaws.com:9094,b-3.sureosackodevmsk.spoc7n.c3.kafka.ap-south-1.amazonaws.com:9094
     max.request.size: 10485880
+    security:
+      protocol: SSL
     consumer:
       security:
         protocol: SSL
     producer:
-      security:
-        protocol: SSL
-    listener:
-      ack-mode: batch
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: com.acko.tool.serializer.KafkaMessageSerializer
 
   datasource:
     url: jdbc:mysql://localhost:3306/camunda
@@ -58,6 +58,12 @@ spring:
           jwk-set-uri: http://localhost:8080/realms/MyRealm/protocol/openid-connect/certs
   elasticsearch:
     uris: http://localhost:9200
+
+acko:
+  rap-manager-service:
+    url: https://health-rap-manager-service-uat.internal.ackodev.com
+  tool-name:
+    name: Doc_tool
 
 jwt:
   auth:
