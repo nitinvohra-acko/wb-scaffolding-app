@@ -10,9 +10,8 @@ import { withRBAC } from '../withRBAC';
 
 const TaskDetails: React.FC = ({}) => {
   const params = useParams();
-  const [taskDetail, setTaskDetail] = useState(null);
   const [layout, setLayout] = useState<'vertical' | 'horizontal'>('horizontal');
-  const hoist = useTasksDetail().hoist;
+  const { hoist, taskDetail } = useTasksDetail.getState();
   const fetchTaskDetail = useTaskDetail().fetchTaskDetail;
 
   useEffect(() => {
@@ -35,9 +34,9 @@ const TaskDetails: React.FC = ({}) => {
     </div>
   );
 };
-
-export default withRBAC(TaskDetails, 'task-details:view', () => (
-  <div className="p-4 text-center">
-    You don't have permission to view the task details.
-  </div>
-));
+export default TaskDetails;
+// export default withRBAC(TaskDetails, 'task-details:view', () => (
+//   <div className="p-4 text-center">
+//     You don't have permission to view the task details.
+//   </div>
+// ));

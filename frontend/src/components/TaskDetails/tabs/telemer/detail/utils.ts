@@ -30,7 +30,7 @@ export type Question = {
     | 'members_comments';
   option?: Option[];
   sub_question_mapping?: Record<string, string[]>;
-  sub_questions?: Question[];
+  subQuestions?: Question[];
   value?: string | string[] | QUESTION[];
   read_only?: boolean;
   answer?: string | string[];
@@ -58,8 +58,8 @@ export const formInitState: any = (
         ? []
         : '';
       // console.log('sub question>>', curr);
-      if (curr?.sub_questions && curr?.sub_questions?.length > 0) {
-        return formInitState(curr.sub_questions, acc);
+      if (curr?.subQuestions && curr?.subQuestions?.length > 0) {
+        return formInitState(curr.subQuestions, acc);
       }
       return acc;
     }
@@ -130,11 +130,11 @@ export const updateObjectByKey = (
       break;
     }
     if (
-      arr[i]?.question_config.sub_questions &&
-      Array.isArray(arr[i].question_config.sub_questions)
+      arr[i]?.question_config.subQuestions &&
+      Array.isArray(arr[i].question_config.subQuestions)
     ) {
       updateObjectByKey(
-        arr[i].question_config.sub_questions,
+        arr[i].question_config.subQuestions,
         key,
         keyValue,
         value,
@@ -165,7 +165,7 @@ export const requestMapping = (questions: QuestionsType[]) => {
       });
     }
     questionConfigs.question_config.answer &&
-      questionConfigs.question_config?.sub_questions?.map((sub_question) => {
+      questionConfigs.question_config?.subQuestions?.map((sub_question) => {
         iterativeQuestionMapping(sub_question);
       });
   }
@@ -209,12 +209,12 @@ export function questionSchema(
         zExpression = z.string().min(1, 'This field is required.');
       }
     }
-    zodExpression[config.question_id] = zExpression; // Add the schema to the object
+    zodExpression[config.question_config.question_id] = zExpression; // Add the schema to the object
   }
 
   // Recursively handle sub-questions
-  if (config.question_config.sub_questions) {
-    config.question_config.sub_questions.forEach((sub) => {
+  if (config.question_config.subQuestions) {
+    config.question_config.subQuestions.forEach((sub) => {
       questionSchema(sub, zodExpression);
     });
   }

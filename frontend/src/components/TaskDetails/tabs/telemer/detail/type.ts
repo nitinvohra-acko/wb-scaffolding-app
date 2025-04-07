@@ -9,7 +9,7 @@ export interface QuestionConfig {
   type: string;
   required: number;
   option?: { capture_text: string; label: string; answer_id: string }[];
-  sub_questions?: QuestionsType[];
+  subQuestions?: QuestionsType[];
   sub_question_mapping?: { [key: string]: string[] };
   answer?: {
     [key: string]: { answer_id: string | string[]; answer: string | string[] };

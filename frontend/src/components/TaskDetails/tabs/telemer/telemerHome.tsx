@@ -1,5 +1,8 @@
 import React from 'react';
 import HealthProfile from './detail';
+import useTelemer from './hooks/useTelemer';
+import useTelemerStore from './store/telemer';
+import { useParams } from 'next/navigation';
 interface PropsType {
   handleLayout: (l: 'vertical' | 'horizontal') => void;
   layout: 'vertical' | 'horizontal';
@@ -7,9 +10,17 @@ interface PropsType {
 }
 
 const Home: React.FC<PropsType> = ({ layout, handleLayout, taskDetail }) => {
+  const params = useParams();
   const [showHealthProfile, setShowHealthProfile] = React.useState(false);
+  const { fetchTelemerAnswers, loading } = useTelemer();
+  const { answers } = useTelemerStore.getState();
+  React.useEffect(() => {
+    fetchTelemerAnswers(params.slug ? params.slug[0] : '');
+  }, []);
+  console.log('answers', answers);
   return (
     <div style={{ height: '100vh', overflowY: 'auto' }} className="w-full">
+      {loading && <h2>Loading...</h2>}
       {!showHealthProfile && (
         <div className="flex flex-col items-center h-screen">
           <h1 className="text-2xl text-center mb-4">

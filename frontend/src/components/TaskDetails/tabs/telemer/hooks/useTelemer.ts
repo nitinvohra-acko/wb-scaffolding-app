@@ -1,35 +1,31 @@
 import { useState } from 'react';
 import telemerStore from '../store/telemer';
 import { question_Data4 } from '../constant4';
+import { apiClient } from '@/utils/interceptor';
+import { QuestionsType } from '../detail/type';
 
 const useTelemer = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<null | string>(null);
-  const { hoist, hoistResponse } = telemerStore();
+  const { hoist, hoistResponse, hoistAnswer } = telemerStore();
 
-  const fetchTelemerConfig = async () => {
+  const fetchTelemerConfig = async (id: string) => {
     try {
       setLoading(true);
-      console.log('calling config');
-      const resp = await fetch('/questions/assessment-questions/config', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const resp: QuestionsType[] = await apiClient(
+        '/questions/assessment-questions/config',
+        'POST',
+        {
+          body: {
+            journey: 'rap',
+            source: 'health',
+            ruleId: 'assessment_question_config',
+            proposalId: id,
+          },
         },
-        body: JSON.stringify({
-          journey: 'rap',
-          source: 'health',
-          ruleId: 'assessment_question_config',
-          proposalId: 'a9e283d2-aebf-4fdf-8e4c-6f62d02660e34',
-        }),
-      });
-      if (!resp.ok) {
-        throw new Error('Failed to fetch telemer config');
-      }
-      const data = await resp.json();
-      // console.log('data >>', data);
-      hoist(question_Data4);
-      hoistResponse(question_Data4);
+      );
+      hoist(resp);
+      hoistResponse(resp);
       setLoading(false);
     } catch (e: any) {
       console.error(e);
@@ -37,6 +33,29 @@ const useTelemer = () => {
       setError(e.message);
     }
   };
-  return { fetchTelemerConfig, loading, error };
+
+  const fetchTelemerAnswers = async (id: string) => {
+    try {
+      setLoading(true);
+      const resp: QuestionsType[] = await apiClient(
+        '/questions/getAnswers',
+        'POST',
+        {
+          body: {
+            journey: 'rap',
+            source: 'health',
+            reference_id: id,
+          },
+        },
+      );
+      hoistAnswer(resp);
+      setLoading(false);
+    } catch (e: any) {
+      console.error(e);
+      setLoading(false);
+      setError(e.message);
+    }
+  };
+  return { fetchTelemerConfig, loading, error, fetchTelemerAnswers };
 };
 export default useTelemer;

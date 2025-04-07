@@ -37,8 +37,8 @@ const nextConfig: NextConfig = {
         destination: `${process.env.NEXT_PUBLIC_BASE_API}/kafka/publish/:path*`,
       },
       {
-        source: '/questions/answers/:path*',
-        destination: `${process.env.NEXT_PUBLIC_BASE_API}/questions/answers/:path*`,
+        source: '/questions/:path*',
+        destination: `${process.env.NEXT_PUBLIC_BASE_API}/questions/:path*`,
       },
       {
         source: '/questions/assessment-questions/config',
