@@ -1,4 +1,3 @@
-import Cookies from 'js-cookie';
 import getCookie from './getCookies';
 export type RequestMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
 

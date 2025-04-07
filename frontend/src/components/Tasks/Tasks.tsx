@@ -30,6 +30,7 @@ export default function TaskDataPage() {
   const columns: ColumnDef[] = [
     { key: 'assignee', header: 'Assignee' },
     { key: 'id', header: 'ID' },
+    { key: 'type', header: 'Type' },
     { key: 'status', header: 'Status' },
     { key: 'priority', header: 'Priority' },
     { key: 'actions', header: 'Detail' },

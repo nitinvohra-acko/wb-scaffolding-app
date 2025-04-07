@@ -42,7 +42,7 @@ export default function UserMenu({ onLogout }: UserMenuProps) {
     offline: 'bg-gray-500',
   };
   const onStatusChange = (value: UserStatus) => {
-    localStorage.setItem('user-status', value);
+    localStorage?.setItem('user-status', value);
     setStatus(value);
     analyticsService?.track({
       eventName: 'user_status_change',

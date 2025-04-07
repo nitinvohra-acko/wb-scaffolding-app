@@ -6,11 +6,11 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/task/:path*',
-        destination: `${process.env.NEXT_PUBLIC_BASE_API}/task/:path*`,
+        destination: `http://localhost:5010/task/:path*`,
       },
       {
         source: '/search/:path*',
-        destination: `${process.env.NEXT_PUBLIC_BASE_API}/search/:path*`,
+        destination: `http://localhost:5010/search/:path*`,
       },
       {
         source: '/actuator/health',
@@ -31,6 +31,18 @@ const nextConfig: NextConfig = {
       {
         source: '/search/fields/:path*',
         destination: `${process.env.NEXT_PUBLIC_BASE_API}/search/fields/:path*`,
+      },
+      {
+        source: '/kafka/publish/:path*',
+        destination: `${process.env.NEXT_PUBLIC_BASE_API}/kafka/publish/:path*`,
+      },
+      {
+        source: '/questions/:path*',
+        destination: `${process.env.NEXT_PUBLIC_BASE_API}/questions/:path*`,
+      },
+      {
+        source: '/questions/assessment-questions/config',
+        destination: `${process.env.NEXT_PUBLIC_BASE_API}/questions/assessment-questions/config`,
       },
       {
         source: '/api/event',

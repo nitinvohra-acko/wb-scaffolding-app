@@ -2,8 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { DataRow } from './constants';
-import LeftSection from './Overview';
+import LeftSection from './Overview/horizontal';
 import RightSection from './tabs';
 import useTaskDetail from '@/hooks/useTaskDetails';
 import useTasksDetail from '@/store/taskDetails';
@@ -11,7 +10,8 @@ import { withRBAC } from '../withRBAC';
 
 const TaskDetails: React.FC = ({}) => {
   const params = useParams();
-  const hoist = useTasksDetail().hoist;
+  const [layout, setLayout] = useState<'vertical' | 'horizontal'>('horizontal');
+  const { hoist, taskDetail } = useTasksDetail.getState();
   const fetchTaskDetail = useTaskDetail().fetchTaskDetail;
 
   useEffect(() => {
@@ -24,15 +24,19 @@ const TaskDetails: React.FC = ({}) => {
   }, []);
 
   return (
-    <div className="flex h-full">
-      <LeftSection />
-      <RightSection />
+    <div className={`${layout === 'horizontal' ? 'flex' : ''} h-full`}>
+      <LeftSection taskDetail={taskDetail} layout={layout} />
+      <RightSection
+        layout={layout}
+        handleLayout={setLayout}
+        taskDetail={taskDetail}
+      />
     </div>
   );
 };
-
-export default withRBAC(TaskDetails, 'task-details:view', () => (
-  <div className="p-4 text-center">
-    You don't have permission to view the task details.
-  </div>
-));
+export default TaskDetails;
+// export default withRBAC(TaskDetails, 'task-details:view', () => (
+//   <div className="p-4 text-center">
+//     You don't have permission to view the task details.
+//   </div>
+// ));
