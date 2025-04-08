@@ -23,7 +23,7 @@ public class CRMTaskIdentification implements JavaDelegate {
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
         delegateExecution.setVariable("event",delegateExecution.getVariable("decision"));
-        KafkaMessage kafkaMessage = KafkaMessage.builder().eventId(UUID.randomUUID().toString()).eventType("telemer_required").timestamp(System.currentTimeMillis()).source("doc_tool").payload(delegateExecution.getVariables()).build();
+        KafkaMessage kafkaMessage = KafkaMessage.builder().eventId(UUID.randomUUID().toString()).eventType("crm_escalation_task").timestamp(System.currentTimeMillis()).source("doc_tool").payload(delegateExecution.getVariables()).build();
         String jsonString = objectMapper.writeValueAsString(kafkaMessage);
         System.out.println(jsonString);
         producerService.sendMessage(kafkaMessage , kafkaMessage.getEventType());

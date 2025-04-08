@@ -151,7 +151,7 @@
       <bpmn:messageEventDefinition id="MessageEventDefinition_16dpp42" messageRef="Message_2ccunnq" />
     </bpmn:boundaryEvent>
     <bpmn:sequenceFlow id="Flow_0oljeju" sourceRef="CRMToolEvent" targetRef="CRMToolDecision" />
-    <bpmn:serviceTask id="CRMToolDecision" name="CRM Tool Decision Process" camunda:class="com.acko.tool.delegates.CRMTaskIdentification">
+    <bpmn:serviceTask id="CRMToolDecision" name="CRM Tool Decision Process" camunda:class="com.acko.tool.delegates.CRM.CRMTaskIdentification">
       <bpmn:incoming>Flow_0oljeju</bpmn:incoming>
     </bpmn:serviceTask>
   </bpmn:process>
