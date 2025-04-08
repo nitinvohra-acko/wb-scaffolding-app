@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 const CLIENT_ID = process.env.NEXT_PUBLIC_CLIENT_ID;
 const REDIRECT_URI = process.env.NEXT_PUBLIC_REDIRECT_URI;
 const KEYCLOAK_BASE_URL = process.env.NEXT_PUBLIC_KEYCLOAK_BASE_URL;
-const SECRET = process.env.NEXT_PUBLIC_SECRET;
 export async function POST(req: Request) {
   const { username, password } = await req.json();
 

@@ -35,6 +35,7 @@ export default function Login() {
     resolver: zodResolver(loginSchema),
   });
 
+  //  create google client and add the client in the keycloak idp setup
   const handleIdPLogin = (provider: string) => {
     const loginUrl =
       `${KEYCLOAK_BASE_URL}/protocol/openid-connect/auth` +

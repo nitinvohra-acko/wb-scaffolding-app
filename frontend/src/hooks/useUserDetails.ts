@@ -1,3 +1,4 @@
+import { UserInfo } from '@/types/auth';
 import { User } from '@/types/users';
 import { apiClient } from '@/utils/interceptor';
 import { useCallback, useState } from 'react';
@@ -8,7 +9,7 @@ const useUserDetail = () => {
   const fetchUser = useCallback(async (userId: string) => {
     try {
       setLoading(true);
-      const response: User = await apiClient(`/api/user/${userId}`, 'GET');
+      const response: UserInfo = await apiClient(`/api/user/${userId}`, 'GET');
       return response;
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
