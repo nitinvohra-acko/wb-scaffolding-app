@@ -18,8 +18,8 @@ const useAuth = () => {
       setLoading(true);
       const response: AuthData = await apiClient(`/api/user/token/info`, 'GET');
       if (response) {
-        if (response?.userInfo?.roles?.[0]) {
-          fetchRoleToPermissions(response.userInfo.roles?.[0]);
+        if (response?.userInfo?.role) {
+          fetchRoleToPermissions(response.userInfo.role);
         }
 
         hoist((response as AuthData)?.userInfo as UserInfo);

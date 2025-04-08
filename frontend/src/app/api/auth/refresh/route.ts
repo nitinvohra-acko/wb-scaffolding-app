@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const CLIENT_ID = process.env.NEXT_PUBLIC_CLIENT_ID!;
 const KEYCLOAK_BASE_URL = `${process.env.NEXT_PUBLIC_KEYCLOAK_BASE_URL}/protocol/openid-connect/token`;
-const SECRET = process.env.NEXT_PUBLIC_SECRET!;
 
 export async function POST(req: NextRequest) {
   try {

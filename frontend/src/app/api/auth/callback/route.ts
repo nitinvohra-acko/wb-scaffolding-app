@@ -4,7 +4,6 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const CLIENT_ID = process.env.NEXT_PUBLIC_CLIENT_ID;
 const REDIRECT_URI = process.env.NEXT_PUBLIC_REDIRECT_URI;
-const SECRET = process.env.NEXT_PUBLIC_SECRET;
 const TOKEN_API = process.env.NEXT_PUBLIC_TOKEN_API;
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
