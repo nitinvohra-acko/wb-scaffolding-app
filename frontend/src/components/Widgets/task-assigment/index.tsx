@@ -35,7 +35,6 @@ import { Check, ChevronsUpDown, UserPlus, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { apiClient } from '@/utils/interceptor';
 import useTasksDetailStore from '@/store/taskDetails';
-import { UsersResponse } from '@/types/users';
 
 interface UserType {
   id: string;
@@ -55,18 +54,18 @@ interface Group {
 interface TaskAssignmentProps {
   taskId: string;
   initialAssignee?: UserType | null;
-  onAssign?: (taskId: string, userId: string) => Promise<void>;
+  closeWidget: () => void;
 }
 
 export function TaskAssignment({
   taskId,
   initialAssignee = null,
-  onAssign,
+  closeWidget,
 }: TaskAssignmentProps) {
-  const { taskDetail } = useTasksDetailStore.getState();
+  const { taskDetail, hoist } = useTasksDetailStore.getState();
   const [selectedGroup, setSelectedGroup] = useState<string>('');
   const [users, setUsers] = useState<UserType[]>([]);
-  const [assignee, setAssignee] = useState<UserType | null>(initialAssignee);
+  const [assignee, setAssignee] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isAssigning, setIsAssigning] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,7 +80,11 @@ export function TaskAssignment({
     { id: 'tech', name: 'Technical Support' },
     { id: 'admin', name: 'Administration' },
   ];
-
+  useEffect(() => {
+    if (taskDetail?.assignee) {
+      setAssignee(taskDetail.assignee);
+    }
+  }, [taskDetail]);
   const fetchUsers = async (groupId: string) => {
     if (!groupId) return;
 
@@ -123,22 +126,20 @@ export function TaskAssignment({
     setError(null);
 
     try {
-      const response = await apiClient(`/task`, 'PATCH', {
+      const response: any = await apiClient(`/task`, 'PATCH', {
         body: {
           id: taskDetail?.id,
           type: taskDetail?.type,
-          assignee: {
-            name: selectedUser?.firstName,
-            id: selectedUser?.id,
-          },
+          assignee: selectedUser?.email,
         },
       });
-
+      hoist(response);
       // if (!response.ok) throw new Error('Failed to assign task');
 
       // Find the assigned user from our list
-      setAssignee(selectedUser);
+      setAssignee(selectedUser?.email ?? '');
       setOpen(false);
+      closeWidget();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to assign task');
       console.error(err);
@@ -165,21 +166,19 @@ export function TaskAssignment({
             <label className="text-sm font-medium">Current Assignee</label>
             {assignee ? (
               <div className="flex items-center gap-2 p-2 border rounded-md bg-purple-50">
-                <Avatar className="h-8 w-8">
+                {/* <Avatar className="h-8 w-8">
                   <AvatarImage src={assignee.avatar} />
                   <AvatarFallback>{assignee.username[0]}</AvatarFallback>
-                </Avatar>
+                </Avatar> */}
                 <div>
-                  <p className="text-sm font-medium">{assignee.firstName}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {assignee.email}
-                  </p>
+                  {/* <p className="text-sm font-medium">{assignee.firstName}</p> */}
+                  <p className="text-xs text-muted-foreground">{assignee}</p>
                 </div>
-                {assignee.role && (
+                {/* {assignee.role && (
                   <Badge variant="outline" className="ml-auto">
                     {assignee.role}
                   </Badge>
-                )}
+                )} */}
               </div>
             ) : (
               <div className="flex items-center gap-2 p-2 border rounded-md text-muted-foreground">
@@ -252,7 +251,7 @@ export function TaskAssignment({
                             <Check
                               className={cn(
                                 'ml-auto h-4 w-4',
-                                assignee?.id === user.id
+                                selectedUser?.id === user.id
                                   ? 'opacity-100'
                                   : 'opacity-0',
                               )}

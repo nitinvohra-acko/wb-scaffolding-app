@@ -4,7 +4,9 @@ import { Phone, FileText, MessageSquare } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import type { ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
+import useTasksDetailStore from '@/store/taskDetails';
+import TaskDetails from './components/taskDetail';
 
 // Define the data structure
 interface DataItem {
@@ -28,17 +30,39 @@ interface MemberItem {
 
 export default function CustomerDashboard({
   layout,
-  taskDetail,
 }: {
   layout: 'horizontal' | 'vertical';
   taskDetail: any;
 }) {
+  const { taskDetail } = useTasksDetailStore.getState();
+  const { insured, proposer } = useMemo(() => {
+    if (
+      Array.isArray(taskDetail?.businessEntityImpl.insured) &&
+      taskDetail?.businessEntityImpl.insured.length > 0
+    ) {
+      let proposer = null;
+      try {
+        proposer = taskDetail?.businessEntityImpl.insured.find(
+          (member) =>
+            (member.parameters.relationship?.value ?? '').toLowerCase() ===
+            'self',
+        );
+      } catch {
+        console.log('proposer could not found');
+      }
+
+      return { insured: taskDetail?.businessEntityImpl.insured, proposer };
+    }
+    return { insured: [], proposer: null };
+  }, [taskDetail]);
   // Customer profile data
   const customerData = {
-    name: 'Rahul',
+    name: proposer?.parameters?.name?.value ?? '',
     proposalNo: '31791797',
-    avatar: 'AB',
+    avatar: proposer?.parameters?.name?.value[0] ?? 'U',
     status: taskDetail?.status,
+    phone: proposer?.parameters.phone?.value ?? '',
+    email: proposer?.parameters.email?.value ?? '',
   };
 
   // Plan details data
@@ -92,20 +116,12 @@ export default function CustomerDashboard({
   ];
 
   // Member level details data
-  const memberDetailsData: MemberItem[] = [
-    {
-      name: 'Rahul',
-      details: 'Self | Male | 40 years',
-      status: 'Tele-mer pending',
-      statusClassName: 'bg-orange-50 text-orange-500 border-orange-200',
-    },
-    {
-      name: 'Smita',
-      details: 'Spouse | Female | 39 years',
-      status: 'Tele-mer pending',
-      statusClassName: 'bg-orange-50 text-orange-500 border-orange-200',
-    },
-  ];
+  const memberDetailsData: MemberItem[] | undefined = insured.map((member) => ({
+    name: member.parameters.name.value,
+    details: 'Self | Male | 40 years',
+    status: 'Tele-mer pending',
+    statusClassName: 'bg-orange-50 text-orange-500 border-orange-200',
+  }));
 
   // Existing policy details data
   const policyDetailsData: DataItem[] = [
@@ -172,7 +188,6 @@ export default function CustomerDashboard({
       </div>
     ));
   };
-  console.log('layout', layout);
   return (
     <div
       className={
@@ -204,7 +219,7 @@ export default function CustomerDashboard({
             </p>
           </div>
         </div>
-
+        <TaskDetails />
         {/* Plan Details Section */}
         <Card className="flex-1">
           <CardHeader className="pb-2">
@@ -232,7 +247,7 @@ export default function CustomerDashboard({
           </CardHeader>
           <CardContent className="pt-0">
             <div className="space-y-3">
-              {memberDetailsData.map((member, index) => (
+              {memberDetailsData?.map((member, index) => (
                 <div key={index} className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">{member.name}</p>

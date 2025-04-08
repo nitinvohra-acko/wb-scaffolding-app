@@ -26,8 +26,14 @@ export interface TaskDetail {
   type: string;
   status: string;
   calculatedPriority: number;
-  businessEntityImpl: any;
+  businessEntityImpl: businessEntityType;
   createdDate: string;
   updatedDate: string;
   tags: { label: string; group: string; level: string; reason: string }[];
+}
+export interface businessEntityType {
+  insured: {
+    insuredId: string;
+    parameters: { [key: string]: { value: string } };
+  }[];
 }

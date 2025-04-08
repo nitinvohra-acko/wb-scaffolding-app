@@ -71,7 +71,7 @@ export default function WidgetSpeedDial({
               </Button>
             </motion.div>
 
-            <motion.div
+            {/* <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
@@ -85,7 +85,7 @@ export default function WidgetSpeedDial({
                 <UserPlus className="h-5 w-5" />
                 <span className="sr-only">Assignment</span>
               </Button>
-            </motion.div>
+            </motion.div> */}
           </div>
         )}
       </AnimatePresence>
