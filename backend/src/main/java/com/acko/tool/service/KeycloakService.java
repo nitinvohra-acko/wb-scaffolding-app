@@ -9,17 +9,21 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.keycloak.admin.client.resource.GroupsResource;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.RolesResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Service;
 
 import com.acko.tool.dto.UserDTO;
+import com.acko.tool.dto.UserGroupDTO;
 import com.acko.tool.dto.UserRoleDTO;
 
+import jakarta.validation.Valid;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -175,6 +179,39 @@ public class KeycloakService {
 			roles.add(getRoleByName(role.getName()));
 		}
 		return roles;
+	}
+
+	public List<GroupRepresentation> createOrUpdateGroups(@Valid List<UserGroupDTO> groupsRequest) {
+		GroupsResource groupsResource = adminRealmResource.groups();
+
+		List<GroupRepresentation> groupRepresentationList = new ArrayList<>();
+		
+		for (UserGroupDTO groupDTO : groupsRequest) {
+			// Create a new group representation
+			GroupRepresentation newGroup = new GroupRepresentation();
+			newGroup.setName(groupDTO.getGroupName());
+			newGroup.setAttributes(Map.of("allowedRoles", groupDTO.getAllowedRoles()));
+			
+			// Create the group in Keycloak
+			groupsResource.add(newGroup);
+			
+			groupRepresentationList.add(newGroup);
+		}
+		return groupRepresentationList;
+	}
+
+	public List<GroupRepresentation> getAllGroups() {
+		GroupsResource groupsResource = adminRealmResource.groups();
+		
+		
+		// Fetch all groups in the realm (with pagination if needed)
+        List<GroupRepresentation> groups = new ArrayList<>();
+        
+		for (GroupRepresentation group : groupsResource.groups()) {
+			groups.add(groupsResource.group(group.getId()).toRepresentation());
+		}
+
+        return groups;
 	}
 	
 }
