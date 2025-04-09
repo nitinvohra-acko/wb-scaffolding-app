@@ -44,4 +44,6 @@ public class Task<T> {
 	@LastModifiedDate
 	private Date updatedDate;
 
+	private Integer version;
+
 }

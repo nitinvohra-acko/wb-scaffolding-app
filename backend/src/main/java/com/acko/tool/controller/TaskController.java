@@ -43,6 +43,14 @@ public class TaskController {
 		}
 		return null;
 	}
+	@PostMapping("/update")
+	public List<Task<?>> updateTasksWithTaskHistory(@RequestBody List<Task<?>> tasks) throws Exception {
+		if (CollectionUtils.isNotEmpty(tasks)) {
+			return taskService.updateTasksWithTaskHistory(tasks);
+		}
+		return null;
+	}
+
 	
 	@DeleteMapping("{id}")
 	public ResponseEntity<?> deleteTasks(@PathVariable String id) {
