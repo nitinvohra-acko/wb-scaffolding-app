@@ -1,5 +1,4 @@
 'use client';
-
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import LeftSection from './Overview/horizontal';
@@ -26,17 +25,12 @@ const TaskDetails: React.FC = ({}) => {
   return (
     <div className={`${layout === 'horizontal' ? 'flex' : ''} h-full`}>
       <LeftSection taskDetail={taskDetail} layout={layout} />
-      <RightSection
-        layout={layout}
-        handleLayout={setLayout}
-        taskDetail={taskDetail}
-      />
+      <RightSection handleLayout={setLayout} taskDetail={taskDetail} />
     </div>
   );
 };
-export default TaskDetails;
-// export default withRBAC(TaskDetails, 'task-details:view', () => (
-//   <div className="p-4 text-center">
-//     You don't have permission to view the task details.
-//   </div>
-// ));
+export default withRBAC(TaskDetails, 'task-details:view', () => (
+  <div className="p-4 text-center">
+    You don't have permission to view the task details.
+  </div>
+));

@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
+import Textarea from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import {

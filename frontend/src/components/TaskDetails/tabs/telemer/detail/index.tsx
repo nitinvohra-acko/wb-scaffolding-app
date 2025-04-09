@@ -11,7 +11,7 @@ import {
   getUniquSection,
 } from './utils';
 import { QuestionsType, QuestionConfig, member } from './type';
-import { Resolver, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import React from 'react';
 import WidgetMap from './widgetMap';
 import { question_Data4 } from '../constant4';
@@ -25,17 +25,26 @@ import * as z from 'zod';
 import { useParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { apiClient } from '@/utils/interceptor';
+import { TaskDetail } from '@/types/task';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import useTaskDetail from '@/hooks/useTaskDetails';
 
 interface PropsType {
   handleLayout: (l: 'vertical' | 'horizontal') => void;
-  layout: 'vertical' | 'horizontal';
   readonly: boolean;
-  taskDetail: any;
+  taskDetail: TaskDetail;
 }
-export default function HealthProfile({ readonly }: PropsType) {
+export default function HealthProfile({ readonly, taskDetail }: PropsType) {
   const params = useParams();
   const { toast } = useToast();
-
+  const { fetchTaskDetail, loading: taskLoading } = useTaskDetail();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(
     'introduction',
   );
@@ -48,6 +57,10 @@ export default function HealthProfile({ readonly }: PropsType) {
   const questions = useTelemerStore().memberResponse;
   const questionConfig = useTelemerStore().questionConfig;
 
+  const allSections: string[] = useMemo(() => {
+    return getUniquSection(questions);
+  }, [questions]);
+
   const zSchema = useMemo(() => {
     const zodExpressions: Record<string, z.ZodTypeAny> = {};
     questionConfig.forEach((config) => {
@@ -56,7 +69,7 @@ export default function HealthProfile({ readonly }: PropsType) {
     return z.record(z.string(), z.object(zodExpressions));
   }, [questionConfig]);
 
-  const { control, getValues, reset, trigger, formState, watch } = useForm({
+  const { control, getValues, trigger, formState } = useForm({
     mode: 'onChange',
     reValidateMode: 'onChange',
     defaultValues: memberForm,
@@ -64,8 +77,6 @@ export default function HealthProfile({ readonly }: PropsType) {
   });
 
   const handleSubmit = async () => {
-    trigger();
-
     if (!formState.isValid) {
       toast({
         title: 'Error',
@@ -73,6 +84,7 @@ export default function HealthProfile({ readonly }: PropsType) {
       });
       return;
     }
+    _setLoading(true);
     const MemberResponse = requestMapping([...questions]);
     try {
       const response = await apiClient('/questions/answers', 'POST', {
@@ -83,36 +95,38 @@ export default function HealthProfile({ readonly }: PropsType) {
           questions: MemberResponse,
         },
       });
-
-      console.log('response', response);
-
-      // runWorkflow();
+      fetchTaskDetail(taskDetail.id);
+      _setLoading(false);
     } catch (err) {
       _setLoading(false);
       console.log('error at submit', err);
     }
   };
 
-  const navigateToSection = (direction: 'next' | 'previous') => {
-    const currentIndex = allSections.findIndex(
-      (section) => section === activeSection,
-    );
-    let newIndex;
+  const navigateToSection = useCallback(
+    (direction: 'next' | 'previous') => {
+      const currentIndex = allSections.findIndex(
+        (section) => section === activeSection,
+      );
+      let newIndex;
 
-    if (direction === 'next') {
-      newIndex =
-        currentIndex < allSections.length - 1 ? currentIndex + 1 : currentIndex;
-    } else {
-      newIndex = currentIndex > 0 ? currentIndex - 1 : currentIndex;
-    }
-    setActiveSection(allSections[newIndex]);
-  };
-  const allSections: string[] = useMemo(() => {
-    return getUniquSection(questions);
-  }, [questions]);
+      if (direction === 'next') {
+        newIndex =
+          currentIndex < allSections.length - 1
+            ? currentIndex + 1
+            : currentIndex;
+      } else {
+        newIndex = currentIndex > 0 ? currentIndex - 1 : currentIndex;
+      }
+      setActiveSection(allSections[newIndex]);
+    },
+    [formState, activeSection, allSections],
+  );
 
   useEffect(() => {
-    fetchTelemerConfig(params.slug ? params.slug[0] : '');
+    if (taskDetail?.businessEntityImpl?.proposalId) {
+      fetchTelemerConfig(taskDetail?.businessEntityImpl?.proposalId);
+    }
   }, []);
 
   useEffect(() => {
@@ -339,7 +353,10 @@ export default function HealthProfile({ readonly }: PropsType) {
     },
     [control, questions],
   );
-
+  const handleConfirmSubmit = () => {
+    handleSubmit();
+    setIsModalOpen(false);
+  };
   const renderInfo = useCallback((config: QuestionsType['question_config']) => {
     return <TeleMerInfo label={config.question_text} />;
   }, []);
@@ -351,7 +368,7 @@ export default function HealthProfile({ readonly }: PropsType) {
         <div className="flex items-center text-purple-500 gap-1">
           <CheckCircle className="w-4 h-4" />
           <span className="text-sm">Auto saved</span>
-          {(loading || _loading) && <PageLoader />}
+          {(loading || _loading || taskLoading) && <PageLoader />}
         </div>
       </div>
       <div>
@@ -365,9 +382,7 @@ export default function HealthProfile({ readonly }: PropsType) {
               navigateToSection={navigateToSection}
               handleSubmit={() => {
                 trigger();
-                setTimeout(() => {
-                  handleSubmit();
-                }, 500);
+                setIsModalOpen(true);
               }}
               sectionList={allSections}
             >
@@ -389,6 +404,47 @@ export default function HealthProfile({ readonly }: PropsType) {
           );
         })}
       </div>
+      {isModalOpen && (
+        <Dialog
+          open={isModalOpen}
+          onOpenChange={(open) => !open && setIsModalOpen(false)}
+        >
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>{'Confirmation!'}</DialogTitle>
+            </DialogHeader>
+            <div className="mt-2">
+              <div className="font-bold text-2xl pb-10 text-center">
+                Do you want to submit?
+              </div>
+              {!formState.isValid && (
+                <div className="text-red-500 p-2 bg-red-50 rounded-md mb-2">
+                  Some fields are required
+                </div>
+              )}
+              <div className="flex space-x-4 justify-around">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsModalOpen(false);
+                  }}
+                  className="px-6"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="default"
+                  onClick={handleConfirmSubmit}
+                  className="px-6 bg-gray-900"
+                  disabled={!formState.isValid}
+                >
+                  Submit
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

@@ -158,10 +158,11 @@ export const requestMapping = (questions: QuestionsType[]) => {
           });
       });
       response.push({
-        question_id: questionConfigs.question_id,
-        question_text: questionConfigs.question_config.question_text,
-        answers,
+        question_id: questionConfigs.question_config.question_id,
+        question: questionConfigs.question_config.question_text,
+        answer: answers,
         answer_id: answers,
+        section: questionConfigs.section,
       });
     }
     questionConfigs.question_config.answer &&
@@ -226,4 +227,28 @@ export function getUniquSection(questions: QuestionsType[]): string[] {
     sectionSet.add(question.section);
   });
   return Array.from(sectionSet) as string[];
+}
+
+export function getQuestionById(
+  questions: QuestionsType[],
+  requireId: string,
+): QuestionsType | null {
+  let found: QuestionsType | null = null;
+  function search(question: QuestionsType) {
+    if (question.question_config.question_id === requireId) {
+      found = question;
+      return;
+    }
+    if (question.question_config.subQuestions) {
+      question.question_config.subQuestions.forEach((question) => {
+        search(question);
+        if (found) return;
+      });
+    }
+  }
+  for (let question of questions) {
+    search(question);
+    if (found) break;
+  }
+  return found;
 }

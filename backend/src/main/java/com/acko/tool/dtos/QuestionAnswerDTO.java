@@ -17,6 +17,9 @@ public class QuestionAnswerDTO {
 
     private List<Map<String, Object>> answer;
 
+    @JsonProperty("answer_id")
+    private List<Map<String, Object>> answerId;
+
     @JsonProperty("updated_by")
     private String updatedBy;
 }

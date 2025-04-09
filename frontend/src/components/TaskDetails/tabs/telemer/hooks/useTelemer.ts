@@ -12,6 +12,7 @@ const useTelemer = () => {
   const fetchTelemerConfig = async (id: string) => {
     try {
       setLoading(true);
+
       const resp: QuestionsType[] = await apiClient(
         '/questions/assessment-questions/config',
         'POST',
@@ -28,7 +29,7 @@ const useTelemer = () => {
       hoistResponse(resp);
       setLoading(false);
     } catch (e: any) {
-      console.error(e);
+      console.log('error', e);
       setLoading(false);
       setError(e.message);
     }

@@ -1,5 +1,4 @@
 'use client';
-
 import { Phone, FileText, MessageSquare } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -172,7 +171,6 @@ export default function CustomerDashboard({
       </div>
     ));
   };
-  console.log('layout', layout);
   return (
     <div
       className={

@@ -7,6 +7,8 @@ import com.acko.tool.repository.AnswerRepository;
 import com.acko.tool.repository.QuestionRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -101,6 +103,9 @@ public class QuestionService {
             String referenceId = request.get("reference_id");
             String source = request.get("source");
             String journey = request.get("journey");
+            if (referenceId == null || source == null || journey == null) {
+                throw new HandleExecuteException("Missing required parameters: reference_id, source, journey");
+            }
             return answerRepository.findByReferenceIdAndSourceAndJourney(referenceId, source, journey);
     }
 

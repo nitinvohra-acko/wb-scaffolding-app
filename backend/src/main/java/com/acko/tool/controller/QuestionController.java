@@ -38,15 +38,20 @@ public class QuestionController {
 
 
     @PostMapping(path =ANSWERS, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> dumpAnswers(@RequestBody AnswerRequest answerRequest) {
+    public ResponseEntity<Map<String,String >> dumpAnswers(@RequestBody AnswerRequest answerRequest) {
         questionService.dumpAnswers(answerRequest);
-        return ResponseEntity.ok("Answers dumped successfully");
+        Map<String, String> response = Map.of("message","Answers dumped successfully");
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping(path=GETANSWERS, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AnswerRequest> getAnswers(
             @RequestBody Map<String,String> request) throws JsonProcessingException {
-        return ResponseEntity.ok(questionService.getAnswers(request));
+        AnswerRequest response = questionService.getAnswers(request);
+        if(response==null){
+            return  ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(response);
     }
 }
 

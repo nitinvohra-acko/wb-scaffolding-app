@@ -5,14 +5,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Telemer from '@/components/TaskDetails/tabs/telemer';
 interface PropsType {
   handleLayout: (l: 'vertical' | 'horizontal') => void;
-  layout: 'vertical' | 'horizontal';
   taskDetail: any;
 }
-const RightSection: React.FC<PropsType> = ({
-  layout,
-  handleLayout,
-  taskDetail,
-}) => {
+const RightSection: React.FC<PropsType> = ({ handleLayout, taskDetail }) => {
   const [activeTab, setActiveTab] = React.useState('telemer');
   return (
     <div className="w-full  p-4">
@@ -33,11 +28,7 @@ const RightSection: React.FC<PropsType> = ({
 
         <TabsContent value="telemer">
           {taskDetail?.status === 'in-progress' ? (
-            <Telemer
-              layout={layout}
-              handleLayout={handleLayout}
-              taskDetail={taskDetail}
-            />
+            <Telemer handleLayout={handleLayout} taskDetail={taskDetail} />
           ) : (
             <div className="font-bold text-green-700 ">
               Telemer form is completed
